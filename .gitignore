@@ -1,0 +1,10 @@
+node_modules
+.DS_Store
+dist
+.next
+.turbo
+coverage
+*.log
+frontend/.next
+backend/dist
+workers/dist
