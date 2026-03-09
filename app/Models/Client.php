@@ -50,6 +50,11 @@ class Client extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function leads(): HasMany
+    {
+        return $this->hasMany(Lead::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'ACTIVE');

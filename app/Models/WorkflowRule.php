@@ -35,7 +35,7 @@ class WorkflowRule extends Model
         return $this->hasMany(WorkflowAction::class);
     }
 
-    public function automationLogs(): HasMany
+    public function logs(): HasMany
     {
         return $this->hasMany(AutomationLog::class);
     }

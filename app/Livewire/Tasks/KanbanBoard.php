@@ -62,8 +62,8 @@ class KanbanBoard extends Component
 
         if ($this->searchQuery) {
             $query->where(function ($q) {
-                $q->where('title', 'ilike', '%'.$this->searchQuery.'%')
-                    ->orWhere('description', 'ilike', '%'.$this->searchQuery.'%');
+                $q->where('title', 'like', '%' . $this->searchQuery . '%')
+                    ->orWhere('description', 'like', '%' . $this->searchQuery . '%');
             });
         }
 
@@ -121,7 +121,7 @@ class KanbanBoard extends Component
         } catch (\Exception $e) {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => 'Failed to update task status: '.$e->getMessage(),
+                'message' => 'Failed to update task status: ' . $e->getMessage(),
             ]);
         }
     }
@@ -136,6 +136,6 @@ class KanbanBoard extends Component
 
     public function render()
     {
-        return view('livewire.tasks.kanban-board');
+        return view('livewire.tasks.kanban-board')->layout('layouts.app');
     }
 }

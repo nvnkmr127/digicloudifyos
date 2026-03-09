@@ -16,6 +16,6 @@ class Index extends Component
             'recent_documents' => \App\Models\Invoice::with('client')->orderByDesc('created_at')->limit(5)->get(),
         ];
 
-        return view('livewire.dashboard.index', $stats);
+        return view('livewire.dashboard.index', $stats)->layout('layouts.app');
     }
 }

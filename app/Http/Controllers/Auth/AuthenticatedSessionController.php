@@ -44,4 +44,31 @@ class AuthenticatedSessionController extends Controller
 
         return redirect('/');
     }
+
+    /**
+     * Auto login as a user with the specified role.
+     */
+    public function autoLogin(string $role): RedirectResponse
+    {
+        $user = \App\Models\User::where('role', strtoupper($role))->first();
+
+        if (!$user) {
+            // If user doesn't exist, try to create one or find any user
+            $orgId = \App\Models\Organization::first()->id;
+            $user = \App\Models\User::create([
+                'organization_id' => $orgId,
+                'email' => strtolower($role) . '@example.com',
+                'full_name' => ucfirst(strtolower($role)) . ' User',
+                'role' => strtoupper($role),
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'status' => 'ACTIVE',
+            ]);
+        }
+
+        Auth::login($user);
+
+        request()->session()->regenerate();
+
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
 }

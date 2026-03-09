@@ -31,14 +31,21 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $org = \App\Models\Organization::create([
+            'name' => $request->name . ' Organization',
+            'slug' => \Illuminate\Support\Str::slug($request->name . '-' . uniqid()),
+        ]);
+
         $user = User::create([
-            'name' => $request->name,
+            'organization_id' => $org->id,
+            'full_name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'OWNER',
         ]);
 
         event(new Registered($user));

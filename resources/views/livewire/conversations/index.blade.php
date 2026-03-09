@@ -29,7 +29,7 @@
                                 {{ $conversation->contact->last_name }}</h4>
                             @if($conversation->messages->count() > 0)
                                 <span
-                                    class="text-xs text-text-muted">{{ $conversation->messages->first()->sent_at->shortAbsoluteDiffForHumans() }}</span>
+                                    class="text-xs text-text-muted">{{ $conversation->messages->first()->sent_at->diffForHumans() }}</span>
                             @endif
                         </div>
                         <div class="flex items-center text-xs text-text-muted mb-1 space-x-1">

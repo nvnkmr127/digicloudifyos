@@ -44,9 +44,9 @@ class KanbanBoard extends Component
 
         if ($this->searchQuery) {
             $query->where(function ($q) {
-                $q->where('name', 'ilike', '%'.$this->searchQuery.'%')
-                    ->orWhere('email', 'ilike', '%'.$this->searchQuery.'%')
-                    ->orWhere('phone', 'ilike', '%'.$this->searchQuery.'%');
+                $q->where('name', 'like', '%' . $this->searchQuery . '%')
+                    ->orWhere('email', 'like', '%' . $this->searchQuery . '%')
+                    ->orWhere('phone', 'like', '%' . $this->searchQuery . '%');
             });
         }
 
@@ -99,7 +99,7 @@ class KanbanBoard extends Component
         } catch (\Exception $e) {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => 'Failed to update lead status: '.$e->getMessage(),
+                'message' => 'Failed to update lead status: ' . $e->getMessage(),
             ]);
         }
     }
@@ -113,6 +113,6 @@ class KanbanBoard extends Component
 
     public function render()
     {
-        return view('livewire.leads.kanban-board');
+        return view('livewire.leads.kanban-board')->layout('layouts.app');
     }
 }

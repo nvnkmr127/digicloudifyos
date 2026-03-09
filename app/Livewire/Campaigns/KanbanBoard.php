@@ -63,9 +63,9 @@ class KanbanBoard extends Component
 
         if ($this->searchQuery) {
             $query->where(function ($q) {
-                $q->where('name', 'ilike', '%'.$this->searchQuery.'%')
+                $q->where('name', 'like', '%' . $this->searchQuery . '%')
                     ->orWhereHas('client', function ($clientQuery) {
-                        $clientQuery->where('name', 'ilike', '%'.$this->searchQuery.'%');
+                        $clientQuery->where('name', 'like', '%' . $this->searchQuery . '%');
                     });
             });
         }
@@ -124,7 +124,7 @@ class KanbanBoard extends Component
         } catch (\Exception $e) {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => 'Failed to update campaign status: '.$e->getMessage(),
+                'message' => 'Failed to update campaign status: ' . $e->getMessage(),
             ]);
         }
     }
@@ -139,6 +139,6 @@ class KanbanBoard extends Component
 
     public function render()
     {
-        return view('livewire.campaigns.kanban-board');
+        return view('livewire.campaigns.kanban-board')->layout('layouts.app');
     }
 }
