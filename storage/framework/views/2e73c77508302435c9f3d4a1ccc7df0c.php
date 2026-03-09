@@ -177,6 +177,12 @@
 
                                 </div>
 
+                                <!-- Role Switcher -->
+                                <div class="block px-4 py-2 text-xs text-gray-400">
+                                    <?php echo e(__('Switch Role')); ?>
+
+                                </div>
+
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = ['OWNER', 'ADMIN', 'ANALYST', 'OPERATOR', 'VIEWER']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <?php if (isset($component)) { $__componentOriginal68cb1971a2b92c9735f83359058f7108 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal68cb1971a2b92c9735f83359058f7108 = $attributes; } ?>

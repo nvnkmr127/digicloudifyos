@@ -35,7 +35,7 @@ class Index extends Component
 
         return view('livewire.pipelines.index', [
             'pipelines' => $pipelines,
-            'selectedPipeline' => $selectedPipeline
+            'selectedPipeline' => $selectedPipeline,
         ]);
     }
 }

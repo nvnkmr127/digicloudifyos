@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\OrganizationScoped;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Laravel\Scout\Searchable;
 
 class Campaign extends Model
 {
-    use HasFactory, HasUuids, Searchable;
+    use HasFactory, HasUuids, OrganizationScoped, Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -69,15 +70,7 @@ class Campaign extends Model
         return $this->hasMany(Alert::class);
     }
 
-    public function scopeForOrganization($query, $organizationId)
-    {
-        return $query->where('organization_id', $organizationId);
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'ACTIVE');
-    }
+    // OrganizationScoped trait provides scopeForOrganization() and scopeActive()
 
     public function scopeRunning($query)
     {
@@ -89,10 +82,10 @@ class Campaign extends Model
         $symbol = $this->adAccount?->currency_symbol ?? '$';
 
         if ($this->daily_budget) {
-            return $symbol . number_format((float) $this->daily_budget, 2) . '/day';
+            return $symbol.number_format((float) $this->daily_budget, 2).'/day';
         }
         if ($this->lifetime_budget) {
-            return $symbol . number_format((float) $this->lifetime_budget, 2) . ' lifetime';
+            return $symbol.number_format((float) $this->lifetime_budget, 2).' lifetime';
         }
 
         return 'No budget set';

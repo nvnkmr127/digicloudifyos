@@ -7,6 +7,7 @@ use Livewire\Component;
 class Index extends Component
 {
     public $selectedConversationId = null;
+
     public $messageBody = '';
 
     public function mount()
@@ -24,12 +25,14 @@ class Index extends Component
 
     public function sendMessage()
     {
-        if (empty(trim($this->messageBody)) || !$this->selectedConversationId)
+        if (empty(trim($this->messageBody)) || ! $this->selectedConversationId) {
             return;
+        }
 
         $conv = \App\Models\Conversation::find($this->selectedConversationId);
-        if (!$conv)
+        if (! $conv) {
             return;
+        }
 
         \App\Models\Message::create([
             'conversation_id' => $conv->id,
@@ -48,7 +51,7 @@ class Index extends Component
             'contact',
             'messages' => function ($q) {
                 $q->latest('sent_at');
-            }
+            },
         ])->get();
 
         $selectedConversation = null;
@@ -57,13 +60,13 @@ class Index extends Component
                 'contact',
                 'messages' => function ($q) {
                     $q->orderBy('sent_at', 'asc');
-                }
+                },
             ])->find($this->selectedConversationId);
         }
 
         return view('livewire.conversations.index', [
             'conversations' => $conversations,
-            'selectedConversation' => $selectedConversation
+            'selectedConversation' => $selectedConversation,
         ]);
     }
 }

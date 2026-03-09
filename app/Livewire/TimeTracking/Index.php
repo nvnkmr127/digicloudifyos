@@ -17,7 +17,7 @@ class Index extends Component
         return view('livewire.time-tracking.index', [
             'timeEntries' => $timeEntries,
             'totalHours' => $totalHours,
-            'billableRatio' => $billableRatio
+            'billableRatio' => $billableRatio,
         ]);
     }
 }

@@ -44,9 +44,9 @@ class KanbanBoard extends Component
 
         if ($this->searchQuery) {
             $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->searchQuery . '%')
-                    ->orWhere('email', 'like', '%' . $this->searchQuery . '%')
-                    ->orWhere('phone', 'like', '%' . $this->searchQuery . '%');
+                $q->where('name', 'like', '%'.$this->searchQuery.'%')
+                    ->orWhere('email', 'like', '%'.$this->searchQuery.'%')
+                    ->orWhere('phone', 'like', '%'.$this->searchQuery.'%');
             });
         }
 
@@ -99,7 +99,7 @@ class KanbanBoard extends Component
         } catch (\Exception $e) {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => 'Failed to update lead status: ' . $e->getMessage(),
+                'message' => 'Failed to update lead status: '.$e->getMessage(),
             ]);
         }
     }

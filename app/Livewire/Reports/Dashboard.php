@@ -30,7 +30,7 @@ class Dashboard extends Component
         return view('livewire.reports.dashboard', [
             'campaignStats' => $campaignStats,
             'leadStats' => $leadStats,
-            'monthlyInvoices' => $monthlyInvoices
+            'monthlyInvoices' => $monthlyInvoices,
         ])->layout('layouts.app');
     }
 }

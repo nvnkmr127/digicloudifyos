@@ -147,6 +147,11 @@
                                     {{ __('Switch Role') }}
                                 </div>
 
+                                <!-- Role Switcher -->
+                                <div class="block px-4 py-2 text-xs text-gray-400">
+                                    {{ __('Switch Role') }}
+                                </div>
+
                                 @foreach(['OWNER', 'ADMIN', 'ANALYST', 'OPERATOR', 'VIEWER'] as $role)
                                     <x-dropdown-link :href="route('auto-login', ['role' => strtolower($role)])">
                                         <span class="{{ Auth::user()->role === $role ? 'font-bold text-indigo-600' : '' }}">

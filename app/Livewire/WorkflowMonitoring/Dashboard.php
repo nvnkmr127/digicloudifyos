@@ -22,7 +22,7 @@ class Dashboard extends Component
 
         return view('livewire.workflow-monitoring.dashboard', [
             'rules' => $rules,
-            'recentLogs' => $recentLogs
+            'recentLogs' => $recentLogs,
         ])->layout('layouts.app');
     }
 }

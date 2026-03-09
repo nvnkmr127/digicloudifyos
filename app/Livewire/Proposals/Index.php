@@ -20,7 +20,7 @@ class Index extends Component
             'drafts' => $drafts,
             'sent' => $sent,
             'paid' => $paid,
-            'overdue' => $overdue
+            'overdue' => $overdue,
         ]);
     }
 }
