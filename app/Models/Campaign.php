@@ -26,6 +26,7 @@ class Campaign extends Model
         'end_date',
         'daily_budget',
         'lifetime_budget',
+        'spend_cap',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class Campaign extends Model
         'end_date' => 'date',
         'daily_budget' => 'decimal:4',
         'lifetime_budget' => 'decimal:4',
+        'spend_cap' => 'decimal:4',
     ];
 
     public function organization(): BelongsTo
@@ -65,9 +67,19 @@ class Campaign extends Model
         return $this->hasMany(DailyMetric::class);
     }
 
+    public function adInsights(): HasMany
+    {
+        return $this->hasMany(AdInsight::class);
+    }
+
     public function alerts(): HasMany
     {
         return $this->hasMany(Alert::class);
+    }
+
+    public function adSets(): HasMany
+    {
+        return $this->hasMany(AdSet::class);
     }
 
     // OrganizationScoped trait provides scopeForOrganization() and scopeActive()
@@ -82,10 +94,10 @@ class Campaign extends Model
         $symbol = $this->adAccount?->currency_symbol ?? '$';
 
         if ($this->daily_budget) {
-            return $symbol.number_format((float) $this->daily_budget, 2).'/day';
+            return $symbol . number_format((float) $this->daily_budget, 2) . '/day';
         }
         if ($this->lifetime_budget) {
-            return $symbol.number_format((float) $this->lifetime_budget, 2).' lifetime';
+            return $symbol . number_format((float) $this->lifetime_budget, 2) . ' lifetime';
         }
 
         return 'No budget set';

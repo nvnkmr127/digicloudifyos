@@ -14,13 +14,19 @@ class AutomationLog extends Model
     protected $fillable = [
         'workflow_rule_id',
         'event_id',
+        'event_type',
         'action_type',
         'status',
+        'executed_at',
         'result',
+        'details',
+        'error_message',
     ];
 
     protected $casts = [
+        'executed_at' => 'datetime',
         'result' => 'array',
+        'details' => 'array',
     ];
 
     public function workflowRule(): BelongsTo

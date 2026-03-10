@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('campaigns.index')" :active="request()->routeIs('campaigns.*')">
                         {{ __('Campaigns') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('ads.index')" :active="request()->routeIs('ads.*')">
+                        {{ __('Ads') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
                         {{ __('Tasks') }}
                     </x-nav-link>
@@ -185,6 +188,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('campaigns.index')" :active="request()->routeIs('campaigns.*')">
                 {{ __('Campaigns') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('ads.index')" :active="request()->routeIs('ads.*')">
+                {{ __('Ads') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
                 {{ __('Tasks') }}

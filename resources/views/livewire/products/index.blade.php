@@ -17,49 +17,44 @@
                 </tr>
             </x-slot>
 
-            @foreach([1, 2, 3] as $product)
+            @forelse($products as $product)
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 <div
-                                    class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-text-muted">
-                                    <!-- Image placeholder -->
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                        </path>
-                                    </svg>
+                                    class="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-primary">
+                                    <span class="text-xs font-bold">{{ substr($product->name, 0, 2) }}</span>
                                 </div>
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-text-primary">
-                                    Enterprise Desk {{ $product }}
+                                    {{ $product->name }}
                                 </div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-text-muted">
-                        SKU-{{ str_pad($product, 4, '0', STR_PAD_LEFT) }}
+                        {{ $product->sku }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-text-primary">
-                        ${{ number_format(199 * $product, 2) }}
+                        ${{ number_format($product->price, 2) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span
-                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            In Stock ({{ 20 * $product }})
+                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            {{ $product->stock > 0 ? 'In Stock (' . $product->stock . ')' : 'Out of Stock' }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="{{ route('products.edit', $product) }}" wire:navigate
+                        <a href="{{ route('products.edit', $product->id) }}" wire:navigate
                             class="text-primary hover:text-indigo-900 mr-3">Edit</a>
-                        <button type="button" class="text-red-600 hover:text-red-900" x-data=""
-                            x-on:click.prevent="$dispatch('open-modal', 'confirm-product-deletion-{{ $product }}')">
+                        <button type="button" class="text-red-600 hover:text-red-900"
+                            x-on:click.prevent="$dispatch('open-modal', 'confirm-product-deletion-{{ $product->id }}')">
                             Delete
                         </button>
 
-                        <x-modal name="confirm-product-deletion-{{ $product }}">
+                        <x-modal name="confirm-product-deletion-{{ $product->id }}">
                             <div class="p-6">
                                 <h2 class="text-lg font-medium text-text-primary">
                                     Delete Product
@@ -69,13 +64,21 @@
                                 </p>
                                 <div class="mt-6 flex justify-end gap-3 text-left">
                                     <x-button color="outline" x-on:click="$dispatch('close')">Cancel</x-button>
-                                    <x-button color="danger" x-on:click="$dispatch('close')">Delete</x-button>
+                                    <x-button color="danger" wire:click="delete('{{ $product->id }}')"
+                                        x-on:click="$dispatch('close')">Delete</x-button>
                                 </div>
                             </div>
                         </x-modal>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-text-muted">
+                        No products found. <a href="{{ route('products.create') }}" class="text-primary font-medium">Create
+                            one?</a>
+                    </td>
+                </tr>
+            @endforelse
         </x-table>
     </x-card>
 </x-app-container>

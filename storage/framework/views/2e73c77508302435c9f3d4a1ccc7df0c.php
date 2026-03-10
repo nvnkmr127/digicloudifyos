@@ -267,6 +267,50 @@
             </footer>
         </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <div x-data="{ 
+            messages: [],
+            remove(mid) {
+                this.messages = this.messages.filter(m => m.id !== mid)
+            },
+            add(msg, type = 'success') {
+                const id = Date.now()
+                this.messages.push({ id, msg, type })
+                setTimeout(() => this.remove(id), 5000)
+            }
+        }" x-on:notify.window="add($event.detail.message, $event.detail.type)"
+        class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full">
+
+        <template x-for="message in messages" :key="message.id">
+            <div x-show="true" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="translate-y-2 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="translate-y-0 opacity-100" x-transition:leave-end="translate-y-2 opacity-0"
+                :class="{
+                    'bg-green-600': message.type === 'success',
+                    'bg-red-600': message.type === 'error',
+                    'bg-blue-600': message.type === 'info',
+                    'bg-yellow-600': message.type === 'warning'
+                }"
+                class="text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between pointer-events-auto">
+                <span x-text="message.msg" class="text-sm font-medium"></span>
+                <button @click="remove(message.id)" class="ml-4 text-white/80 hover:text-white">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </template>
+
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
+            <div x-init="add('<?php echo e(session('success')); ?>', 'success')"></div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
+            <div x-init="add('<?php echo e(session('error')); ?>', 'error')"></div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+    </div>
 </body>
 
 </html><?php /**PATH /Users/naveenadicharla/Documents/DC OS/resources/views/layouts/app.blade.php ENDPATH**/ ?>

@@ -14,13 +14,17 @@ class WorkflowRule extends Model
 
     protected $fillable = [
         'organization_id',
+        'name',
+        'description',
         'event_type',
+        'conditions',
         'action_type',
         'action_config',
         'is_active',
     ];
 
     protected $casts = [
+        'conditions' => 'array',
         'action_config' => 'array',
         'is_active' => 'boolean',
     ];
