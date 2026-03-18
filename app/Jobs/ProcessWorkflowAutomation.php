@@ -162,10 +162,13 @@ class ProcessWorkflowAutomation implements ShouldQueue
         \App\Models\Alert::create([
             'organization_id' => $event->organization_id,
             'campaign_id' => $event->payload['entity_id'] ?? null,
-            'type' => $event->event_type,
+            'alert_type' => $event->event_type,
             'severity' => 'warning',
+            'title' => 'System Notification',
             'message' => $message,
-            'details' => $event->payload,
+            'payload' => $event->payload,
+            'triggered_at' => now(),
+            'status' => 'OPEN',
         ]);
     }
 

@@ -10,8 +10,8 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('audience_insights', function (Blueprint $table) {
-            $table->integer('leads')->default(0)->after('conversions');
+        Schema::table('ad_accounts', function (Blueprint $table) {
+            $table->decimal('target_cpc', 10, 2)->after('target_ctr')->nullable();
         });
     }
 
@@ -20,8 +20,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('audience_insights', function (Blueprint $table) {
-            $table->dropColumn('leads');
+        Schema::table('ad_accounts', function (Blueprint $table) {
+            $table->dropColumn('target_cpc');
         });
     }
 };

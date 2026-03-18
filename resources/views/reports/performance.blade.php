@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ $reportName }}</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 0; }
+        .header { background: #1e293b; color: white; padding: 40px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+        .header p { margin: 10px 0 0; opacity: 0.8; font-size: 14px; }
+        .content { padding: 40px; }
+        .summary-grid { display: table; width: 100%; margin-bottom: 40px; }
+        .summary-item { display: table-cell; width: 25%; padding: 20px; text-align: center; border: 1px solid #f1f5f9; border-radius: 12px; }
+        .summary-item .label { font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .summary-item .value { font-size: 20px; font-weight: 700; color: #0f172a; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f8fafc; text-align: left; padding: 12px; font-size: 11px; font-weight: 900; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; font-size: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 20px; text-align: center; font-size: 10px; color: #94a3b8; }
+        .page-break { page-break-after: always; }
+        .section-title { font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 30px; margin-bottom: 15px; border-left: 4px solid #6366f1; padding-left: 15px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Performance Report</h1>
+        <p>{{ $clientName ?? 'Agency Account' }} | {{ $dateRange ?? 'Last 30 Days' }}</p>
+    </div>
+
+    <div class="content">
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="label">Total Spend</div>
+                <div class="value">${{ number_format($overview['total_spend'], 2) }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Total Leads</div>
+                <div class="value">{{ number_format($overview['total_leads']) }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Avg CPL</div>
+                <div class="value">${{ number_format($overview['avg_cpl'], 2) }}</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Avg ROAS</div>
+                <div class="value">{{ number_format($overview['avg_roas'], 2) }}x</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Campaign Performance</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Campaign</th>
+                    <th style="text-align: right;">Spend</th>
+                    <th style="text-align: right;">Leads</th>
+                    <th style="text-align: right;">CPL</th>
+                    <th style="text-align: right;">CTR</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($campaigns as $camp)
+                <tr>
+                    <td style="font-weight: 700;">{{ $camp['name'] }}</td>
+                    <td style="text-align: right;">${{ number_format($camp['spend'], 2) }}</td>
+                    <td style="text-align: right;">{{ number_format($camp['leads']) }}</td>
+                    <td style="text-align: right;">${{ number_format($camp['cpl'], 2) }}</td>
+                    <td style="text-align: right;">{{ number_format($camp['ctr'], 2) }}%</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        @if(count($creatives) > 0)
+        <div class="page-break"></div>
+        <h2 class="section-title">Top Performing Creatives</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Creative Asset</th>
+                    <th style="text-align: right;">CTR</th>
+                    <th style="text-align: right;">Leads</th>
+                    <th style="text-align: right;">Engagement</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(array_slice($creatives, 0, 10) as $creative)
+                <tr>
+                    <td>{{ $creative['asset_name'] }}</td>
+                    <td style="text-align: right;">{{ number_format($creative['ctr'], 2) }}%</td>
+                    <td style="text-align: right;">{{ number_format($creative['leads']) }}</td>
+                    <td style="text-align: right;">{{ number_format($creative['engagement_rate'], 2) }}%</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+    </div>
+
+    <div class="footer">
+        Generated by DigiCloudify OS on {{ now()->format('M d, Y H:i') }}
+    </div>
+</body>
+</html>

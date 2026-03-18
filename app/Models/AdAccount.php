@@ -31,6 +31,7 @@ class AdAccount extends Model
         'facebook_page_token',
         'target_cpl',
         'target_ctr',
+        'target_cpc',
         'target_frequency',
     ];
 

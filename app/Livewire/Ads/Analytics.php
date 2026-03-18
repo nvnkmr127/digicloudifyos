@@ -103,12 +103,13 @@ class Analytics extends Component
             ->where('date', '>=', $startDate)
             ->get();
 
-        $processBreakdown = function ($type) use ($audienceInsights) {
+        $processBreakdown = function ($type, $groupCol) use ($audienceInsights) {
             return $audienceInsights->where('breakdown_type', $type)
-                ->groupBy('dimension_1')
+                ->filter(fn($i) => !empty($i->{$groupCol}))
+                ->groupBy($groupCol)
                 ->map(function ($group) {
                     $spend = $group->sum('spend');
-                    $leads = $group->sum('conversions'); // Using conversions as Leads proxy for breakdowns
+                    $leads = $group->sum('leads'); // Phase 17: Accurate leads from Meta Actions
                     return [
                         'spend' => $spend,
                         'leads' => $leads,
@@ -122,11 +123,11 @@ class Analytics extends Component
             'totalLeads' => $totalLeads,
             'campaigns' => $campaigns,
             'creatives' => $creatives,
-            'ageStats' => $processBreakdown('age'),
-            'genderStats' => $processBreakdown('gender'),
-            'deviceStats' => $processBreakdown('device_platform'),
-            'placementStats' => $processBreakdown('publisher_platform,platform_position'),
-            'cityStats' => $processBreakdown('city'),
+            'ageStats' => $processBreakdown('age', 'age'),
+            'genderStats' => $processBreakdown('gender', 'gender'),
+            'deviceStats' => $processBreakdown('device_platform', 'device'),
+            'placementStats' => $processBreakdown('publisher_platform,platform_position', 'placement'),
+            'cityStats' => $processBreakdown('city', 'city'),
         ])->layout('layouts.app');
     }
 }

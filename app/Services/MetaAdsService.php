@@ -148,7 +148,7 @@ class MetaAdsService extends BaseAdsService
 
         // Fetch User's Ad Accounts (Discovery Phase 3)
         $accountsResponse = Http::withToken($accessTokenValue)->get("https://graph.facebook.com/{$this->apiVersion}/me/adaccounts", [
-            'fields' => 'name,account_id,currency,timezone_name,account_status',
+            'fields' => 'name,account_id,currency,timezone_name,account_status,spend_cap,amount_spent,business,owner',
         ]);
 
         if ($accountsResponse->failed()) {
@@ -163,10 +163,12 @@ class MetaAdsService extends BaseAdsService
         $storedAccounts = collect();
 
         foreach ($accountsData as $accountData) {
+            // Mapping based on Meta documentation: 1=ACTIVE, 2=DISABLED, 3=UNSETTLED, etc.
             $status = match ($accountData['account_status']) {
                 1 => 'ACTIVE',
-                2 => 'INACTIVE',
-                3 => 'ARCHIVED',
+                2 => 'DISABLED',
+                3 => 'UNSETTLED',
+                101 => 'CLOSED',
                 default => 'INACTIVE',
             };
 
@@ -177,18 +179,24 @@ class MetaAdsService extends BaseAdsService
                     'external_account_id' => $accountData['account_id'],
                 ],
                 [
-                    'client_id' => $clientId, // Associated with provided client during connection
+                    'client_id' => $clientId,
                     'access_token_id' => $accessToken->id,
                     'account_name' => $accountData['name'],
                     'currency_code' => $accountData['currency'],
                     'timezone' => $accountData['timezone_name'],
                     'status' => $status,
+                    'credentials' => [
+                        'spend_cap' => $accountData['spend_cap'] ?? null,
+                        'amount_spent' => $accountData['amount_spent'] ?? null,
+                        'business' => $accountData['business'] ?? null,
+                        'owner' => $accountData['owner'] ?? null,
+                    ]
                 ]
             );
             $storedAccounts->push($adAccount);
         }
 
-        return $storedAccounts->first(); // Return first for immediate UI flow, others synced in BG if needed
+        return $storedAccounts->first();
     }
 
     public function syncCampaigns(\App\Models\AdAccount $adAccount): Collection
@@ -475,6 +483,7 @@ class MetaAdsService extends BaseAdsService
             AdsInsightsFields::CLICKS,
             AdsInsightsFields::SPEND,
             AdsInsightsFields::CONVERSIONS,
+            AdsInsightsFields::ACTIONS,
             AdsInsightsFields::DATE_START,
         ];
 
@@ -534,6 +543,16 @@ class MetaAdsService extends BaseAdsService
                     $adId = $ad?->id;
                 }
 
+                $leads = 0;
+                $actions = $insight->{AdsInsightsFields::ACTIONS} ?? [];
+                if (is_array($actions)) {
+                    foreach ($actions as $action) {
+                        if (str_contains($action['action_type'], 'lead')) {
+                            $leads += (int) $action['value'];
+                        }
+                    }
+                }
+
                 $record = \App\Models\AudienceInsight::updateOrCreate(
                     [
                         'ad_account_id' => $adAccount->id,
@@ -557,6 +576,7 @@ class MetaAdsService extends BaseAdsService
                         'reach' => $insight->{AdsInsightsFields::REACH} ?? 0,
                         'clicks' => $insight->{AdsInsightsFields::CLICKS} ?? 0,
                         'conversions' => isset($insight->{AdsInsightsFields::CONVERSIONS}) ? array_sum(array_column($insight->{AdsInsightsFields::CONVERSIONS}, 'value')) : 0,
+                        'leads' => $leads,
                         'metadata' => $data,
                     ]
                 );

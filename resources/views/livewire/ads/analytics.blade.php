@@ -284,20 +284,19 @@
             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-10">Gender Intelligence</h4>
             <div class="flex items-center justify-center py-8">
                 @php
-                    $totalGenderSpend = $genderStats->sum() ?: 1;
-                    $femaleSpend = $genderStats->get('female', 0);
-                    $maleSpend = $genderStats->get('male', 0);
-                    $otherSpend = $totalGenderSpend - $femaleSpend - $maleSpend;
+                    $totalGenderLeads = $genderStats->sum('leads') ?: 1;
+                    $femaleLeads = $genderStats->get('female', ['leads' => 0])['leads'];
+                    $maleLeads = $genderStats->get('male', ['leads' => 0])['leads'];
                 @endphp
                 <div class="relative w-48 h-48">
                     <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
                         <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f3f4f6" stroke-width="3"></circle>
                         <circle cx="18" cy="18" r="15.915" fill="none" stroke="#6366f1" stroke-width="3"
-                            stroke-dasharray="{{ ($femaleSpend / $totalGenderSpend) * 100 }} 100" stroke-dashoffset="0">
+                            stroke-dasharray="{{ ($femaleLeads / $totalGenderLeads) * 100 }} 100" stroke-dashoffset="0">
                         </circle>
                         <circle cx="18" cy="18" r="15.915" fill="none" stroke="#a855f7" stroke-width="3"
-                            stroke-dasharray="{{ ($maleSpend / $totalGenderSpend) * 100 }} 100"
-                            stroke-dashoffset="-{{ ($femaleSpend / $totalGenderSpend) * 100 }}"></circle>
+                            stroke-dasharray="{{ ($maleLeads / $totalGenderLeads) * 100 }} 100"
+                            stroke-dashoffset="-{{ ($femaleLeads / $totalGenderLeads) * 100 }}"></circle>
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center flex-col">
                         <span

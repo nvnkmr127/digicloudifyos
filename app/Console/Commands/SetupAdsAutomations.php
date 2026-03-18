@@ -94,5 +94,17 @@ class SetupAdsAutomations extends Command
                 ]
             ]
         );
+        // 6. High CPC Alert
+        WorkflowRule::updateOrCreate(
+            ['organization_id' => $org->id, 'event_type' => 'ads_high_cpc', 'name' => 'High CPC Watchdog'],
+            [
+                'description' => 'Alert when Cost Per Click exceeds target',
+                'is_active' => true,
+                'action_type' => 'send_notification',
+                'action_config' => [
+                    'message' => 'High CPC alert on {{campaign_name}}! Current CPC is ${{cpc}} (Target: ${{threshold}}).'
+                ]
+            ]
+        );
     }
 }

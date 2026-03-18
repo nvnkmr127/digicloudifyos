@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/reports', \App\Livewire\Reports\Dashboard::class)->name('reports.index');
     Route::get('/alerts', \App\Livewire\Alerts\Index::class)->name('alerts.index');
     Route::get('/clients', \App\Livewire\Clients\Index::class)->name('clients.index');
+    Route::get('/clients/performance', \App\Livewire\Clients\PerformanceDashboard::class)->name('clients.performance');
     Route::get('/clients/create', \App\Livewire\Clients\Create::class)->name('clients.create');
     Route::get('/clients/{client}/edit', \App\Livewire\Clients\Edit::class)->name('clients.edit');
 

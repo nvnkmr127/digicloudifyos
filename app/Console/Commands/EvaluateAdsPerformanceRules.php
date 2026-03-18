@@ -116,11 +116,36 @@ class EvaluateAdsPerformanceRules extends Command
         ]);
     }
 
+    protected function createPerformanceAlert(\App\Models\Campaign $campaign, $type, $message, $details, $severity = 'warning')
+    {
+        $existing = \App\Models\Alert::where('campaign_id', $campaign->id)
+            ->where('alert_type', $type)
+            ->whereDate('created_at', now()->toDateString())
+            ->first();
+
+        if ($existing)
+            return;
+
+        \App\Models\Alert::create([
+            'organization_id' => $campaign->organization_id,
+            'client_id' => $campaign->client_id,
+            'campaign_id' => $campaign->id,
+            'alert_type' => $type,
+            'severity' => $severity,
+            'title' => ucwords(str_replace('_', ' ', $type)),
+            'message' => $message,
+            'payload' => $details,
+            'triggered_at' => now(),
+            'status' => 'OPEN'
+        ]);
+    }
+
     protected function evaluateCampaigns($account)
     {
         $campaigns = $account->campaigns()->where('status', 'running')->get();
         $targetCpl = $account->target_cpl ?? 10.00;
         $targetCtr = $account->target_ctr ?? 1.00;
+        $targetCpc = $account->target_cpc ?? 0.50;
 
         /** @var \App\Models\Campaign $campaign */
         foreach ($campaigns as $campaign) {
@@ -136,31 +161,57 @@ class EvaluateAdsPerformanceRules extends Command
 
             $ctr = ($insight->clicks / $insight->impressions) * 100;
             $cpl = $insight->conversions > 0 ? $insight->spend / $insight->conversions : 0;
+            $cpc = $insight->clicks > 0 ? $insight->spend / $insight->clicks : 0;
 
             // Low CTR Alert
             if ($ctr < $targetCtr) {
-                $this->warn("Low CTR on campaign {$campaign->name}: " . round($ctr, 2) . "%");
-                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_low_ctr', [
-                    'organization_id' => $account->organization_id,
+                $msg = "Low CTR on campaign {$campaign->name}: " . round($ctr, 2) . "%";
+                $this->warn($msg);
+
+                $details = [
                     'entity_type' => 'campaign',
                     'entity_id' => $campaign->id,
                     'campaign_name' => $campaign->name,
                     'ctr' => round($ctr, 2),
                     'threshold' => $targetCtr
-                ]);
+                ];
+                $this->createPerformanceAlert($campaign, 'ads_low_ctr', $msg, $details);
+
+                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_low_ctr', array_merge($details, ['organization_id' => $account->organization_id]));
             }
 
             // High CPL Alert
             if ($cpl > $targetCpl && $insight->conversions > 0) {
-                $this->warn("High CPL on campaign {$campaign->name}: $" . round($cpl, 2));
-                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_high_cpl', [
-                    'organization_id' => $account->organization_id,
+                $msg = "High CPL on campaign {$campaign->name}: $" . round($cpl, 2);
+                $this->warn($msg);
+
+                $details = [
                     'entity_type' => 'campaign',
                     'entity_id' => $campaign->id,
                     'campaign_name' => $campaign->name,
                     'cpl' => round($cpl, 2),
                     'threshold' => $targetCpl
-                ]);
+                ];
+                $this->createPerformanceAlert($campaign, 'ads_high_cpl', $msg, $details);
+
+                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_high_cpl', array_merge($details, ['organization_id' => $account->organization_id]));
+            }
+
+            // High CPC Alert
+            if ($cpc > $targetCpc && $insight->clicks > 0) {
+                $msg = "High CPC on campaign {$campaign->name}: $" . round($cpc, 2);
+                $this->warn($msg);
+
+                $details = [
+                    'entity_type' => 'campaign',
+                    'entity_id' => $campaign->id,
+                    'campaign_name' => $campaign->name,
+                    'cpc' => round($cpc, 2),
+                    'threshold' => $targetCpc
+                ];
+                $this->createPerformanceAlert($campaign, 'ads_high_cpc', $msg, $details);
+
+                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_high_cpc', array_merge($details, ['organization_id' => $account->organization_id]));
             }
         }
     }
@@ -188,15 +239,20 @@ class EvaluateAdsPerformanceRules extends Command
             $frequency = $insight->impressions / $insight->reach;
 
             if ($frequency > $targetFrequency) {
-                $this->warn("Creative Fatigue on ad {$ad->name}: " . round($frequency, 2));
-                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_creative_fatigue', [
-                    'organization_id' => $account->organization_id,
+                $msg = "Creative Fatigue on ad {$ad->name}: " . round($frequency, 2);
+                $this->warn($msg);
+
+                $details = [
                     'entity_type' => 'ad',
                     'entity_id' => $ad->id,
                     'ad_name' => $ad->name,
                     'frequency' => round($frequency, 2),
                     'threshold' => $targetFrequency
-                ]);
+                ];
+
+                $this->createPerformanceAlert($ad->adSet->campaign, 'ads_creative_fatigue', $msg, $details);
+
+                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_creative_fatigue', array_merge($details, ['organization_id' => $account->organization_id]));
             }
         }
     }

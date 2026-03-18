@@ -27,6 +27,7 @@ class AudienceInsight extends Model
         'reach',
         'clicks',
         'conversions',
+        'leads',
         'metadata',
     ];
 
@@ -35,6 +36,7 @@ class AudienceInsight extends Model
         'metadata' => 'array',
         'spend' => 'decimal:4',
         'conversions' => 'decimal:4',
+        'leads' => 'integer',
     ];
 
     public function adAccount(): BelongsTo
