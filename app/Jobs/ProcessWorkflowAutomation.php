@@ -200,13 +200,62 @@ class ProcessWorkflowAutomation implements ShouldQueue
             return;
 
         $message = isset($config['message']) ? $this->replacePlaceholders($config['message'], $event->payload) : null;
+        $headers = $config['headers'] ?? [];
+        
+        $request = \Illuminate\Support\Facades\Http::timeout(10);
+        
+        if (!empty($headers)) {
+            $request->withHeaders($headers);
+        }
 
-        \Illuminate\Support\Facades\Http::post($url, [
+        $payload = [
             'event' => $event->event_type,
             'data' => $event->payload,
             'message' => $message,
             'timestamp' => now()->toIso8601String(),
-        ]);
+        ];
+
+        try {
+            $response = $request->post($url, $payload);
+            
+            // If we have a webhook ID in the config, log the delivery
+            if (isset($config['webhook_id'])) {
+                \App\Models\WebhookDelivery::create([
+                    'webhook_id' => $config['webhook_id'],
+                    'event' => $event->event_type,
+                    'payload' => $payload,
+                    'response_status' => $response->status(),
+                    'response_body' => substr($response->body(), 0, 1000), // Limit length
+                    'delivered_at' => $response->successful() ? now() : null,
+                    'failed_at' => $response->failed() ? now() : null,
+                    'error_message' => $response->failed() ? 'HTTP ' . $response->status() : null,
+                ]);
+            }
+            
+            if ($response->failed()) {
+                Log::warning('Outbound Webhook Failed', [
+                    'url' => $url,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'event_id' => $event->id
+                ]);
+                
+                throw new \Exception('Webhook delivery failed with status: ' . $response->status());
+            }
+        } catch (\Exception $e) {
+            if (isset($config['webhook_id'])) {
+                \App\Models\WebhookDelivery::create([
+                    'webhook_id' => $config['webhook_id'],
+                    'event' => $event->event_type,
+                    'payload' => $payload,
+                    'response_status' => 0,
+                    'response_body' => null,
+                    'failed_at' => now(),
+                    'error_message' => substr($e->getMessage(), 0, 500),
+                ]);
+            }
+            throw $e;
+        }
     }
 
     protected function replacePlaceholders(string $text, array $data): string
@@ -222,21 +271,25 @@ class ProcessWorkflowAutomation implements ShouldQueue
     protected function assignSales(array $config, WorkflowEvent $event): void
     {
         if ($event->payload['entity_type'] === 'lead') {
-            $fbLead = \App\Models\FacebookLead::find($event->payload['entity_id']);
-            if ($fbLead) {
-                // Find corresponding CRM lead by email
-                $crmLead = \App\Models\Lead::where('email', $fbLead->email)
-                    ->where('organization_id', $fbLead->organization_id)
-                    ->first();
-
-                if ($crmLead) {
-                    $assignedTo = $config['user_id'] ?? 'Round Robin';
-                    $crmLead->update([
-                        'assigned_user' => $assignedTo,
-                        'notes' => $crmLead->notes . "\n[System] Auto-assigned to {$assignedTo} via automation rule."
-                    ]);
-                    Log::info('Lead auto-assigned', ['lead_id' => $crmLead->id, 'to' => $assignedTo]);
+            $crmLead = \App\Models\Lead::find($event->payload['entity_id']);
+            
+            if (!$crmLead) {
+                // Fallback for facebook leads
+                $fbLead = \App\Models\FacebookLead::find($event->payload['entity_id']);
+                if ($fbLead) {
+                    $crmLead = \App\Models\Lead::where('email', $fbLead->email)
+                        ->where('organization_id', $fbLead->organization_id)
+                        ->first();
                 }
+            }
+
+            if ($crmLead) {
+                $assignedTo = $config['user_id'] ?? 'Round Robin';
+                $crmLead->update([
+                    'assigned_user' => $assignedTo,
+                    'notes' => $crmLead->notes . "\n[System] Auto-assigned to {$assignedTo} via automation rule."
+                ]);
+                Log::info('Lead auto-assigned', ['lead_id' => $crmLead->id, 'to' => $assignedTo]);
             }
         }
     }

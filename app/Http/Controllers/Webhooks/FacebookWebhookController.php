@@ -37,6 +37,22 @@ class FacebookWebhookController extends Controller
      */
     public function handle(Request $request)
     {
+        // 1. Verify Payload Signature
+        $signature = $request->header('X-Hub-Signature-256');
+        $appSecret = config('services.facebook.client_secret');
+        
+        if ($signature && $appSecret) {
+            $expectedSignature = 'sha256=' . hash_hmac('sha256', $request->getContent(), $appSecret);
+            if (!hash_equals($expectedSignature, $signature)) {
+                Log::warning('Facebook Webhook Signature Verification Failed');
+                return response('Invalid Signature', 401);
+            }
+        } elseif (!$signature && app()->environment('production')) {
+            Log::warning('Facebook Webhook Missing Signature in Production');
+            return response('Missing Signature', 401);
+        }
+
+        // 2. Process Payload
         $payload = $request->all();
 
         Log::info('Facebook Webhook Payload Received', ['object' => $payload['object'] ?? 'unknown']);

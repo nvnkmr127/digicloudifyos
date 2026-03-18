@@ -40,6 +40,8 @@
     36 => 'Spatie\\Activitylog\\ActivitylogServiceProvider',
     37 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     38 => 'Spatie\\Permission\\PermissionServiceProvider',
+    39 => 'App\\Providers\\AuthServiceProvider',
+    40 => 'App\\Providers\\HorizonServiceProvider',
   ),
   'eager' => 
   array (
@@ -66,6 +68,8 @@
     20 => 'Spatie\\Activitylog\\ActivitylogServiceProvider',
     21 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     22 => 'Spatie\\Permission\\PermissionServiceProvider',
+    23 => 'App\\Providers\\AuthServiceProvider',
+    24 => 'App\\Providers\\HorizonServiceProvider',
   ),
   'deferred' => 
   array (

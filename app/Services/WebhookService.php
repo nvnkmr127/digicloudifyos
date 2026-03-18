@@ -70,6 +70,8 @@ class WebhookService
                 'event' => $event,
                 'error' => $e->getMessage(),
             ]);
+
+            throw $e;
         }
 
         return $delivery;

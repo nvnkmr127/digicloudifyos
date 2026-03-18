@@ -4,13 +4,19 @@ namespace App\Livewire\Ads;
 
 use App\Models\AdAccount;
 use App\Models\AdInsight;
+use App\Models\FacebookLead;
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 
 class Index extends Component
 {
     public function render()
     {
-        $organizationId = auth()->user()->organization_id;
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $organizationId = Auth::user()->organization_id;
 
         $accounts = AdAccount::where('organization_id', $organizationId)
             ->withCount(['campaigns', 'adInsights'])
@@ -26,7 +32,7 @@ class Index extends Component
             ->where('date', '>=', now()->subDays(30))
             ->sum('impressions');
 
-        $latestLeads = \App\Models\FacebookLead::where('organization_id', $organizationId)
+        $latestLeads = FacebookLead::where('organization_id', $organizationId)
             ->with(['campaign', 'ad'])
             ->latest()
             ->take(5)

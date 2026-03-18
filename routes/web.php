@@ -94,11 +94,31 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
         ->middleware('can:manage-organization')
         ->name('settings');
 
+    // Webhooks
+    Route::get('/webhooks', \App\Livewire\Webhooks\Index::class)
+        ->middleware('can:manage-organization')
+        ->name('webhooks.index');
+    Route::get('/webhooks/inbound', \App\Livewire\Webhooks\InboundIndex::class)
+        ->middleware('can:manage-organization')
+        ->name('webhooks.inbound');
+    Route::get('/webhooks/outbound', \App\Livewire\Webhooks\OutboundIndex::class)
+        ->middleware('can:manage-organization')
+        ->name('webhooks.outbound');
+    Route::get('/webhooks/api', \App\Livewire\Webhooks\ApiIndex::class)
+        ->middleware('can:manage-organization')
+        ->name('webhooks.api');
+    Route::get('/webhooks/mappings/inbound', \App\Livewire\Webhooks\InboundMappings::class)
+        ->middleware('can:manage-organization')
+        ->name('webhooks.mappings.inbound');
+    Route::get('/webhooks/mappings/outbound', \App\Livewire\Webhooks\OutboundMappings::class)
+        ->middleware('can:manage-organization')
+        ->name('webhooks.mappings.outbound');
+
     // Ads Integration
     Route::get('/ads/integration/{platform}', [App\Http\Controllers\AdsIntegrationController::class, 'redirect'])->name('ads.redirect');
     Route::get('/ads/callback/{platform}', [App\Http\Controllers\AdsIntegrationController::class, 'callback'])->name('ads.callback');
     Route::get('/auth/facebook/callback', [App\Http\Controllers\AdsIntegrationController::class, 'facebookCallback'])->name('auth.facebook.callback');
-    Route::get('/ads', [App\Livewire\Ads\Index::class, 'render'])->name('ads.index');
+    Route::get('/ads', \App\Livewire\Ads\Index::class)->name('ads.index');
     Route::get('/ads/analytics', \App\Livewire\Ads\Analytics::class)->name('ads.analytics');
     Route::get('/ads/leads', \App\Livewire\Ads\Leads::class)->name('ads.leads');
 });

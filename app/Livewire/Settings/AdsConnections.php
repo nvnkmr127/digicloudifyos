@@ -16,10 +16,34 @@ class AdsConnections extends Component
     public $showPageSelector = false;
     public $selectedAccountId = null;
     public $pages = [];
+    public $syncFrequencies = [];
 
     public function mount()
     {
         $this->clients = Client::where('organization_id', auth()->user()->organization_id)->get();
+        
+        // Initialize sync frequencies
+        $adAccounts = AdAccount::where('organization_id', auth()->user()->organization_id)
+            ->where('platform', 'META_ADS')
+            ->get();
+            
+        foreach ($adAccounts as $account) {
+            $this->syncFrequencies[$account->id] = $account->credentials['sync_frequency'] ?? '15_min';
+        }
+    }
+
+    public function updateSyncFrequency($accountId)
+    {
+        $account = AdAccount::where('organization_id', auth()->user()->organization_id)
+            ->findOrFail($accountId);
+            
+        $freq = $this->syncFrequencies[$accountId] ?? '15_min';
+        
+        $creds = $account->credentials ?? [];
+        $creds['sync_frequency'] = $freq;
+        $account->update(['credentials' => $creds]);
+        
+        session()->flash('success', "Sync frequency updated to " . str_replace('_', ' ', $freq) . ".");
     }
 
     public function render()

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\AdAccount;
 use App\Models\FacebookLead;
 use App\Models\User;
+use App\Models\LeadSyncLog;
 use App\Notifications\NewFacebookLeadNotification;
 use App\Services\MetaAdsService;
 use Illuminate\Bus\Queueable;
@@ -44,36 +45,62 @@ class ProcessFacebookLeadWebhook implements ShouldQueue
             return;
         }
 
-        $service = new MetaAdsService();
-        $lead = $service->syncLead($adAccount, $this->leadgenId, $this->formId);
+        $syncLog = LeadSyncLog::create([
+            'organization_id' => $adAccount->organization_id,
+            'ad_account_id' => $adAccount->id,
+            'source' => 'webhook',
+            'status' => 'processing',
+            'details' => ['leadgen_id' => $this->leadgenId, 'form_id' => $this->formId],
+        ]);
 
-        if ($lead) {
-            Log::info('Successfully processed webhook lead', [
-                'facebook_lead_id' => $lead->facebook_lead_id,
-                'email' => $lead->email
-            ]);
+        try {
+            $service = new MetaAdsService();
+            $lead = $service->syncLead($adAccount, $this->leadgenId, $this->formId);
 
-            // Notify sales / admins for this organization
-            $usersToNotify = User::where('organization_id', $adAccount->organization_id)
-                ->whereIn('role', ['OWNER', 'ADMIN'])
-                ->get();
+            if ($lead) {
+                $syncLog->update([
+                    'status' => 'success',
+                    'leads_processed' => 1,
+                ]);
 
-            if ($usersToNotify->isNotEmpty()) {
-                Notification::send($usersToNotify, new NewFacebookLeadNotification($lead));
+                Log::info('Successfully processed webhook lead', [
+                    'facebook_lead_id' => $lead->facebook_lead_id,
+                    'email' => $lead->email
+                ]);
+
+                // Notify sales / admins for this organization
+                $usersToNotify = User::where('organization_id', $adAccount->organization_id)
+                    ->whereIn('role', ['OWNER', 'ADMIN'])
+                    ->get();
+
+                if ($usersToNotify->isNotEmpty()) {
+                    Notification::send($usersToNotify, new NewFacebookLeadNotification($lead));
+                }
+
+                // Trigger Automation Workflow
+                ProcessWorkflowAutomation::dispatch('lead_captured', [
+                    'organization_id' => $adAccount->organization_id,
+                    'entity_type' => 'lead',
+                    'entity_id' => $lead->id,
+                    'email' => $lead->email,
+                    'full_name' => $lead->full_name,
+                    'form_name' => $lead->form_name,
+                ]);
+
+            } else {
+                $syncLog->update([
+                    'status' => 'failed',
+                    'error_message' => 'Individual lead sync returned null.',
+                ]);
+                Log::error('Individual lead sync failed during webhook processing', ['leadgen_id' => $this->leadgenId]);
             }
-
-            // Trigger Automation Workflow
-            ProcessWorkflowAutomation::dispatch('lead_captured', [
-                'organization_id' => $adAccount->organization_id,
-                'entity_type' => 'lead',
-                'entity_id' => $lead->id,
-                'email' => $lead->email,
-                'full_name' => $lead->full_name,
-                'form_name' => $lead->form_name,
+        } catch (\Exception $e) {
+            $syncLog->update([
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+                'details' => ['leadgen_id' => $this->leadgenId, 'trace' => $e->getTraceAsString()],
             ]);
-
-        } else {
-            Log::error('Individual lead sync failed during webhook processing', ['leadgen_id' => $this->leadgenId]);
+            throw $e;
         }
     }
 }

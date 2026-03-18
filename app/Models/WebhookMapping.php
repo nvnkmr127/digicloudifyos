@@ -5,26 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Webhook extends Model
+class WebhookMapping extends Model
 {
     use HasUuids;
 
     protected $fillable = [
         'organization_id',
+        'direction',
         'name',
-        'url',
-        'events',
-        'secret',
+        'source_key',
+        'target_key',
+        'transform_rule',
+        'webhook_id',
+        'inbound_webhook_id',
         'active',
-        'headers',
     ];
 
     protected $casts = [
-        'events' => 'array',
-        'headers' => 'array',
-        'secret' => 'encrypted',
         'active' => 'boolean',
     ];
 
@@ -33,13 +31,13 @@ class Webhook extends Model
         return $this->belongsTo(Organization::class);
     }
 
-    public function deliveries(): HasMany
+    public function webhook(): BelongsTo
     {
-        return $this->hasMany(WebhookDelivery::class);
+        return $this->belongsTo(Webhook::class);
     }
 
-    public function shouldTriggerForEvent(string $event): bool
+    public function inboundWebhook(): BelongsTo
     {
-        return $this->active && in_array($event, $this->events ?? []);
+        return $this->belongsTo(InboundWebhook::class);
     }
 }

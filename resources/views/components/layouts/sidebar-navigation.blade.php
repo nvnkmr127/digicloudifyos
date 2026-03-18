@@ -21,6 +21,7 @@
             ['route' => 'time-tracking.index', 'label' => 'Time Tracking', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
         ],
         'Growth & Marketing' => [
+            ['route' => 'ads.index', 'label' => 'Ads Manager', 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'],
             ['route' => 'conversations.index', 'label' => 'Conversations', 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'],
             ['route' => 'calendars.index', 'label' => 'Calendars', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
             ['route' => 'automations.index', 'label' => 'Automations', 'icon' => 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z'],
@@ -31,6 +32,12 @@
         ],
         'Monitoring' => [
             ['route' => 'workflow.index', 'label' => 'Monitoring', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
+            ['route' => 'webhooks.index', 'label' => 'Webhooks', 'icon' => 'M7 8h10M7 12h10M7 16h6m6-8l4 4-4 4'],
+            ['route' => 'webhooks.inbound', 'label' => 'Inbound Webhooks', 'icon' => 'M4 12h16m0 0l-4-4m4 4l-4 4'],
+            ['route' => 'webhooks.outbound', 'label' => 'Outbound Webhooks', 'icon' => 'M20 12H4m0 0l4-4m-4 4l4 4'],
+            ['route' => 'webhooks.api', 'label' => 'Webhook API', 'icon' => 'M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
+            ['route' => 'webhooks.mappings.inbound', 'label' => 'Inbound Mappings', 'icon' => 'M8 7h8M8 12h8M8 17h5M4 7h.01M4 12h.01M4 17h.01'],
+            ['route' => 'webhooks.mappings.outbound', 'label' => 'Outbound Mappings', 'icon' => 'M4 12h4m4 0h8m-8 0V8m0 4v4'],
             ['route' => 'clients.performance', 'label' => 'Performance Dashboard', 'icon' => 'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'],
             ['route' => 'reports.index', 'label' => 'Reports', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
             ['route' => 'alerts.index', 'label' => 'Alerts', 'icon' => 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9'],

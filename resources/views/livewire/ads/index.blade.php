@@ -1,7 +1,7 @@
 <div class="p-6">
     <div class="mb-8 flex justify-between items-center">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Social Ads Overview</h1>
+            <h1 class="text-2xl font-bold text-text-primary">Ads Manager</h1>
             <p class="text-text-muted mt-1">Performance across all connected ad platforms</p>
         </div>
         <div class="flex items-center gap-3">

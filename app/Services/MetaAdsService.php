@@ -992,7 +992,7 @@ class MetaAdsService extends BaseAdsService
         ]);
     }
 
-    public function syncLead(AdAccount $adAccount, string $leadId, string $formId = null, string $formName = null): ?FacebookLead
+    public function syncLead(AdAccount $adAccount, string $leadId, ?string $formId = null, ?string $formName = null): ?FacebookLead
     {
         $this->initSdk($adAccount->facebook_page_token);
 
@@ -1053,19 +1053,21 @@ class MetaAdsService extends BaseAdsService
             );
 
             // Also sync to main CRM leads table
-            \App\Models\Lead::updateOrCreate(
-                [
-                    'organization_id' => $adAccount->organization_id,
-                    'email' => $mapped['email'],
-                ],
-                [
-                    'name' => $mapped['full_name'] ?? 'Facebook Lead',
-                    'phone' => $mapped['phone_number'],
-                    'source' => 'Facebook Ads',
-                    'status' => 'New',
-                    'notes' => "Webhook lead captured" . ($formName ? " from $formName" : ""),
-                ]
-            );
+            if (!empty($mapped['email'])) {
+                $crmLead = \App\Models\Lead::firstOrCreate(
+                    [
+                        'organization_id' => $adAccount->organization_id,
+                        'email' => $mapped['email'],
+                    ],
+                    [
+                        'name' => $mapped['full_name'] ?? 'Facebook Lead',
+                        'phone' => $mapped['phone_number'],
+                        'source' => 'Facebook Ads',
+                        'status' => 'New',
+                        'notes' => "Webhook lead captured" . ($formName ? " from $formName" : ""),
+                    ]
+                );
+            }
 
             return $lead;
         } catch (\Exception $e) {
@@ -1163,19 +1165,21 @@ class MetaAdsService extends BaseAdsService
                 );
 
                 // Also sync to main CRM leads table
-                \App\Models\Lead::updateOrCreate(
-                    [
-                        'organization_id' => $adAccount->organization_id,
-                        'email' => $mapped['email'],
-                    ],
-                    [
-                        'name' => $mapped['full_name'] ?? 'Facebook Lead',
-                        'phone' => $mapped['phone_number'],
-                        'source' => 'Facebook Ads',
-                        'status' => 'New',
-                        'notes' => "Lead from Form: $formName (ID: $formId)",
-                    ]
-                );
+                if (!empty($mapped['email'])) {
+                    \App\Models\Lead::firstOrCreate(
+                        [
+                            'organization_id' => $adAccount->organization_id,
+                            'email' => $mapped['email'],
+                        ],
+                        [
+                            'name' => $mapped['full_name'] ?? 'Facebook Lead',
+                            'phone' => $mapped['phone_number'],
+                            'source' => 'Facebook Ads',
+                            'status' => 'New',
+                            'notes' => "Lead from Form: $formName (ID: $formId)",
+                        ]
+                    );
+                }
 
                 $synced->push($lead);
             }

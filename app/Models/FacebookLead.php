@@ -51,4 +51,10 @@ class FacebookLead extends Model
     {
         return $this->belongsTo(Ad::class);
     }
+
+    public function crmLead()
+    {
+        return $this->hasOne(Lead::class, 'email', 'email')
+            ->where('organization_id', $this->organization_id);
+    }
 }

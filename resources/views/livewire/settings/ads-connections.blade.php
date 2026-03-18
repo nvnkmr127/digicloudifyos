@@ -99,6 +99,8 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
                                 Lead Sync</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                Sync Frequency</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
                                 Currency</th>
                         </tr>
                     </thead>
@@ -135,6 +137,18 @@
                                         <button wire:click="openPageSelector('{{ $account->id }}')" class="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-white hover:border-primary hover:text-primary transition duration-150">
                                             Connect Page
                                         </button>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if($account->facebook_page_id)
+                                    <select wire:model="syncFrequencies.{{ $account->id }}" wire:change="updateSyncFrequency('{{ $account->id }}')" class="text-xs rounded-md border-gray-200 focus:border-primary focus:ring-primary py-1.5 pr-8">
+                                        <option value="15_min">Every 15 Min</option>
+                                        <option value="hourly">Hourly</option>
+                                        <option value="daily">Daily</option>
+                                        <option value="never">Never</option>
+                                    </select>
+                                    @else
+                                    <span class="text-xs text-gray-400">N/A</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-text-primary">
