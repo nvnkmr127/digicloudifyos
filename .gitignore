@@ -7,6 +7,8 @@
 # Environment files
 .env
 .env.backup
+.env.local
+.env.*.local
 .env.production
 .phpunit.result.cache
 auth.json
@@ -19,10 +21,20 @@ auth.json
 /storage/framework/views/*
 /storage/logs/*.log
 /.phpunit.cache/
+/bootstrap/cache/
 
 # Build artifacts
 dist/
 /public/build/
+/public/css/
+/public/js/
+/public/manifest.json
+/public/hot
+
+# Database
+/database/database.sqlite
+/database/database.sqlite-shm
+/database/database.sqlite-wal
 
 # IDE files
 .idea/
@@ -30,13 +42,26 @@ dist/
 .zed/
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
+.phpstorm.meta.php
+_ide_*.php
 
 # Log files
 *.log
 npm-debug.log
 yarn-error.log
+php-errors.log
+
+# Testing
+coverage/
+.coverage
+*.coverage
 
 # Misc
 docker-compose.override.yml
 homestead.json
 homestead.yaml
+.env.dusk.local
+artisan
