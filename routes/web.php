@@ -39,10 +39,18 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/workflow-monitoring', \App\Livewire\WorkflowMonitoring\Dashboard::class)->name('workflow.index');
     Route::get('/reports', \App\Livewire\Reports\Dashboard::class)->name('reports.index');
     Route::get('/alerts', \App\Livewire\Alerts\Index::class)->name('alerts.index');
-    Route::get('/clients', \App\Livewire\Clients\Index::class)->name('clients.index');
-    Route::get('/clients/performance', \App\Livewire\Clients\PerformanceDashboard::class)->name('clients.performance');
-    Route::get('/clients/create', \App\Livewire\Clients\Create::class)->name('clients.create');
-    Route::get('/clients/{client}/edit', \App\Livewire\Clients\Edit::class)->name('clients.edit');
+    Route::get('/clients', \App\Livewire\Clients\Index::class)
+        ->middleware('can:manage-organization')
+        ->name('clients.index');
+    Route::get('/clients/performance', \App\Livewire\Clients\PerformanceDashboard::class)
+        ->middleware('can:manage-organization')
+        ->name('clients.performance');
+    Route::get('/clients/create', \App\Livewire\Clients\Create::class)
+        ->middleware('can:manage-organization')
+        ->name('clients.create');
+    Route::get('/clients/{client}/edit', \App\Livewire\Clients\Edit::class)
+        ->middleware('can:manage-organization')
+        ->name('clients.edit');
 
     // Operational Modules
     Route::get('/projects', \App\Livewire\Projects\Index::class)->name('projects.index');
@@ -51,9 +59,15 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/projects/{project}/edit', \App\Livewire\Projects\Edit::class)->name('projects.edit');
     Route::get('/pipelines', \App\Livewire\Pipelines\Index::class)->name('pipelines.index');
     Route::get('/team', \App\Livewire\Team\Index::class)->name('team.index');
-    Route::get('/users', \App\Livewire\Users\Index::class)->name('users.index');
-    Route::get('/users/create', \App\Livewire\Users\Create::class)->name('users.create');
-    Route::get('/users/{user}/edit', \App\Livewire\Users\Edit::class)->name('users.edit');
+    Route::get('/users', \App\Livewire\Users\Index::class)
+        ->middleware('can:manage-organization')
+        ->name('users.index');
+    Route::get('/users/create', \App\Livewire\Users\Create::class)
+        ->middleware('can:manage-organization')
+        ->name('users.create');
+    Route::get('/users/{user}/edit', \App\Livewire\Users\Edit::class)
+        ->middleware('can:manage-organization')
+        ->name('users.edit');
 
     // Communication & Marketing
     Route::get('/conversations', \App\Livewire\Conversations\Index::class)->name('conversations.index');
@@ -76,7 +90,9 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/forms', \App\Livewire\Forms\Index::class)->name('forms.index');
     Route::get('/products', \App\Livewire\Products\Index::class)->name('products.index');
     Route::get('/products/create', \App\Livewire\Products\Create::class)->name('products.create');
-    Route::get('/settings', \App\Livewire\Settings\Index::class)->name('settings');
+    Route::get('/settings', \App\Livewire\Settings\Index::class)
+        ->middleware('can:manage-organization')
+        ->name('settings');
 
     // Ads Integration
     Route::get('/ads/integration/{platform}', [App\Http\Controllers\AdsIntegrationController::class, 'redirect'])->name('ads.redirect');

@@ -3,6 +3,7 @@
 namespace App\Livewire\Settings;
 
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 
 class Index extends Component
 {
@@ -10,6 +11,10 @@ class Index extends Component
 
     public function mount()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
         $this->tab = request()->query('tab', 'general');
     }
 
@@ -20,6 +25,10 @@ class Index extends Component
 
     public function render()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
         return view('livewire.settings.index');
     }
 }

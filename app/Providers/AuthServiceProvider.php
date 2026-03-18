@@ -27,11 +27,11 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         Gate::before(function ($user, $ability) {
-            return $user->hasRole('super-admin') ? true : null;
+            return $user->hasRole('OWNER') ? true : null;
         });
 
         Gate::define('manage-organization', function ($user) {
-            return $user->hasRole(['admin', 'super-admin']);
+            return $user->hasRole(['OWNER', 'ADMIN']);
         });
 
         Gate::define('view-analytics', function ($user) {

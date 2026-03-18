@@ -31,7 +31,7 @@ class CampaignPolicy
 
     public function delete(User $user, Campaign $campaign): bool
     {
-        if ($campaign->status === 'running') {
+        if ($campaign->status === 'ACTIVE') {
             return false;
         }
 
@@ -42,12 +42,12 @@ class CampaignPolicy
     public function restore(User $user, Campaign $campaign): bool
     {
         return $user->organization_id === $campaign->organization_id
-            && $user->hasRole('admin');
+            && $user->hasRole('ADMIN');
     }
 
     public function forceDelete(User $user, Campaign $campaign): bool
     {
         return $user->organization_id === $campaign->organization_id
-            && $user->hasRole('admin');
+            && $user->hasRole('ADMIN');
     }
 }

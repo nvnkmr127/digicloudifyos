@@ -43,11 +43,11 @@ class CampaignRef extends Model
 
     public function isRunning(): bool
     {
-        return $this->status === 'running';
+        return $this->status === 'ACTIVE';
     }
 
     public function isCompleted(): bool
     {
-        return $this->status === 'completed';
+        return $this->status === 'ARCHIVED';
     }
 }

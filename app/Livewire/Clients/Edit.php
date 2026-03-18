@@ -26,6 +26,14 @@ class Edit extends Component
 
     public function mount(Client $client)
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
+        if ($client->organization_id !== Auth::user()->organization_id) {
+            abort(403);
+        }
+
         $this->client = $client;
         $this->name = $client->name;
         $this->email = $client->email;
@@ -36,6 +44,14 @@ class Edit extends Component
 
     public function update()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
+        if ($this->client->organization_id !== Auth::user()->organization_id) {
+            abort(403);
+        }
+
         $this->validate();
 
         $this->client->update([
@@ -53,6 +69,10 @@ class Edit extends Component
 
     public function render()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
         return view('livewire.clients.edit');
     }
 }

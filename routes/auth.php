@@ -22,8 +22,10 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('auto-login/{role}', [AuthenticatedSessionController::class, 'autoLogin'])
-        ->name('auto-login');
+    if (app()->environment(['local', 'testing'])) {
+        Route::get('auto-login/{role}', [AuthenticatedSessionController::class, 'autoLogin'])
+            ->name('auto-login');
+    }
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');

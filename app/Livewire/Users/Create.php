@@ -7,27 +7,35 @@ use Livewire\Component;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class Create extends Component
 {
     public $full_name = '';
     public $email = '';
-    public $role = 'MANAGER';
+    public $role = 'ANALYST';
     public $status = 'ACTIVE';
     public $password = '';
 
-    protected $rules = [
-        'full_name' => 'required|min:3',
-        'email' => 'required|email|unique:users,email',
-        'role' => 'required|in:ADMIN,MANAGER,VIEWER',
-        'status' => 'required|in:ACTIVE,INACTIVE',
-        'password' => 'required|min:8',
-    ];
-
     public function save()
     {
-        $this->validate();
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
+        $this->validate([
+            'full_name' => 'required|min:3',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->where(function ($query) {
+                    return $query->where('organization_id', Auth::user()->organization_id);
+                }),
+            ],
+            'role' => 'required|in:ADMIN,ANALYST,OPERATOR,VIEWER',
+            'status' => 'required|in:ACTIVE,INACTIVE',
+            'password' => 'required|min:8',
+        ]);
 
         User::create([
             'organization_id' => Auth::user()->organization_id,
@@ -45,6 +53,10 @@ class Create extends Component
 
     public function render()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
         return view('livewire.users.create');
     }
 }

@@ -13,12 +13,17 @@ class Index extends Component
 
     public function delete($id)
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
         if ($id === Auth::id()) {
             session()->flash('error', 'You cannot delete yourself.');
             return;
         }
 
-        $user = User::findOrFail($id);
+        $user = User::where('organization_id', Auth::user()->organization_id)
+            ->findOrFail($id);
         $user->delete();
 
         session()->flash('success', 'User deleted successfully.');
@@ -26,10 +31,16 @@ class Index extends Component
 
     public function render()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
         $users = User::where('organization_id', Auth::user()->organization_id)
             ->when($this->search, function ($query) {
-                $query->where('full_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%');
+                $query->where(function ($nestedQuery) {
+                    $nestedQuery->where('full_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                });
             })
             ->orderBy('full_name')
             ->get();

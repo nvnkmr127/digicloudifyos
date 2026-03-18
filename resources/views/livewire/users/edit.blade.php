@@ -27,7 +27,8 @@
                     <select id="role" wire:model="role"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         <option value="ADMIN">Administrator</option>
-                        <option value="MANAGER">Manager</option>
+                        <option value="ANALYST">Analyst</option>
+                        <option value="OPERATOR">Operator</option>
                         <option value="VIEWER">Viewer</option>
                     </select>
                     @error('role') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror

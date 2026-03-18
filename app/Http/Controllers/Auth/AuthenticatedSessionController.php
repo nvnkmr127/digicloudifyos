@@ -50,20 +50,34 @@ class AuthenticatedSessionController extends Controller
      */
     public function autoLogin(string $role): RedirectResponse
     {
-        $user = \App\Models\User::where('role', strtoupper($role))->first();
+        $normalizedRole = strtoupper($role);
 
-        if (!$user) {
-            // If user doesn't exist, try to create one or find any user
-            $orgId = \App\Models\Organization::first()->id;
-            $user = \App\Models\User::create([
-                'organization_id' => $orgId,
-                'email' => strtolower($role) . '@example.com',
-                'full_name' => ucfirst(strtolower($role)) . ' User',
-                'role' => strtoupper($role),
+        if (! in_array($normalizedRole, ['OWNER', 'ADMIN', 'ANALYST', 'OPERATOR', 'VIEWER'], true)) {
+            abort(404);
+        }
+
+        $email = strtolower($normalizedRole) . '@example.com';
+
+        $org = \App\Models\Organization::firstOrCreate([
+            'slug' => 'default-org',
+        ], [
+            'name' => 'Default Organization',
+            'timezone' => 'UTC',
+        ]);
+
+        $user = \App\Models\User::firstOrCreate(
+            [
+                'organization_id' => $org->id,
+                'email' => $email,
+            ],
+            [
+                'full_name' => ucfirst(strtolower($normalizedRole)) . ' User',
+                'role' => $normalizedRole,
                 'password' => \Illuminate\Support\Facades\Hash::make('password'),
                 'status' => 'ACTIVE',
-            ]);
-        }
+                'email_verified_at' => now(),
+            ]
+        );
 
         Auth::login($user);
 

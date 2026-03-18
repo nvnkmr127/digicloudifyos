@@ -7,6 +7,7 @@ use Livewire\Component;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class Edit extends Component
 {
@@ -19,6 +20,14 @@ class Edit extends Component
 
     public function mount(User $user)
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
+        if ($user->organization_id !== Auth::user()->organization_id) {
+            abort(403);
+        }
+
         $this->user = $user;
         $this->full_name = $user->full_name;
         $this->email = $user->email;
@@ -28,10 +37,26 @@ class Edit extends Component
 
     public function update()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
+        if ($this->user->organization_id !== Auth::user()->organization_id) {
+            abort(403);
+        }
+
         $this->validate([
             'full_name' => 'required|min:3',
-            'email' => 'required|email|unique:users,email,' . $this->user->id,
-            'role' => 'required|in:ADMIN,MANAGER,VIEWER',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')
+                    ->ignore($this->user->id)
+                    ->where(function ($query) {
+                        return $query->where('organization_id', Auth::user()->organization_id);
+                    }),
+            ],
+            'role' => 'required|in:ADMIN,ANALYST,OPERATOR,VIEWER',
             'status' => 'required|in:ACTIVE,INACTIVE',
             'password' => 'nullable|min:8',
         ]);
@@ -56,6 +81,10 @@ class Edit extends Component
 
     public function render()
     {
+        if (! Auth::user()?->isAdmin()) {
+            abort(403);
+        }
+
         return view('livewire.users.edit');
     }
 }

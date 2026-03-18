@@ -14,6 +14,39 @@ class User extends Authenticatable
 {
     use HasFactory, HasUuids, Notifiable;
 
+    private const ROLE_ALIASES = [
+        'SUPER-ADMIN' => 'OWNER',
+        'SUPER_ADMIN' => 'OWNER',
+        'ADMINISTRATOR' => 'ADMIN',
+    ];
+
+    private const ROLE_PERMISSIONS = [
+        'OWNER' => ['*'],
+        'ADMIN' => [
+            'manage-organization',
+            'manage-users',
+            'view-analytics',
+            'manage-workflow',
+            'view-campaigns',
+            'create-campaigns',
+            'edit-campaigns',
+            'delete-campaigns',
+        ],
+        'ANALYST' => [
+            'view-analytics',
+            'view-campaigns',
+        ],
+        'OPERATOR' => [
+            'manage-workflow',
+            'view-campaigns',
+            'create-campaigns',
+            'edit-campaigns',
+        ],
+        'VIEWER' => [
+            'view-campaigns',
+        ],
+    ];
+
     protected $fillable = [
         'organization_id',
         'email',
@@ -23,6 +56,7 @@ class User extends Authenticatable
         'status',
         'last_login_at',
         'email_verified_at',
+        'remember_token',
     ];
 
     protected $hidden = [
@@ -32,6 +66,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'last_login_at' => 'datetime',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
     public function organization(): BelongsTo
@@ -69,13 +105,44 @@ class User extends Authenticatable
         return in_array($this->role, ['OWNER', 'ADMIN']);
     }
 
-    public function hasRole(string $role): bool
+    public function hasRole(string|array $role): bool
     {
-        return $this->role === $role;
+        $currentRole = $this->normalizeRole((string) $this->role);
+
+        if (is_array($role)) {
+            foreach ($role as $candidateRole) {
+                if ($currentRole === $this->normalizeRole((string) $candidateRole)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return $currentRole === $this->normalizeRole($role);
+    }
+
+    public function hasPermissionTo(string $permission): bool
+    {
+        $role = $this->normalizeRole((string) $this->role);
+        $permissions = self::ROLE_PERMISSIONS[$role] ?? [];
+
+        if (in_array('*', $permissions, true)) {
+            return true;
+        }
+
+        return in_array($permission, $permissions, true);
     }
 
     public function isActive(): bool
     {
         return $this->status === 'ACTIVE';
+    }
+
+    private function normalizeRole(string $role): string
+    {
+        $normalizedRole = strtoupper(trim($role));
+
+        return self::ROLE_ALIASES[$normalizedRole] ?? $normalizedRole;
     }
 }

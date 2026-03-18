@@ -32,9 +32,7 @@ class SendCampaignNotification implements ShouldQueue
     {
         try {
             $users = User::where('organization_id', $this->campaign->organization_id)
-                ->whereHas('roles', function ($query) {
-                    $query->whereIn('name', ['admin', 'manager']);
-                })
+                ->whereIn('role', ['OWNER', 'ADMIN', 'OPERATOR'])
                 ->get();
 
             foreach ($users as $user) {

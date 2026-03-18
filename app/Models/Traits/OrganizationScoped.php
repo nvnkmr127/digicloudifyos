@@ -53,10 +53,7 @@ trait OrganizationScoped
         static::addGlobalScope('organization', function (Builder $builder) {
             if (Auth::check() && Auth::user()) {
                 $user = Auth::user();
-                // Only apply organization scope for non-admin users
-                if (! in_array($user->role ?? '', ['OWNER', 'ADMIN'])) {
-                    $builder->where('organization_id', $user->organization_id);
-                }
+                $builder->where('organization_id', $user->organization_id);
             }
         });
     }

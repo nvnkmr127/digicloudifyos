@@ -105,12 +105,12 @@ class Campaign extends Model
 
     public function isRunning(): bool
     {
-        return $this->status === 'running';
+        return $this->status === 'ACTIVE';
     }
 
     public function isCompleted(): bool
     {
-        return $this->status === 'completed';
+        return $this->status === 'ARCHIVED';
     }
 
     public function toSearchableArray(): array
@@ -127,6 +127,6 @@ class Campaign extends Model
 
     public function shouldBeSearchable(): bool
     {
-        return $this->status !== 'deleted';
+        return $this->status !== 'ARCHIVED';
     }
 }
