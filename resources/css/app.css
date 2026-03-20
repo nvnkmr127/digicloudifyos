@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .text-branding {
+        @apply text-tiny font-black uppercase tracking-branding;
+    }
+    .text-branding-wide {
+        @apply text-tiny font-black uppercase tracking-branding-wide;
+    }
+    .text-branding-sm {
+        @apply text-tiny font-black uppercase tracking-branding;
+    }
+}

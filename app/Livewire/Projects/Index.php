@@ -14,6 +14,7 @@ class Index extends Component
     public function delete($id)
     {
         $project = Project::findOrFail($id);
+        $this->authorize('delete', $project);
         $project->delete();
 
         session()->flash('success', 'Project deleted successfully.');

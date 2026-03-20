@@ -8,12 +8,15 @@ class DetailView extends Component
 {
     public $lead;
 
-    public function mount($id)
+    public function mount($id, \App\Repositories\LeadRepository $repository)
     {
-        $this->lead = \App\Models\Lead::where('id', $id)
-            ->where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)
-            ->with(['client'])
-            ->firstOrFail();
+        $this->lead = $repository->find($id);
+
+        if (!$this->lead) {
+            abort(404);
+        }
+
+        $this->authorize('view', $this->lead);
     }
 
     public function render()

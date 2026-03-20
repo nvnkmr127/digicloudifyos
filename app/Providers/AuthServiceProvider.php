@@ -2,11 +2,12 @@
 
 namespace App\Providers;
 
-use App\Models\Campaign;
+use App\Models\Client;
 use App\Models\CreativeRequest;
 use App\Models\Lead;
 use App\Models\Task;
 use App\Policies\CampaignPolicy;
+use App\Policies\ClientPolicy;
 use App\Policies\CreativeRequestPolicy;
 use App\Policies\LeadPolicy;
 use App\Policies\TaskPolicy;
@@ -19,7 +20,11 @@ class AuthServiceProvider extends ServiceProvider
         Campaign::class => CampaignPolicy::class,
         Task::class => TaskPolicy::class,
         Lead::class => LeadPolicy::class,
+        Client::class => ClientPolicy::class,
         CreativeRequest::class => CreativeRequestPolicy::class,
+        \App\Models\Project::class => \App\Policies\ProjectPolicy::class,
+        \App\Models\Pipeline::class => \App\Policies\PipelinePolicy::class,
+        \App\Models\Opportunity::class => \App\Policies\OpportunityPolicy::class,
     ];
 
     public function boot(): void

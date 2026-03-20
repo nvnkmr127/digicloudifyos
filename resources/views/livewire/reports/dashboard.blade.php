@@ -24,7 +24,7 @@
             </div>
         @endif
 
-        <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-card-premium border border-gray-100 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-50">
                     <thead class="bg-gray-50/50">
@@ -45,7 +45,7 @@
                                     <div class="text-[9px] font-bold text-gray-400 uppercase mt-1">{{ $report->client?->name ?? 'Internal Report' }}</div>
                                 </td>
                                 <td class="px-8 py-6 whitespace-nowrap">
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-600">{{ $report->type }}</span>
+                                    <span class="text-branding text-gray-600">{{ $report->type }}</span>
                                 </td>
                                 <td class="px-8 py-6 whitespace-nowrap">
                                     <span class="inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest {{ $report->format === 'pdf' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600' }}">
@@ -53,7 +53,7 @@
                                     </span>
                                 </td>
                                 <td class="px-8 py-6 whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest {{ $report->status === 'COMPLETED' ? 'text-green-600' : ($report->status === 'FAILED' ? 'text-red-600' : 'text-amber-500') }}">
+                                    <span class="inline-flex items-center gap-1.5 text-branding {{ $report->status === 'COMPLETED' ? 'text-green-600' : ($report->status === 'FAILED' ? 'text-red-600' : 'text-amber-500') }}">
                                         <span class="w-1.5 h-1.5 rounded-full {{ $report->status === 'COMPLETED' ? 'bg-green-600' : ($report->status === 'FAILED' ? 'bg-red-600' : 'bg-amber-500 animate-pulse') }}"></span>
                                         {{ $report->status }}
                                     </span>
@@ -79,7 +79,7 @@
                                 <td colspan="6" class="px-8 py-20 text-center">
                                     <div class="flex flex-col items-center">
                                         <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 mb-4 text-2xl">📊</div>
-                                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">No intelligence reports found</p>
+                                        <p class="text-branding text-gray-400">No intelligence reports found</p>
                                     </div>
                                 </td>
                             </tr>
@@ -99,20 +99,20 @@
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showCreateModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div class="inline-block align-middle bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-10">
+                <div class="inline-block align-middle bg-white rounded-card-premium text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-10">
                     <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-8">Generate Intelligence Report</h3>
                     
                     <form wire:submit.prevent="generateReport">
                         <div class="space-y-6">
                             <div>
-                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Report Name</label>
+                                <label class="text-branding text-gray-400 block mb-2">Report Name</label>
                                 <input type="text" wire:model="reportName" placeholder="e.g., Q1 Performance Review" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-indigo-500 transition">
                                 @error('reportName') <span class="text-red-500 text-[10px] font-bold mt-1 uppercase">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="grid grid-cols-2 gap-6">
                                 <div>
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Type</label>
+                                    <label class="text-branding text-gray-400 block mb-2">Type</label>
                                     <select wire:model="reportType" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-indigo-500 transition">
                                         <option value="campaign">Campaign Performance</option>
                                         <option value="audience">Audience Insights</option>
@@ -121,7 +121,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Format</label>
+                                    <label class="text-branding text-gray-400 block mb-2">Format</label>
                                     <select wire:model="reportFormat" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-indigo-500 transition">
                                         <option value="pdf">Professional PDF</option>
                                         <option value="excel">Excel Datasheet</option>
@@ -130,7 +130,7 @@
                             </div>
 
                             <div>
-                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Target Client</label>
+                                <label class="text-branding text-gray-400 block mb-2">Target Client</label>
                                 <select wire:model="clientId" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-indigo-500 transition">
                                     <option value="">Internal Use (Full Account)</option>
                                     @foreach($clients as $client)
@@ -140,7 +140,7 @@
                             </div>
 
                             <div>
-                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Date Range (Last X Days)</label>
+                                <label class="text-branding text-gray-400 block mb-2">Date Range (Last X Days)</label>
                                 <select wire:model="dateRange" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-indigo-500 transition">
                                     <option value="7">Last 7 Days</option>
                                     <option value="30">Last 30 Days</option>

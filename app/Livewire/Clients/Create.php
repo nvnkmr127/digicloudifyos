@@ -25,9 +25,7 @@ class Create extends Component
 
     public function save()
     {
-        if (! Auth::user()?->isAdmin()) {
-            abort(403);
-        }
+        $this->authorize('create', Client::class);
 
         $this->validate();
 
@@ -47,9 +45,7 @@ class Create extends Component
 
     public function render()
     {
-        if (! Auth::user()?->isAdmin()) {
-            abort(403);
-        }
+        $this->authorize('create', Client::class);
 
         return view('livewire.clients.create');
     }

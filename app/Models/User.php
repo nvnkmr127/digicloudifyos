@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasUuids, Notifiable, OrganizationScoped;
 
     private const ROLE_ALIASES = [
         'SUPER-ADMIN' => 'OWNER',

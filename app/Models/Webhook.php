@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Traits\OrganizationScoped;
+
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Webhook extends Model
 {
-    use HasUuids;
+    use HasUuids, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',

@@ -13,7 +13,7 @@
     <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
             <nav class="flex mb-4" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-3 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3 text-branding text-gray-400">
                     <li><a href="{{ route('ads.index') }}" class="hover:text-primary transition">Ads</a></li>
                     <li><span class="mx-2">/</span></li>
                     <li class="text-gray-900">Lead Registry</li>
@@ -23,15 +23,15 @@
             <p class="text-gray-500 mt-2 font-medium">Unified roster of all captured Facebook and Meta Ads leads</p>
         </div>
         <div class="flex flex-wrap items-center gap-4">
-            <button wire:click="syncLeads" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
+            <button wire:click="syncLeads" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-2xl text-branding transition flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 Sync Leads
             </button>
-            <button wire:click="viewSyncLogs" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
+            <button wire:click="viewSyncLogs" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-2xl text-branding transition flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                 Sync Logs
             </button>
-            <button wire:click="exportLeads" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2">
+            <button wire:click="exportLeads" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-2xl text-branding transition flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Export CSV
             </button>
@@ -40,14 +40,14 @@
                     class="border-none bg-transparent text-xs font-bold px-4 py-2 w-48 focus:ring-0 placeholder-gray-300">
             </div>
             <select wire:model.live="formFilter"
-                class="bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest px-4 py-2 shadow-sm focus:ring-primary">
+                class="bg-white border border-gray-100 rounded-2xl text-branding px-4 py-2 shadow-sm focus:ring-primary">
                 <option value="">All Forms</option>
                 @foreach($forms as $form)
                     <option value="{{ $form }}">{{ $form }}</option>
                 @endforeach
             </select>
             <select wire:model.live="statusFilter"
-                class="bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest px-4 py-2 shadow-sm focus:ring-primary">
+                class="bg-white border border-gray-100 rounded-2xl text-branding px-4 py-2 shadow-sm focus:ring-primary">
                 <option value="">All Statuses</option>
                 @foreach($statuses as $status)
                     <option value="{{ $status }}">{{ $status }}</option>
@@ -56,7 +56,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-card-premium border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-50">
                 <thead class="bg-gray-50/50">
@@ -108,7 +108,7 @@
                                         default => 'bg-gray-50 text-gray-700'
                                     };
                                 @endphp
-                                <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest {{ $statusColor }}">
+                                <span class="px-3 py-1.5 rounded-xl text-branding {{ $statusColor }}">
                                     {{ $status }}
                                 </span>
                             </td>

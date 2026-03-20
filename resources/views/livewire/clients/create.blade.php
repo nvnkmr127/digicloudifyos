@@ -9,41 +9,30 @@
 
     <x-card>
         <form wire:submit="save" class="space-y-6 max-w-2xl">
-            <div>
-                <label for="name" class="block text-sm font-medium text-text-primary">Client Name</label>
+            <x-form-field label="Client Name" name="name">
                 <x-input id="name" type="text" placeholder="e.g. Acme Corp" wire:model="name" />
-                @error('name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+            </x-form-field>
 
-            <div>
-                <label for="email" class="block text-sm font-medium text-text-primary">Email Address</label>
+            <x-form-field label="Email Address" name="email">
                 <x-input id="email" type="email" placeholder="client@example.com" wire:model="email" />
-                @error('email') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+            </x-form-field>
 
             <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label for="industry" class="block text-sm font-medium text-text-primary">Industry</label>
+                <x-form-field label="Industry" name="industry">
                     <x-input id="industry" type="text" placeholder="e.g. Technology" wire:model="industry" />
-                    @error('industry') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
-                <div>
-                    <label for="external_ref" class="block text-sm font-medium text-text-primary">External ID</label>
+                </x-form-field>
+                <x-form-field label="External ID" name="external_ref">
                     <x-input id="external_ref" type="text" placeholder="CRM-12345" wire:model="external_ref" />
-                    @error('external_ref') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
+                </x-form-field>
             </div>
 
-            <div>
-                <label for="status" class="block text-sm font-medium text-text-primary">Status</label>
-                <select id="status" wire:model="status"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <x-form-field label="Status" name="status">
+                <x-select id="status" wire:model="status">
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
                     <option value="ARCHIVED">Archived</option>
-                </select>
-                @error('status') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+                </x-select>
+            </x-form-field>
 
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <x-button color="outline" href="{{ route('clients.index') }}" wire:navigate>Cancel</x-button>

@@ -134,7 +134,7 @@
                                             <button wire:click="openPageSelector('{{ $account->id }}')" class="text-[10px] text-text-muted hover:text-primary underline uppercase tracking-widest ml-1 font-black">Change</button>
                                         </div>
                                     @else
-                                        <button wire:click="openPageSelector('{{ $account->id }}')" class="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-white hover:border-primary hover:text-primary transition duration-150">
+                                        <button wire:click="openPageSelector('{{ $account->id }}')" class="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-branding text-gray-600 hover:bg-white hover:border-primary hover:text-primary transition duration-150">
                                             Connect Page
                                         </button>
                                     @endif

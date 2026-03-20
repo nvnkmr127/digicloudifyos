@@ -1,46 +1,50 @@
-<div class="p-6">
+<div class="p-8">
     <div class="mb-8 flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold text-text-primary">Ads Manager</h1>
-            <p class="text-text-muted mt-1">Performance across all connected ad platforms</p>
+        <div class="mb-4">
+            <nav class="flex mb-4" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3 text-branding text-brand-muted">
+                    <li>Marketing</li>
+                    <li><span class="mx-2">/</span></li>
+                    <li class="text-brand-black">Ads Manager</li>
+                </ol>
+            </nav>
+            <h1 class="text-4xl font-black text-brand-black tracking-tight">Strategy Center</h1>
+            <p class="text-gray-500 mt-2 font-medium">Performance across all connected ad platforms</p>
         </div>
         <div class="flex items-center gap-3">
-            <a href="{{ route('ads.analytics') }}"
-                class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg font-semibold text-sm text-text-primary shadow-sm hover:bg-gray-50 transition duration-150">
-                <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <x-button color="outline" href="{{ route('ads.analytics') }}" class="rounded-xl shadow-sm text-branding">
+                <svg class="w-4 h-4 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 Analytics Dashboard
-            </a>
-            <a href="{{ route('ads.leads') }}"
-                class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg font-semibold text-sm text-text-primary shadow-sm hover:bg-gray-50 transition duration-150">
+            </x-button>
+            <x-button color="outline" href="{{ route('ads.leads') }}" class="rounded-xl shadow-sm text-branding">
                 <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 Leads Registry
-            </a>
-            <a href="{{ route('settings', ['tab' => 'ads']) }}"
-                class="inline-flex items-center px-4 py-2 bg-primary border border-transparent rounded-lg font-semibold text-sm text-white shadow-lg hover:bg-primary-dark transition duration-150">
+            </x-button>
+            <x-button color="primary" href="{{ route('settings', ['tab' => 'ads']) }}" class="rounded-xl shadow-lg shadow-primary-soft/30 text-branding">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
                 Manage Connections
-            </a>
+            </x-button>
         </div>
     </div>
 
     <!-- Quick Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <x-card class="border-l-4 border-primary">
-            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Connected Accounts</p>
-            <h3 class="text-2xl font-bold text-text-primary mt-1">{{ count($accounts) }}</h3>
+        <x-card variant="premium" class="border-l-4 border-primary">
+            <p class="text-branding text-brand-muted">Total Managed Portfolio</p>
+            <h3 class="text-2xl font-black text-brand-black mt-1">{{ count($accounts) }}</h3>
         </x-card>
-        <x-card class="border-l-4 border-green-500">
-            <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Spend (Last 30d)</p>
-            <h3 class="text-2xl font-bold text-text-primary mt-1">${{ number_format($totalSpend, 2) }}</h3>
+        <x-card variant="premium" class="border-l-4 border-success">
+            <p class="text-branding text-brand-muted">30D Deployed Capital</p>
+            <h3 class="text-2xl font-black text-brand-black mt-1">${{ number_format($totalSpend, 2) }}</h3>
         </x-card>
         <x-card class="border-l-4 border-blue-500">
             <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Impressions (Last 30d)</p>
@@ -55,21 +59,24 @@
 
     @if(count($accounts) > 0)
         <!-- Accounts Table -->
-        <x-card title="Connected Ad Accounts" class="mb-8">
+        <x-card variant="premium" class="mb-8 p-0 border-none overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-brand-light/50">
+                <h2 class="text-branding-wide text-brand-muted">Connected Ad Accounts</h2>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50/50">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                                Account</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                                Platform</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                                Campaigns</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">
-                                Status</th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-text-muted uppercase tracking-wider">
-                                Latest Action</th>
+                            <th class="px-8 py-6 text-left text-branding text-brand-muted">
+                                Account Entity</th>
+                            <th class="px-8 py-6 text-left text-branding text-brand-muted">
+                                Platform Status</th>
+                            <th class="px-8 py-6 text-left text-branding text-brand-muted">
+                                Active Campaigns</th>
+                            <th class="px-8 py-6 text-left text-branding text-brand-muted">
+                                Protocol Status</th>
+                            <th class="px-8 py-6 text-right text-branding text-brand-muted">
+                                Strategy Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-white">
@@ -110,8 +117,11 @@
         <!-- Latest Leads -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2">
-                <x-card title="Latest Captured Leads">
-                    <div class="space-y-4">
+                <x-card variant="premium" class="mb-8 p-0 border-none overflow-hidden">
+                    <div class="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-brand-light/50">
+                        <h2 class="text-branding-wide text-brand-muted">Latest Captured Leads</h2>
+                    </div>
+                    <div class="p-8 space-y-4">
                         @forelse($latestLeads as $lead)
                             <div
                                 class="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100 hover:bg-white hover:border-indigo-100 transition-all group">
@@ -127,15 +137,14 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1">
+                                    <p class="text-branding text-primary mb-1">
                                         {{ $lead->form_name ?: 'Facebook Lead Ads' }}</p>
-                                    <p class="text-[9px] text-text-muted font-bold">{{ $lead->created_at->diffForHumans() }}</p>
+                                    <p class="text-branding text-brand-muted">{{ $lead->created_at->diffForHumans() }}</p>
                                 </div>
                             </div>
                         @empty
-                            <div class="py-12 text-center bg-gray-50/20 rounded-2xl border border-dashed border-gray-200">
-                                <p class="text-sm text-text-muted font-black uppercase tracking-widest italic">No leads captured
-                                    yet</p>
+                            <div class="py-12 text-center bg-brand-light/20 rounded-2xl border border-dashed border-gray-200">
+                                <p class="text-branding text-brand-muted italic">No leads captured yet</p>
                             </div>
                         @endforelse
                     </div>
@@ -143,17 +152,16 @@
             </div>
 
             <div class="space-y-6">
-                <div
-                    class="bg-indigo-600 p-8 rounded-[2rem] text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                <x-card variant="brand" class="p-8 shadow-xl shadow-primary-soft/30">
                     <h4 class="text-xl font-black mb-2 tracking-tight">Lead Gen Tips</h4>
                     <p class="text-indigo-100 text-xs font-medium leading-relaxed mb-6">Ensure your Facebook Page is
                         connected to enable real-time webhook capture.</p>
-                    <a href="{{ route('settings', ['tab' => 'ads']) }}"
-                        class="inline-flex items-center px-4 py-2 bg-white text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition">
+                    <x-button color="outline" href="{{ route('settings', ['tab' => 'ads']) }}"
+                        class="mt-6 border-white/20 bg-white/10 text-white rounded-xl text-branding hover:bg-white/20 transition">
                         Check Connections
-                    </a>
+                    </x-button>
                     <div class="absolute -right-4 -bottom-4 h-24 w-24 bg-white opacity-5 rounded-full"></div>
-                </div>
+                </x-card>
             </div>
         </div>
     @else

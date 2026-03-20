@@ -60,12 +60,12 @@
                             <div class="flex items-center space-x-3">
                                 @if($alert->status === 'OPEN')
                                     <button wire:click="acknowledge('{{ $alert->id }}')"
-                                        class="bg-white border {{ $borderColor }} px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest {{ $textColor }} hover:bg-gray-50 transition shadow-sm">
+                                        class="bg-white border {{ $borderColor }} px-4 py-1.5 rounded-xl text-branding {{ $textColor }} hover:bg-gray-50 transition shadow-sm">
                                         Acknowledge
                                     </button>
                                 @endif
                                 <button wire:click="resolve('{{ $alert->id }}')"
-                                    class="bg-gray-900 text-white px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition shadow-sm opacity-0 group-hover:opacity-100">
+                                    class="bg-gray-900 text-white px-4 py-1.5 rounded-xl text-branding hover:bg-black transition shadow-sm opacity-0 group-hover:opacity-100">
                                     Resolve
                                 </button>
                             </div>

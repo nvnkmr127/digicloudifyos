@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AccessToken extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',

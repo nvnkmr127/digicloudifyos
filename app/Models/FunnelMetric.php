@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FunnelMetric extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',

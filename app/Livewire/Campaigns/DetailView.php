@@ -16,10 +16,10 @@ class DetailView extends Component
 
     protected function loadCampaign($id)
     {
-        $this->campaign = \App\Models\Campaign::where('id', $id)
-            ->where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)
-            ->with(['client', 'adAccount', 'creativeRequests', 'tasks', 'adSets.ads', 'dailyMetrics', 'facebookLeads', 'audienceInsights'])
-            ->firstOrFail();
+        $this->campaign = \App\Models\Campaign::with(['client', 'adAccount', 'creativeRequests', 'tasks', 'adSets.ads', 'dailyMetrics', 'facebookLeads', 'audienceInsights'])
+            ->findOrFail($id);
+
+        $this->authorize('view', $this->campaign);
     }
 
     public function setTab($tab)
@@ -29,12 +29,14 @@ class DetailView extends Component
 
     public function syncMetrics()
     {
+        $this->authorize('update', $this->campaign);
         \App\Jobs\SyncCampaignMetrics::dispatch($this->campaign);
         session()->flash('message', 'Syncing campaign metrics and hierarchy in the background...');
     }
 
     public function pauseCampaign()
     {
+        $this->authorize('update', $this->campaign);
         $service = $this->getService();
         if ($service && $service->pauseCampaign($this->campaign)) {
             $this->loadCampaign($this->campaign->id);
@@ -46,6 +48,7 @@ class DetailView extends Component
 
     public function archiveCampaign()
     {
+        $this->authorize('update', $this->campaign);
         $service = $this->getService();
         if ($service && $service->archiveCampaign($this->campaign)) {
             $this->loadCampaign($this->campaign->id);
@@ -57,6 +60,7 @@ class DetailView extends Component
 
     public function deleteCampaign()
     {
+        $this->authorize('delete', $this->campaign);
         $service = $this->getService();
         if ($service && $service->deleteCampaign($this->campaign)) {
             return redirect()->route('campaigns.index')->with('message', 'Campaign deleted successfully.');

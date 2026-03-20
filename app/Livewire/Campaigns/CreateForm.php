@@ -35,9 +35,10 @@ class CreateForm extends Component
 
     public function save()
     {
+        $this->authorize('create', \App\Models\Campaign::class);
         $this->validate();
 
-        Campaign::create([
+        \App\Models\Campaign::create([
             'organization_id' => Auth::user()->organization_id,
             'client_id' => $this->client_id,
             'ad_account_id' => $this->ad_account_id ?: null,

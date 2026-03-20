@@ -10,7 +10,7 @@ class Index extends Component
 
     public function mount()
     {
-        $firstPipeline = \App\Models\Pipeline::first();
+        $firstPipeline = \App\Models\Pipeline::where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)->first();
         if ($firstPipeline) {
             $this->selectedPipelineId = $firstPipeline->id;
         }
@@ -18,19 +18,23 @@ class Index extends Component
 
     public function updateOpportunityStage($opportunityId, $newStageId)
     {
-        $opportunity = \App\Models\Opportunity::find($opportunityId);
-        if ($opportunity) {
-            $opportunity->update(['pipeline_stage_id' => $newStageId]);
-        }
+        $opportunity = \App\Models\Opportunity::findOrFail($opportunityId);
+        $this->authorize('update', $opportunity);
+        $opportunity->update(['pipeline_stage_id' => $newStageId]);
     }
 
     public function render()
     {
-        $pipelines = \App\Models\Pipeline::all();
+        $orgId = \Illuminate\Support\Facades\Auth::user()->organization_id;
+        $pipelines = \App\Models\Pipeline::where('organization_id', $orgId)->get();
         $selectedPipeline = null;
 
         if ($this->selectedPipelineId) {
-            $selectedPipeline = \App\Models\Pipeline::with(['stages.opportunities.contact'])->find($this->selectedPipelineId);
+            $selectedPipeline = \App\Models\Pipeline::where('organization_id', $orgId)
+                ->with(['stages.opportunities.contact'])
+                ->findOrFail($this->selectedPipelineId);
+            
+            $this->authorize('view', $selectedPipeline);
         }
 
         return view('livewire.pipelines.index', [

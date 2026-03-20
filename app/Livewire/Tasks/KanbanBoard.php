@@ -40,8 +40,7 @@ class KanbanBoard extends Component
 
     public function loadUsers()
     {
-        $this->users = User::where('organization_id', Auth::user()->organization_id)
-            ->where('status', 'ACTIVE')
+        $this->users = User::active()
             ->orderBy('full_name')
             ->get(['id', 'full_name']);
     }
@@ -49,7 +48,6 @@ class KanbanBoard extends Component
     public function refreshTasks()
     {
         $query = Task::query()
-            ->where('organization_id', Auth::user()->organization_id)
             ->with(['assignee:id,full_name', 'campaign:id,name', 'client:id,name']);
 
         if ($this->priorityFilter !== 'all') {
@@ -96,9 +94,7 @@ class KanbanBoard extends Component
     public function updateTaskStatus($taskId, $newStatus)
     {
         try {
-            $task = Task::where('id', $taskId)
-                ->where('organization_id', Auth::user()->organization_id)
-                ->firstOrFail();
+            $task = Task::findOrFail($taskId);
 
             $this->authorize('update', $task);
 

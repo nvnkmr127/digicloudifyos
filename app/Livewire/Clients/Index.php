@@ -13,12 +13,11 @@ class Index extends Component
 
     public function delete($id)
     {
-        if (! Auth::user()?->isAdmin()) {
-            abort(403);
-        }
-
         $client = Client::where('organization_id', Auth::user()->organization_id)
             ->findOrFail($id);
+
+        $this->authorize('delete', $client);
+
         $client->delete();
 
         session()->flash('success', 'Client deleted successfully.');
@@ -26,9 +25,7 @@ class Index extends Component
 
     public function render()
     {
-        if (! Auth::user()?->isAdmin()) {
-            abort(403);
-        }
+        $this->authorize('viewAny', Client::class);
 
         $clients = Client::where('organization_id', Auth::user()->organization_id)
             ->when($this->search, function ($query) {

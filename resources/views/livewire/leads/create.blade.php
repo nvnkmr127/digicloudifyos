@@ -9,62 +9,47 @@
 
     <x-card>
         <form wire:submit="save" class="space-y-6 max-w-2xl">
-            <div>
-                <label for="name" class="block text-sm font-medium text-text-primary">Lead Name</label>
+            <x-form-field label="Lead Name" name="name">
                 <x-input id="name" type="text" placeholder="e.g. John Doe" wire:model="name" />
-                @error('name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+            </x-form-field>
 
             <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-text-primary">Email</label>
+                <x-form-field label="Email" name="email">
                     <x-input id="email" type="email" placeholder="john@example.com" wire:model="email" />
-                    @error('email') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-text-primary">Phone</label>
+                </x-form-field>
+                <x-form-field label="Phone" name="phone">
                     <x-input id="phone" type="text" placeholder="+1234567890" wire:model="phone" />
-                    @error('phone') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
+                </x-form-field>
             </div>
 
             <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label for="source" class="block text-sm font-medium text-text-primary">Source</label>
+                <x-form-field label="Source" name="source">
                     <x-input id="source" type="text" placeholder="Google, Referral, etc." wire:model="source" />
-                    @error('source') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
-                <div>
-                    <label for="status" class="block text-sm font-medium text-text-primary">Status</label>
-                    <select id="status" wire:model="status"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                </x-form-field>
+                <x-form-field label="Status" name="status">
+                    <x-select id="status" wire:model="status">
                         <option value="New">New</option>
                         <option value="Contacted">Contacted</option>
-                        <option value="Qualified">Qualified</option>
-                        <option value="Lost">Lost</option>
+                        <option value="Interested">Interested</option>
+                        <option value="Offer Sent">Offer Sent</option>
                         <option value="Won">Won</option>
-                    </select>
-                    @error('status') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
+                        <option value="Lost">Lost</option>
+                    </x-select>
+                </x-form-field>
             </div>
 
-            <div>
-                <label for="assigned_user" class="block text-sm font-medium text-text-primary">Assign To</label>
-                <select id="assigned_user" wire:model="assigned_user"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <x-form-field label="Assign To" name="assigned_user">
+                <x-select id="assigned_user" wire:model="assigned_user">
                     <option value="">Select a user...</option>
                     @foreach($users as $user)
                         <option value="{{ $user->id }}">{{ $user->full_name }}</option>
                     @endforeach
-                </select>
-                @error('assigned_user') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+                </x-select>
+            </x-form-field>
 
-            <div>
-                <label for="notes" class="block text-sm font-medium text-text-primary">Notes</label>
+            <x-form-field label="Notes" name="notes">
                 <x-textarea id="notes" rows="4" placeholder="Additional details..." wire:model="notes"></x-textarea>
-                @error('notes') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+            </x-form-field>
 
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <x-button color="outline" href="{{ route('leads.index') }}" wire:navigate>Cancel</x-button>

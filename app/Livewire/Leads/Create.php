@@ -28,11 +28,18 @@ class Create extends Component
         'notes' => 'nullable|string',
     ];
 
+    protected function getService(): \App\Services\LeadService
+    {
+        return app(\App\Services\LeadService::class);
+    }
+
     public function save()
     {
+        $this->authorize('create', Lead::class);
+
         $this->validate();
 
-        Lead::create([
+        $this->getService()->create([
             'organization_id' => Auth::user()->organization_id,
             'name' => $this->name,
             'email' => $this->email,

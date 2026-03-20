@@ -10,7 +10,7 @@
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -18,19 +18,6 @@
     <style>
         [x-cloak] {
             display: none !important;
-        }
-
-        :root {
-            --primary: #4F46E5;
-            --primary-hover: #4338CA;
-        }
-
-        .bg-primary {
-            background-color: var(--primary);
-        }
-
-        .text-primary {
-            color: var(--primary);
         }
 
         /* Custom Scrollbar */
@@ -70,7 +57,7 @@
             class="fixed inset-y-0 left-0 flex flex-col w-64 bg-white border-r border-gray-200 z-50 md:hidden" x-cloak>
             <div class="h-16 flex items-center px-6 border-b border-gray-200 justify-between">
                 <span class="text-xl font-bold text-primary">{{ config('app.name') }}</span>
-                <button @click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700">
+                <button @click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700" aria-label="Close sidebar">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                         </path>
@@ -98,7 +85,7 @@
             <header
                 class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
                 <div class="flex items-center">
-                    <button @click="sidebarOpen = true" class="md:hidden text-gray-500 hover:text-gray-700 mr-4">
+                    <button @click="sidebarOpen = true" class="md:hidden text-gray-500 hover:text-gray-700 mr-4" aria-label="Open sidebar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16"></path>
@@ -119,12 +106,13 @@
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                                    aria-label="User menu"
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-button text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                                     <div class="flex items-center">
                                         <div
-                                            class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                                            class="h-8 w-8 rounded-full bg-primary-soft flex items-center justify-center mr-2">
                                             <span
-                                                class="text-xs font-medium text-indigo-700">{{ substr(Auth::user()->full_name, 0, 1) }}</span>
+                                                class="text-xs font-medium text-primary">{{ substr(Auth::user()->full_name, 0, 1) }}</span>
                                         </div>
                                         <div class="hidden sm:block">{{ Auth::user()->full_name }}</div>
                                     </div>
@@ -142,7 +130,7 @@
                             <x-slot name="content">
                                 <div class="px-4 py-2 border-b border-gray-100">
                                     <p class="text-xs text-gray-500">Current Role</p>
-                                    <p class="text-sm font-semibold text-indigo-600">{{ Auth::user()->role }}</p>
+                                    <p class="text-sm font-semibold text-primary">{{ Auth::user()->role }}</p>
                                 </div>
                                 <x-dropdown-link :href="route('profile.edit')">
                                     {{ __('Profile') }}
@@ -155,14 +143,9 @@
                                     {{ __('Switch Role') }}
                                 </div>
 
-                                <!-- Role Switcher -->
-                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                    {{ __('Switch Role') }}
-                                </div>
-
                                 @foreach(['OWNER', 'ADMIN', 'ANALYST', 'OPERATOR', 'VIEWER'] as $role)
                                     <x-dropdown-link :href="route('auto-login', ['role' => strtolower($role)])">
-                                        <span class="{{ Auth::user()->role === $role ? 'font-bold text-indigo-600' : '' }}">
+                                        <span class="{{ Auth::user()->role === $role ? 'font-bold text-primary' : '' }}">
                                             {{ $role }}
                                         </span>
                                     </x-dropdown-link>

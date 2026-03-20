@@ -31,7 +31,7 @@ class ProcessFacebookLeadWebhook implements ShouldQueue
         $this->onQueue('leads');
     }
 
-    public function handle(): void
+    public function handle(MetaAdsService $service): void
     {
         Log::info('Processing Facebook Webhook Lead', ['leadgen_id' => $this->leadgenId]);
 
@@ -54,7 +54,6 @@ class ProcessFacebookLeadWebhook implements ShouldQueue
         ]);
 
         try {
-            $service = new MetaAdsService();
             $lead = $service->syncLead($adAccount, $this->leadgenId, $this->formId);
 
             if ($lead) {
@@ -77,15 +76,8 @@ class ProcessFacebookLeadWebhook implements ShouldQueue
                     Notification::send($usersToNotify, new NewFacebookLeadNotification($lead));
                 }
 
-                // Trigger Automation Workflow
-                ProcessWorkflowAutomation::dispatch('lead_captured', [
-                    'organization_id' => $adAccount->organization_id,
-                    'entity_type' => 'lead',
-                    'entity_id' => $lead->id,
-                    'email' => $lead->email,
-                    'full_name' => $lead->full_name,
-                    'form_name' => $lead->form_name,
-                ]);
+                // REMOVED redundant ProcessWorkflowAutomation dispatch.
+                // The LeadObserver already dispatches 'lead_created' when MetaAdsService calls Lead::firstOrCreate.
 
             } else {
                 $syncLog->update([

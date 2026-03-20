@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Traits\OrganizationScoped;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Pipeline extends Model
 {
+    use OrganizationScoped;
+
     protected $guarded = [];
 
     public function stages()

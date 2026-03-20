@@ -28,6 +28,11 @@ class KanbanBoard extends Component
         'leadCreated' => 'refreshLeads',
     ];
 
+    protected function getService(): \App\Services\LeadService
+    {
+        return app(\App\Services\LeadService::class);
+    }
+
     public function mount()
     {
         $this->refreshLeads();
@@ -35,27 +40,20 @@ class KanbanBoard extends Component
 
     public function refreshLeads()
     {
-        $query = Lead::query()
-            ->where('organization_id', Auth::user()->organization_id);
+        $filters = [
+            'source' => $this->sourceFilter,
+            'search' => $this->searchQuery,
+        ];
 
-        if ($this->sourceFilter !== 'all') {
-            $query->where('source', $this->sourceFilter);
-        }
-
-        if ($this->searchQuery) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%'.$this->searchQuery.'%')
-                    ->orWhere('email', 'like', '%'.$this->searchQuery.'%')
-                    ->orWhere('phone', 'like', '%'.$this->searchQuery.'%');
-            });
-        }
-
-        $leads = $query->orderBy('created_at', 'desc')->get();
+        $allLeads = $this->getService()->getAllForOrganization(
+            Auth::user()->organization_id,
+            $filters
+        );
 
         $this->leads = collect($this->columns)
-            ->mapWithKeys(function ($column) use ($leads) {
+            ->mapWithKeys(function ($column) use ($allLeads) {
                 return [
-                    $column['key'] => $leads->where('status', $column['key'])->values()->toArray(),
+                    $column['key'] => $allLeads->where('status', $column['key'])->values()->toArray(),
                 ];
             })
             ->toArray();
@@ -74,14 +72,13 @@ class KanbanBoard extends Component
     public function updateLeadStatus($leadId, $newStatus)
     {
         try {
-            $lead = Lead::where('id', $leadId)
-                ->where('organization_id', Auth::user()->organization_id)
-                ->firstOrFail();
+            $lead = Lead::findOrFail($leadId);
 
             $this->authorize('update', $lead);
 
             $oldStatus = $lead->status;
-            $lead->update(['status' => $newStatus]);
+            
+            $this->getService()->updateStatus($lead, $newStatus);
 
             $this->refreshLeads();
 

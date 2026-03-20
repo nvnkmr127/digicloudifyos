@@ -38,9 +38,9 @@ class RequestsBoard extends Component
 
     public function updateStatus($requestId, $newStatus)
     {
-        $request = \App\Models\CreativeRequest::where('id', $requestId)
-            ->where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)
-            ->firstOrFail();
+        $request = \App\Models\CreativeRequest::findOrFail($requestId);
+
+        $this->authorize('update', $request);
 
         $request->update(['status' => $newStatus]);
         $this->refreshRequests();

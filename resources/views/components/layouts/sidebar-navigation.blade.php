@@ -56,8 +56,9 @@
             $active = request()->routeIs($link['route'] . '*');
         @endphp
         <a href="{{ route($link['route']) }}"
-            class="flex items-center px-3 py-2 rounded-md transition-colors duration-150 {{ $active ? 'bg-primary text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100' }}">
-            <svg class="w-5 h-5 mr-3 {{ $active ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor"
+            {{ $active ? 'aria-current=page' : '' }}
+            class="flex items-center px-3 py-2 rounded-element transition-colors duration-150 {{ $active ? 'bg-primary text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100' }}">
+            <svg class="w-5 h-5 mr-3 {{ $active ? 'text-white' : 'text-gray-500' }}" fill="none" stroke="currentColor"
                 viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $link['icon'] }}"></path>
             </svg>

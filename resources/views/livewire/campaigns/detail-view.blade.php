@@ -112,7 +112,7 @@
                                 Timeline</div>
                             <div class="flex items-center mt-1">
                                 <span
-                                    class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mr-3">
+                                    class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-branding mr-3">
                                     {{ $campaign->status }}
                                 </span>
                                 <span class="text-sm font-bold text-gray-900">
@@ -256,7 +256,7 @@
                                             <h5 class="text-lg font-black text-gray-900 tracking-tight">{{ $adSet->name }}
                                             </h5>
                                             <div
-                                                class="flex items-center mt-1 space-x-3 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                                class="flex items-center mt-1 space-x-3 text-branding text-gray-400">
                                                 <span>ID: {{ $adSet->external_adset_id }}</span>
                                                 <span class="text-gray-200">•</span>
                                                 <span class="text-indigo-500">{{ $adSet->status }}</span>
@@ -295,7 +295,7 @@
                                                 </div>
 
                                                 <div
-                                                    class="pt-4 border-t border-gray-50 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                                    class="pt-4 border-t border-gray-50 flex justify-between items-center text-branding text-gray-400">
                                                     <span>Creative Info</span>
                                                     <button class="text-indigo-500 hover:underline">Preview</button>
                                                 </div>
@@ -448,7 +448,7 @@
                             @endphp
                             @forelse($placementData as $placement => $pInsights)
                                 <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                                    <p class="text-branding text-gray-400 mb-2">
                                         {{ $placement }}</p>
                                     <div class="flex items-baseline gap-2">
                                         <span
@@ -468,10 +468,10 @@
                     </div>
                 </div>
             @elseif($activeTab === 'leads')
-                <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+                <div class="bg-white rounded-card-premium border border-gray-100 shadow-sm overflow-hidden">
                     <div class="p-10 border-b border-gray-50 flex justify-between items-center">
                         <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Campaign Lead Roster</h4>
-                        <span class="bg-indigo-50 text-indigo-600 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                        <span class="bg-indigo-50 text-indigo-600 px-4 py-1 rounded-full text-branding">
                             {{ $campaign->facebookLeads->count() }} Total
                         </span>
                     </div>
@@ -501,7 +501,7 @@
                                             <div class="text-[10px] text-gray-400 font-black uppercase tracking-widest">{{ $lead->phone }}</div>
                                         </td>
                                         <td class="px-8 py-6 whitespace-nowrap">
-                                            <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-600">
+                                            <span class="inline-flex px-3 py-1 rounded-full text-branding bg-gray-100 text-gray-600">
                                                 {{ $lead->form_name ?: 'Meta Lead Ads' }}
                                             </span>
                                         </td>

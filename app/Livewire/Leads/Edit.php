@@ -41,11 +41,16 @@ class Edit extends Component
         $this->notes = $lead->notes;
     }
 
+    protected function getService(): \App\Services\LeadService
+    {
+        return app(\App\Services\LeadService::class);
+    }
+
     public function update()
     {
         $this->validate();
 
-        $this->lead->update([
+        $this->getService()->update($this->lead, [
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,

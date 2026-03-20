@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SocialChannel extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, SoftDeletes;
+    use HasFactory, HasUuids, OrganizationScoped, SoftDeletes, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',

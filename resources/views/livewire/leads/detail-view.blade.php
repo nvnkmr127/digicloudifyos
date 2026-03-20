@@ -1,97 +1,68 @@
-<div>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Lead Details') }}
-        </h2>
-    </x-slot>
+<x-app-container>
+    <div class="mb-4">
+        <a href="{{ route('leads.index') }}" wire:navigate class="text-sm text-text-muted hover:text-primary hover:font-bold transition-all">
+            &larr; Back to Leads Pipeline
+        </a>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-            <!-- Header Card -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-3xl border border-gray-100">
-                <div class="p-8 md:p-12">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-                        <div class="flex items-center">
-                            <div class="h-16 w-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-blue-100 mr-6">
-                                {{ substr($lead->name, 0, 1) }}
-                            </div>
-                            <div>
-                                <h3 class="text-3xl font-black text-gray-900 tracking-tight">{{ $lead->name }}</h3>
-                                <p class="text-gray-400 font-bold text-sm tracking-widest uppercase mt-1">Lead ID: {{ substr($lead->id, 0, 8) }}</p>
-                            </div>
-                        </div>
-                        <div class="mt-6 md:mt-0 flex items-center space-x-4">
-                            @php
-                                $statusColors = [
-                                    'new' => 'bg-gray-100 text-gray-600',
-                                    'contacted' => 'bg-blue-100 text-blue-700',
-                                    'qualified' => 'bg-green-100 text-green-700',
-                                    'negotiation' => 'bg-purple-100 text-purple-700',
-                                    'closed_won' => 'bg-indigo-600 text-white',
-                                    'closed_lost' => 'bg-red-100 text-red-700',
-                                ];
-                                $color = $statusColors[$lead->status] ?? 'bg-gray-100 text-gray-600';
-                            @endphp
-                            <span class="{{ $color }} px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
-                                {{ str_replace('_', ' ', $lead->status) }}
-                            </span>
-                            <button class="bg-indigo-600 text-white px-6 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95">
-                                Convert to Client
-                            </button>
-                        </div>
-                    </div>
+    <x-page-header :title="'Lead Details: ' . $lead->name">
+        <div class="flex items-center space-x-3">
+            <x-status-badge :status="$lead->status" type="lead" class="py-2 px-6" />
+            <x-button color="primary" class="rounded-2xl shadow-lg shadow-indigo-100">
+                Convert to Client
+            </x-button>
+        </div>
+    </x-page-header>
 
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mt-12 pt-12 border-t border-gray-50">
-                        <div>
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Lead Source</div>
-                            <div class="text-lg font-bold text-gray-900 uppercase">{{ $lead->source }}</div>
-                        </div>
-                        <div>
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Project Score</div>
-                            <div class="text-lg font-bold text-gray-900">{{ $lead->score ?? '0' }}/100</div>
-                        </div>
-                        <div>
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Estimated Value</div>
-                            <div class="text-lg font-bold text-gray-900">${{ number_format($lead->value ?? 0, 2) }}</div>
-                        </div>
-                        <div>
-                            <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Acquisition</div>
-                            <div class="text-lg font-bold text-gray-900">{{ $lead->created_at->format('M d, Y') }}</div>
-                        </div>
+    <div class="space-y-8">
+        <!-- Header Card -->
+        <x-card class="border-none shadow-xl shadow-gray-100 bg-gradient-to-br from-white to-[#FDFDFF]">
+            <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                <div class="h-20 w-20 bg-indigo-600 rounded-card-premium flex items-center justify-center text-white text-3xl font-black shadow-2xl shadow-indigo-200">
+                    {{ substr($lead->name, 0, 1) }}
+                </div>
+                <div class="flex-1 text-center md:text-left">
+                    <h3 class="text-4xl font-black text-gray-900 tracking-tight leading-none mb-2">
+                        {{ $lead->name }}
+                    </h3>
+                    <p class="text-indigo-600 font-black text-xs tracking-widest uppercase">ID: {{ substr($lead->id, 0, 8) }} • PROSPECT</p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-10 pt-8 border-t border-gray-50 text-left">
+                        <x-detail-label label="Lead Source" class="uppercase">{{ $lead->source }}</x-detail-label>
+                        <x-detail-label label="Project Score">{{ $lead->score ?? '0' }}/100</x-detail-label>
+                        <x-detail-label label="Est. Value">${{ number_format($lead->value ?? 0, 2) }}</x-detail-label>
+                        <x-detail-label label="Acquired">{{ $lead->created_at->format('M d, Y') }}</x-detail-label>
                     </div>
                 </div>
             </div>
+        </x-card>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Info Section -->
-                <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                    <h4 class="text-xl font-black text-gray-900 tracking-tight mb-8">Prospect Intelligence</h4>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</label>
-                            <div class="text-sm font-bold text-indigo-600">{{ $lead->email }}</div>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</label>
-                            <div class="text-sm font-bold text-gray-900">{{ $lead->phone ?? 'Not provided' }}</div>
-                        </div>
-                        @if($lead->company)
-                            <div>
-                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Organization</label>
-                                <div class="text-sm font-bold text-gray-900">{{ $lead->company }}</div>
-                            </div>
-                        @endif
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Contact Info -->
+            <x-card class="lg:col-span-2 border-none shadow-lg shadow-gray-50 p-8">
+                <h4 class="text-xl font-black text-gray-900 tracking-tight mb-8 flex items-center">
+                    <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
+                    Prospect Intelligence
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <x-detail-label label="Email Address">
+                        <span class="text-indigo-600 underline font-bold">{{ $lead->email }}</span>
+                    </x-detail-label>
+                    <x-detail-label label="Phone Number">{{ $lead->phone ?? 'Not provided' }}</x-detail-label>
+                    
+                    @if($lead->company)
+                        <x-detail-label label="Organization" class="md:col-span-2">{{ $lead->company }}</x-detail-label>
+                    @endif
                 </div>
+            </x-card>
 
-                <!-- Notes Section -->
-                <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                    <h4 class="text-xl font-black text-gray-900 tracking-tight mb-8">Discovery Notes</h4>
-                    <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 italic text-gray-600 text-sm">
-                        {{ $lead->notes ?? 'No internal briefing notes available for this prospect.' }}
-                    </div>
+            <!-- Metadata / Notes -->
+            <x-card class="border-none shadow-lg shadow-gray-50 p-8 bg-gray-50">
+                <h4 class="text-xl font-black text-gray-900 tracking-tight mb-8">Discovery Notes</h4>
+                <div class="p-6 bg-white rounded-3xl border border-gray-100 italic text-gray-600 text-sm leading-relaxed shadow-sm">
+                    {{ $lead->notes ?? 'No internal briefing notes available for this prospect.' }}
                 </div>
-            </div>
+            </x-card>
         </div>
     </div>
-</div>
+</x-app-container>

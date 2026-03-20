@@ -39,6 +39,16 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\ExportService::class,
             \App\Services\ExportService::class
         );
+
+        $this->app->singleton(
+            \App\Repositories\LeadRepository::class,
+            \App\Repositories\LeadRepository::class
+        );
+
+        $this->app->singleton(
+            \App\Services\LeadService::class,
+            \App\Services\LeadService::class
+        );
     }
 
     /**
@@ -76,5 +86,6 @@ class AppServiceProvider extends ServiceProvider
         Validator::replacer('organization_exists', function ($message, $attribute, $rule, $parameters) {
             return str_replace(':attribute', $attribute, 'The selected :attribute is invalid or does not belong to your organization.');
         });
+        \App\Models\Lead::observe(\App\Observers\LeadObserver::class);
     }
 }

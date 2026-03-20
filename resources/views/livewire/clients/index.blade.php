@@ -41,17 +41,7 @@
                         {{ $client->industry ?: 'N/A' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @php
-                            $statusColors = [
-                                'ACTIVE' => 'bg-green-100 text-green-700',
-                                'INACTIVE' => 'bg-gray-100 text-gray-600',
-                                'ARCHIVED' => 'bg-red-100 text-red-700',
-                            ];
-                            $color = $statusColors[$client->status] ?? 'bg-gray-100 text-gray-600';
-                        @endphp
-                        <span class="{{ $color }} px-2 py-1 rounded-full text-xs font-semibold">
-                            {{ $client->status }}
-                        </span>
+                        <x-status-badge :status="$client->status" type="client" />
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-text-primary">
                         {{ $client->campaigns_count }}

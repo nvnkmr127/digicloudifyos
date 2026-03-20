@@ -4,6 +4,7 @@ namespace App\Livewire\Campaigns;
 
 use App\Models\Campaign;
 use App\Models\Client;
+use App\Services\CampaignService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -33,44 +34,29 @@ class KanbanBoard extends Component
         'campaignCreated' => 'refreshCampaigns',
     ];
 
-    public function mount()
+    public function mount(CampaignService $service)
     {
         $this->loadClients();
-        $this->refreshCampaigns();
+        $this->refreshCampaigns($service);
     }
 
     public function loadClients()
     {
-        $this->clients = Client::where('organization_id', Auth::user()->organization_id)
-            ->where('status', 'ACTIVE')
+        // Global scope now handles organization_id automatically
+        $this->clients = Client::active()
             ->orderBy('name')
             ->get(['id', 'name']);
     }
 
-    public function refreshCampaigns()
+    public function refreshCampaigns(CampaignService $service)
     {
-        $query = Campaign::query()
-            ->where('organization_id', Auth::user()->organization_id)
-            ->with(['client:id,name', 'adAccount:id,account_name,platform']);
+        $filters = [
+            'status' => $this->statusFilter,
+            'client_id' => $this->clientFilter,
+            'search' => $this->searchQuery,
+        ];
 
-        if ($this->statusFilter !== 'all') {
-            $query->where('status', $this->statusFilter);
-        }
-
-        if ($this->clientFilter) {
-            $query->where('client_id', $this->clientFilter);
-        }
-
-        if ($this->searchQuery) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%'.$this->searchQuery.'%')
-                    ->orWhereHas('client', function ($clientQuery) {
-                        $clientQuery->where('name', 'like', '%'.$this->searchQuery.'%');
-                    });
-            });
-        }
-
-        $campaigns = $query->orderBy('created_at', 'desc')->get();
+        $campaigns = $service->getAllForOrganization(Auth::user()->organization_id, $filters);
 
         $this->campaigns = collect($this->columns)
             ->mapWithKeys(function ($column) use ($campaigns) {
@@ -83,32 +69,32 @@ class KanbanBoard extends Component
 
     public function updatedStatusFilter()
     {
-        $this->refreshCampaigns();
+        $this->refreshCampaigns(app(CampaignService::class));
     }
 
     public function updatedClientFilter()
     {
-        $this->refreshCampaigns();
+        $this->refreshCampaigns(app(CampaignService::class));
     }
 
     public function updatedSearchQuery()
     {
-        $this->refreshCampaigns();
+        $this->refreshCampaigns(app(CampaignService::class));
     }
 
-    public function updateCampaignStatus($campaignId, $newStatus)
+    public function updateCampaignStatus($campaignId, $newStatus, CampaignService $service)
     {
         try {
-            $campaign = Campaign::where('id', $campaignId)
-                ->where('organization_id', Auth::user()->organization_id)
-                ->firstOrFail();
+            $campaign = Campaign::findOrFail($campaignId);
 
             $this->authorize('update', $campaign);
 
             $oldStatus = $campaign->status;
-            $campaign->update(['status' => $newStatus]);
 
-            $this->refreshCampaigns();
+            // Use the service to handle the update, events, and cache clearing
+            $service->update($campaign, ['status' => $newStatus]);
+
+            $this->refreshCampaigns($service);
 
             $this->dispatch('campaignUpdated', [
                 'campaignId' => $campaignId,
@@ -134,7 +120,7 @@ class KanbanBoard extends Component
         $this->statusFilter = 'all';
         $this->clientFilter = null;
         $this->searchQuery = '';
-        $this->refreshCampaigns();
+        $this->refreshCampaigns(app(CampaignService::class));
     }
 
     public function render()

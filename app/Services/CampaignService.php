@@ -113,6 +113,10 @@ class CampaignService
 
     protected function clearCache(string $organizationId): void
     {
-        Cache::tags(['campaigns', "org.{$organizationId}"])->flush();
+        if (config('cache.default') !== 'file' && config('cache.default') !== 'database') {
+            Cache::tags(['campaigns', "org.{$organizationId}"])->flush();
+        } else {
+            Log::debug('Cache tags not supported for current driver. Skipping tag-based flush in CampaignService.');
+        }
     }
 }

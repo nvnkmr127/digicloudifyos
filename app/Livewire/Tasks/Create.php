@@ -33,6 +33,7 @@ class Create extends Component
 
     public function save()
     {
+        $this->authorize('create', Task::class);
         $this->validate();
 
         Task::create([

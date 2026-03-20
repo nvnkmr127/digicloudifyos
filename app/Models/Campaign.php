@@ -12,7 +12,7 @@ use Laravel\Scout\Searchable;
 
 class Campaign extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, Searchable;
+    use HasFactory, HasUuids, OrganizationScoped, Searchable, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',

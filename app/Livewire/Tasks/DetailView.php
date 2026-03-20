@@ -10,10 +10,10 @@ class DetailView extends Component
 
     public function mount($id)
     {
-        $this->task = \App\Models\Task::where('id', $id)
-            ->where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)
-            ->with(['campaign', 'assignee', 'creator'])
-            ->firstOrFail();
+        $this->task = \App\Models\Task::with(['campaign', 'assignee', 'creator'])
+            ->findOrFail($id);
+
+        $this->authorize('view', $this->task);
     }
 
     public function render()

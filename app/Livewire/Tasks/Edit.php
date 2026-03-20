@@ -34,6 +34,7 @@ class Edit extends Component
 
     public function mount(Task $task)
     {
+        $this->authorize('update', $task);
         $this->task = $task;
         $this->title = $task->title;
         $this->description = $task->description;
@@ -42,11 +43,12 @@ class Edit extends Component
         $this->status = $task->status;
         $this->assigned_to = $task->assigned_to;
         $this->client_id = $task->client_id;
-        $this->deadline = $task->deadline ? $task->deadline->format('Y-m-d') : '';
+        $this->deadline = $task->deadline ? (\Carbon\Carbon::parse($task->deadline))->format('Y-m-d') : '';
     }
 
     public function update()
     {
+        $this->authorize('update', $this->task);
         $this->validate();
 
         $this->task->update([
