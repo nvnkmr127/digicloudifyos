@@ -34,6 +34,11 @@ class AutomationLog extends Model
         return $this->belongsTo(WorkflowRule::class);
     }
 
+    public function rule(): BelongsTo
+    {
+        return $this->belongsTo(WorkflowRule::class, 'workflow_rule_id');
+    }
+
     public function event(): BelongsTo
     {
         return $this->belongsTo(WorkflowEvent::class, 'event_id');

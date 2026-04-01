@@ -2,25 +2,31 @@
 
 namespace App\Livewire\Proposals;
 
+use App\Models\Proposal;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
+    use WithPagination;
+
+    public function delete($id)
+    {
+        $proposal = Proposal::findOrFail($id);
+        $proposal->delete();
+        session()->flash('success', 'Proposal deleted.');
+    }
+
     public function render()
     {
-        $invoices = \App\Models\Invoice::with(['client', 'project'])->orderByDesc('issue_date')->get();
-
-        $drafts = $invoices->where('status', 'draft')->count();
-        $sent = $invoices->where('status', 'sent')->count();
-        $paid = $invoices->where('status', 'paid')->count();
-        $overdue = $invoices->where('status', 'overdue')->count();
+        $proposals = Proposal::where('organization_id', Auth::user()->organization_id)
+            ->with(['client'])
+            ->latest()
+            ->paginate(10);
 
         return view('livewire.proposals.index', [
-            'invoices' => $invoices,
-            'drafts' => $drafts,
-            'sent' => $sent,
-            'paid' => $paid,
-            'overdue' => $overdue,
-        ]);
+            'proposals' => $proposals
+        ])->layout('layouts.app');
     }
 }

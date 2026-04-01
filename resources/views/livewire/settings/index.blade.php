@@ -1,77 +1,53 @@
 <x-app-container>
-    <x-page-header title="Settings" />
+    <x-page-header title="Organization Settings" />
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <!-- Settings Nav -->
-        <div class="md:col-span-1">
-            <nav class="space-y-1">
-                <button wire:click="setTab('general')"
-                    class="{{ $tab === 'general' ? 'bg-primary text-white' : 'text-text-muted hover:bg-gray-50' }} w-full flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                    General
-                </button>
-                <button wire:click="setTab('security')"
-                    class="{{ $tab === 'security' ? 'bg-primary text-white' : 'text-text-muted hover:bg-gray-50' }} w-full flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                    Security
-                </button>
-                <button wire:click="setTab('ads')"
-                    class="{{ $tab === 'ads' ? 'bg-primary text-white' : 'text-text-muted hover:bg-gray-50' }} w-full flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                    Ads Integration
-                </button>
-                <button wire:click="setTab('billing')"
-                    class="{{ $tab === 'billing' ? 'bg-primary text-white' : 'text-text-muted hover:bg-gray-50' }} w-full flex items-center px-3 py-2 text-sm font-medium rounded-md">
-                    Billing
-                </button>
-            </nav>
-        </div>
-
-        <!-- Settings Content -->
-        <div class="md:col-span-3 space-y-6">
-            @if($tab === 'general')
-                <x-card>
-                    <div class="border-b border-gray-100 pb-4 mb-4">
-                        <h2 class="text-lg font-semibold text-text-primary">Profile Setting</h2>
-                        <p class="text-sm text-text-muted mt-1">Update your account's profile information and email address.
-                        </p>
-                    </div>
-
-                    <form class="space-y-6 max-w-xl">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-text-primary">Name</label>
-                            <x-input id="name" type="text" value="Admin User" />
+    <div class="max-w-4xl">
+        <x-card class="p-10 border-none shadow-2xl rounded-[3rem]">
+            <form wire:submit="save" class="space-y-8">
+                <!-- Profile/Logo Section -->
+                <div class="flex items-center space-x-8">
+                    <div class="relative">
+                        <div class="h-24 w-24 bg-gray-100 rounded-[2rem] overflow-hidden flex items-center justify-center border-4 border-white shadow-xl">
+                            @if($logo)
+                                <img src="{{ $logo->temporaryUrl() }}" class="object-cover w-full h-full">
+                            @elseif($currentLogo)
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($currentLogo) }}" class="object-cover w-full h-full">
+                            @else
+                                <span class="text-2xl font-black text-indigo-300">DC</span>
+                            @endif
                         </div>
-
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-text-primary">Email Address</label>
-                            <x-input id="email" type="email" value="admin@example.com" />
-                        </div>
-
-                        <div class="flex items-center gap-4 pt-4">
-                            <x-button color="primary">Save Changes</x-button>
-                        </div>
-                    </form>
-                </x-card>
-
-                <x-card>
-                    <div class="border-b border-gray-100 pb-4 mb-4">
-                        <h2 class="text-lg font-semibold text-text-primary">Danger Zone</h2>
-                        <p class="text-sm text-text-muted mt-1">Once you delete your account, there is no going back. Please
-                            be certain.</p>
+                        <label for="logo-upload" class="absolute -bottom-2 -right-2 p-2 bg-indigo-600 rounded-full text-white shadow-xl hover:scale-110 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </label>
+                        <input type="file" id="logo-upload" wire:model="logo" class="hidden">
                     </div>
+                    <div>
+                        <h3 class="text-xl font-black text-gray-900 tracking-tight">{{ $name }}</h3>
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Agency Brand Identity</p>
+                    </div>
+                </div>
 
-                    <div class="pt-2">
-                        <x-button color="danger">Delete Account</x-button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-100">
+                    <div>
+                        <x-input-label>Agency Name</x-input-label>
+                        <x-text-input wire:model="name" class="w-full mt-2 rounded-2xl" />
                     </div>
-                </x-card>
-            @elseif($tab === 'ads')
-                @livewire('settings.ads-connections')
-            @else
-                <x-card>
-                    <div class="text-center py-12">
-                        <h3 class="text-lg font-semibold text-text-primary">{{ ucfirst($tab) }} Settings</h3>
-                        <p class="text-sm text-text-muted mt-2">Section under development.</p>
+                    <div>
+                        <x-input-label>Billing Email</x-input-label>
+                        <x-text-input wire:model="email" type="email" class="w-full mt-2 rounded-2xl" />
                     </div>
-                </x-card>
-            @endif
-        </div>
+                    <div>
+                        <x-input-label>Contact Phone</x-input-label>
+                        <x-text-input wire:model="phone" class="w-full mt-2 rounded-2xl" />
+                    </div>
+                </div>
+
+                <div class="pt-8 flex justify-end">
+                    <x-button type="submit" color="primary" class="px-12 py-4 rounded-2xl shadow-xl shadow-indigo-100">
+                        Update Settings
+                    </x-button>
+                </div>
+            </form>
+        </x-card>
     </div>
 </x-app-container>

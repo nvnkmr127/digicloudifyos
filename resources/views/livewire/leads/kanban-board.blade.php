@@ -94,9 +94,16 @@
                                         @endif
                                     </div>
 
-                                    @if($lead['source'])
+                                    @if(($lead['source'] ?? null) || ($lead['score'] ?? 0) > 0)
                                         <div class="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
-                                            <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{ $lead['source'] }}</span>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{{ $lead['source'] ?? 'General' }}</span>
+                                                @if(($lead['score'] ?? 0) > 0)
+                                                    <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-lg text-[8px] font-black uppercase tracking-widest border border-indigo-100">
+                                                        SCORE: {{ $lead['score'] }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <svg class="w-4 h-4 text-gray-200 group-hover:text-indigo-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                             </svg>

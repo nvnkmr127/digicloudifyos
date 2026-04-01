@@ -4,9 +4,11 @@
             <x-button color="outline" class="rounded-xl text-branding">
                 Configure Streams
             </x-button>
-            <x-button color="primary" class="rounded-xl shadow-lg shadow-primary-soft/30">
-                + New Opportunity
-            </x-button>
+            <a href="{{ route('opportunities.create') }}">
+                <x-button color="primary" class="rounded-xl shadow-lg shadow-primary-soft/30">
+                    + New Opportunity
+                </x-button>
+            </a>
         </div>
     </x-page-header>
 
@@ -37,7 +39,7 @@
                 @endforeach
             </x-select>
         </div>
-    </div>
+    </x-card>
 
     <!-- Pipeline Kanban -->
     <div class="flex overflow-x-auto space-x-6 pb-10 scrollbar-thin scrollbar-thumb-gray-200">

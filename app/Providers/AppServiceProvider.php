@@ -87,5 +87,13 @@ class AppServiceProvider extends ServiceProvider
             return str_replace(':attribute', $attribute, 'The selected :attribute is invalid or does not belong to your organization.');
         });
         \App\Models\Lead::observe(\App\Observers\LeadObserver::class);
+        \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
+        \App\Models\Proposal::observe(\App\Observers\ProposalObserver::class);
+
+        // Sidebar Intelligence Badges
+        \Illuminate\Support\Facades\View::composer(
+            'components.layouts.sidebar-navigation',
+            \App\View\Composers\NavigationComposer::class
+        );
     }
 }

@@ -1,180 +1,212 @@
 <x-app-container>
-    <x-page-header title="Command Central" />
+    <x-page-header title="Agency OS Command Center">
+        <div class="flex items-center gap-4">
+            <span class="px-4 py-2 bg-indigo-50 text-[10px] font-black text-indigo-600 rounded-full border border-indigo-100 uppercase tracking-[0.2em] animate-pulse">
+                Satellite Uplink Active
+            </span>
+            <x-button color="outline" class="rounded-2xl shadow-sm" href="{{ route('settings') }}">
+                Config OS
+            </x-button>
+        </div>
+    </x-page-header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-        <!-- Stat Cards -->
-        <x-card variant="premium" class="group hover:scale-105 transition-all">
-            <div class="flex items-center justify-between mb-6">
-                <div class="h-12 w-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                </div>
-                <span class="text-branding text-brand-muted">+12% vs Q3</span>
-            </div>
-            <p class="text-branding-wide text-brand-muted mb-1">Active Client Entity</p>
-            <h3 class="text-4xl font-black text-gray-900 tracking-tight leading-none">{{ $total_clients }}</h3>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-10">
+        <!-- Revenue Card -->
+        <x-card class="p-8 border-none shadow-xl rounded-[2.5rem] bg-indigo-600 text-white relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 h-32 w-32 bg-white opacity-5 rounded-full"></div>
+             <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Liquidity Matrix</p>
+             <h3 class="text-3xl font-black tracking-tight">${{ number_format($revenue_matrix['total_paid'] / 100, 2) }}</h3>
+             <div class="mt-4 flex items-center justify-between">
+                 <span class="text-[9px] font-black text-indigo-300 uppercase">+14.2% Flux</span>
+                 <span class="text-[9px] font-black italic opacity-50">{{ number_format($revenue_matrix['pending'] / 100, 2) }} Pending</span>
+             </div>
         </x-card>
 
-        <x-card variant="premium" class="group hover:scale-105 transition-all">
-            <div class="flex items-center justify-between mb-6">
-                <div class="h-12 w-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                    </svg>
-                </div>
-                <span class="text-branding text-brand-muted">Ongoing</span>
-            </div>
-            <p class="text-branding-wide text-brand-muted mb-1">Operational Campaigns</p>
-            <h3 class="text-4xl font-black text-gray-900 tracking-tight leading-none">{{ $campaigns_count }}</h3>
+        <!-- Lead Flux Card -->
+        <x-card class="p-8 border-none shadow-xl rounded-[2.5rem] bg-white group hover:bg-gray-50 transition">
+             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Lead Inflow</p>
+             <h3 class="text-3xl font-black text-gray-900 tracking-tight">{{ $lead_flux['total'] }} <span class="text-sm text-green-500 ml-2 font-black">+{{ $lead_flux['new_today'] }}</span></h3>
+             <div class="mt-4 flex items-center gap-2">
+                 <div class="flex -space-x-2">
+                     <div class="h-6 w-6 rounded-full bg-indigo-50 border border-white"></div>
+                     <div class="h-6 w-6 rounded-full bg-pink-50 border border-white"></div>
+                 </div>
+                 <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">{{ $lead_flux['high_intent'] }} High Intent Nodes</span>
+             </div>
         </x-card>
 
-        <x-card variant="premium" class="group hover:scale-105 transition-all">
-            <div class="flex items-center justify-between mb-6">
-                <div class="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <span class="text-branding text-success">Optimized</span>
-            </div>
-            <p class="text-branding-wide text-brand-muted mb-1">Processed Revenue</p>
-            <h3 class="text-4xl font-black text-gray-900 tracking-tight leading-none">${{ number_format($total_revenue / 1000, 1) }}K</h3>
+        <!-- Creative Node Card -->
+        <x-card class="p-8 border-none shadow-xl rounded-[2.5rem] bg-white group">
+             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Creative Pulse</p>
+             <h3 class="text-3xl font-black text-gray-900 tracking-tight">{{ $creative_nodes['pending'] }} Requests</h3>
+             <div class="mt-4 flex items-center justify-between">
+                 @if($creative_nodes['urgent'] > 0)
+                    <span class="px-2 py-1 bg-rose-50 text-rose-600 text-[8px] font-black rounded-lg uppercase tracking-widest animate-bounce">{{ $creative_nodes['urgent'] }} Critical</span>
+                 @else
+                    <span class="text-[9px] font-black text-green-500 uppercase tracking-widest">Stable Ops</span>
+                 @endif
+                 <x-button color="outline" class="p-1 px-3 rounded-lg text-[9px] border-gray-100" href="{{ route('creative-requests.index') }}">View Hub</x-button>
+             </div>
         </x-card>
 
-        <x-card variant="brand" class="group hover:scale-105 transition-all">
-            <div class="relative z-10">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center text-white shadow-sm border border-white/10">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                    </div>
-                    <x-button color="outline" class="!py-1 !px-3 text-branding border-white/20 bg-transparent hover:bg-white/10 rounded-xl">Create</x-button>
-                </div>
-                <p class="text-branding-wide text-primary-soft opacity-80 mb-1">Project Portfolio</p>
-                <h3 class="text-4xl font-black text-white tracking-tight leading-none">{{ $projects_count }}</h3>
-            </div>
-            <div class="absolute -right-10 -bottom-10 h-40 w-40 bg-white/5 rounded-full blur-3xl"></div>
+        <!-- Automation Pulse Card -->
+        <x-card class="p-8 border-none shadow-xl rounded-[2.5rem] bg-gray-900 text-white group overflow-hidden">
+             <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent"></div>
+             <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <span class="h-1.5 w-1.5 bg-green-400 rounded-full animate-ping"></span>
+                 Automation Core
+             </p>
+             <h3 class="text-3xl font-black tracking-tight">{{ $automation_pulse['total_runs'] }} Ops</h3>
+             <p class="mt-4 text-[9px] font-black text-gray-400 uppercase tracking-widest italic">Autonomous efficiency optimized</p>
         </x-card>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <!-- Main Feed -->
-        <div class="lg:col-span-2 space-y-10">
-            <x-card variant="premium" class="p-10 rounded-card-xl shadow-xl shadow-gray-100/40 relative">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-                    <div>
-                        <h4 class="text-2xl font-black text-gray-900 tracking-tight">Financial Protocol Feed</h4>
-                        <p class="text-branding-wide text-brand-muted mt-1">Real-time ledger updates</p>
-                    </div>
-                    <x-button color="outline" class="rounded-2xl px-6 text-branding border-gray-100 hover:bg-gray-50 flex items-center">
-                        Execute Export
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                    </x-button>
-                </div>
-
-                <div class="space-y-4">
-                    @forelse($recent_documents as $invoice)
-                        <div class="group p-6 rounded-[2rem] bg-gray-50/50 hover:bg-white hover:shadow-2xl hover:scale-[1.01] transition-all border border-gray-100/50 hover:border-indigo-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                            <div class="flex items-center gap-6">
-                                <div class="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-gray-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-black text-gray-900 tracking-tight">{{ $invoice->client->name ?? 'External Entity' }}</p>
-                                    <div class="flex items-center gap-3 mt-1">
-                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">INV-{{ substr($invoice->id, 0, 8) }}</span>
-                                        <span class="text-gray-200 text-xs">|</span>
-                                        <span class="text-[10px] font-bold text-gray-400">{{ $invoice->created_at->diffForHumans() }}</span>
-                                    </div>
-                                </div>
+        <!-- Active Automations Flow -->
+        <div class="lg:col-span-2">
+            <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Automation Real-Time Stream</h3>
+            <div class="space-y-4">
+                @foreach($automation_pulse['recent_runs'] as $run)
+                    <div class="flex items-center justify-between p-6 bg-white rounded-[2rem] shadow-sm hover:shadow-md transition group border-l-4 {{ $run->status === 'success' ? 'border-green-400' : 'border-rose-400' }}">
+                         <div class="flex items-center gap-6">
+                            <div class="h-12 w-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                             </div>
-                            
-                            <div class="flex items-center gap-8">
-                                <div class="text-right">
-                                    <p class="text-lg font-black text-gray-900">${{ number_format($invoice->total_amount, 2) }}</p>
-                                    <p class="text-branding text-success">Verified Payment</p>
+                            <div>
+                                <h4 class="text-sm font-black text-gray-900 uppercase tracking-tight">{{ $run->rule->name }}</h4>
+                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1">{{ $run->created_at->diffForHumans() }} • Node {{ substr($run->id, 0, 6) }}</p>
+                            </div>
+                         </div>
+                         <div class="text-right">
+                            <span class="px-3 py-1 bg-gray-50 text-[8px] font-black rounded-full uppercase tracking-widest text-gray-400">{{ $run->status }}</span>
+                         </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Recent Projects & Metrics -->
+        <div class="space-y-10">
+            <div>
+                 <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Strategic Initiatives</h3>
+                 <div class="bg-white rounded-[3rem] shadow-xl p-8 space-y-8">
+                     @foreach($recent_projects as $project)
+                        <div class="flex items-start gap-4">
+                            <div class="h-10 w-10 flex-shrink-0 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-400 font-black text-xs">
+                                {{ substr($project->name, 0, 1) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-xs font-black text-gray-900 truncate uppercase mt-1">{{ $project->name }}</h4>
+                                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{{ $project->client->name }}</p>
+                                <div class="mt-3 w-full bg-gray-50 h-1 rounded-full overflow-hidden">
+                                     <div class="bg-indigo-500 h-full w-[45%]"></div>
                                 </div>
-                                <div class="h-10 w-1 bg-gray-100 rounded-full"></div>
-                                <x-button color="outline" class="rounded-xl !py-2 !px-4 text-[9px] font-black uppercase border-gray-200">Inspect</x-button>
                             </div>
                         </div>
+                     @endforeach
+                     <x-button color="outline" class="w-full rounded-2xl text-[10px] font-black uppercase tracking-widest py-4 border-gray-100" href="{{ route('projects.index') }}">Access Full Portfolio</x-button>
+                 </div>
+            </div>
+
+            <div class="p-8 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                 <div class="absolute -right-10 -bottom-10 h-40 w-40 bg-white opacity-10 rounded-full group-hover:scale-110 transition duration-700"></div>
+                 <div class="relative z-10">
+                     <h3 class="text-white text-lg font-black tracking-tight uppercase italic mb-6">Conversion Core</h3>
+                     <div class="flex items-center justify-between mb-2">
+                        <span class="text-[9px] font-black text-indigo-200 uppercase tracking-widest">Funnel Efficiency</span>
+                        <span class="text-[10px] font-black text-white">78%</span>
+                     </div>
+                     <div class="w-full bg-indigo-500 h-2 rounded-full overflow-hidden mb-6">
+                         <div class="bg-white h-full w-[78%]"></div>
+                     </div>
+                     <p class="text-[10px] font-bold text-indigo-100 opacity-70 uppercase tracking-widest leading-relaxed italic">Intelligence engine is optimizing {{ $conversion_funnel['total_submissions'] }} unique data points from your marketing logic stack.</p>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Intelligence Hub -->
+    <div class="mt-16 mb-12">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">Performance Intelligence Hub</h3>
+            <a href="{{ route('intelligence.overview') }}" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline italic">Access Neural Center →</a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Client Health Grid Preview -->
+            <div class="p-10 bg-white shadow-xl rounded-[3rem] border border-slate-100 relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 h-40 w-40 bg-indigo-50 opacity-0 group-hover:opacity-100 rounded-full transition duration-700"></div>
+                <h4 class="text-lg font-black text-slate-900 tracking-tight mb-8">Portfolio Health</h4>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    @forelse($client_health_grid as $client)
+                        <a href="{{ route('intelligence.client', $client->id) }}" class="p-3 bg-slate-50 rounded-2xl border border-transparent hover:border-indigo-100 hover:bg-white transition flex items-center gap-3">
+                            <div class="h-8 w-8 flex items-center justify-center rounded-lg font-bold text-[10px] {{ $client->latestHealthScore?->getScoreBadgeClass() ?? 'bg-slate-200 text-slate-400' }}">
+                                {{ $client->latestHealthScore?->overall_score ?? '?' }}
+                            </div>
+                            <span class="text-[10px] font-black text-slate-700 uppercase truncate">{{ $client->name }}</span>
+                        </a>
                     @empty
-                        <div class="py-24 text-center">
-                            <p class="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">No activity detected in current cycle</p>
+                        <p class="text-xs text-slate-400 italic">No health data synced yet.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Morning Briefing Highlights -->
+            <div class="p-10 bg-indigo-600 shadow-2xl rounded-[3rem] text-white relative group overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500 to-violet-700 opacity-0 group-hover:opacity-100 transition duration-700"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-8 text-indigo-200">
+                        <h4 class="text-lg font-black text-white tracking-tight">Daily Briefing</h4>
+                        <span class="text-[9px] font-black uppercase tracking-widest italic opacity-70">Awaiting Action</span>
+                    </div>
+
+                    @if($morning_briefing_preview)
+                        <div class="space-y-4">
+                            @foreach($morning_briefing_preview->actionItems as $item)
+                                <div class="p-4 bg-white/10 rounded-2xl border border-white/5 backdrop-blur-sm">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $item->priority_level === 'urgent' ? 'bg-rose-400' : 'bg-amber-400' }}"></span>
+                                        <p class="text-[9px] font-black uppercase tracking-widest text-indigo-100 truncate">{{ $item->client->name }}</p>
+                                    </div>
+                                    <p class="text-[11px] font-bold text-white leading-relaxed">{{ $item->title }}</p>
+                                </div>
+                            @endforeach
+                            <x-button color="outline" class="w-full mt-4 rounded-2xl py-3 border-white/20 text-white font-black text-[9px]" href="{{ route('intelligence.briefing') }}">Execute Morning Strategy</x-button>
+                        </div>
+                    @else
+                        <div class="py-6 text-center text-indigo-200 italic">
+                            <p class="text-sm">Morning briefing will be delivered at 7:00 AM.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Recent Anomalies -->
+            <div class="p-10 bg-slate-900 shadow-2xl rounded-[3rem] text-white group relative overflow-hidden">
+                <div class="absolute -left-10 -bottom-10 h-40 w-40 bg-indigo-500/5 rounded-full"></div>
+                <h4 class="text-lg font-black text-white tracking-tight mb-8">Neural Exceptions</h4>
+                
+                <div class="space-y-4">
+                    @forelse($recent_anomalies as $anomaly)
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition cursor-pointer" onclick="window.location='{{ route('intelligence.alerts') }}'">
+                            <div class="flex items-center gap-4">
+                                <div class="h-2 w-2 rounded-full {{ $anomaly->severity === 'critical' ? 'bg-rose-500 animate-pulse' : 'bg-amber-500' }}"></div>
+                                <div>
+                                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">{{ $anomaly->client->name }}</p>
+                                    <p class="text-[10px] font-bold text-slate-200 mt-0.5">{{ $anomaly->metric_name }} Outlier detected</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-black {{ $anomaly->deviation_percentage > 0 ? 'text-rose-400' : 'text-emerald-400' }}">{{ $anomaly->deviation_percentage > 0 ? '+' : '' }}{{ round($anomaly->deviation_percentage) }}%</span>
+                        </div>
+                    @empty
+                        <div class="py-8 text-center">
+                            <span class="text-2xl grayscale opacity-30 mb-2 block">🧘</span>
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest tracking-[0.2em]">All Systems Nominal</p>
                         </div>
                     @endforelse
                 </div>
-            </x-card>
-        </div>
-
-        <!-- Sidebar / Intelligence -->
-        <div class="space-y-10">
-            <x-card variant="brand" class="p-8 shadow-indigo-100/20 shadow-xl">
-                <div class="relative z-10">
-                    <h4 class="text-xl font-black tracking-tight mb-8">System Analytics</h4>
-                    <div class="space-y-8">
-                        <div>
-                            <div class="flex justify-between items-center mb-3">
-                                <label class="text-branding text-primary-soft opacity-80">Resource Load</label>
-                                <span class="text-[10px] font-black">78%</span>
-                            </div>
-                            <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                                <div class="h-full bg-white rounded-full w-[78%]"></div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="flex justify-between items-center mb-3">
-                                <label class="text-[10px] font-black text-indigo-200 uppercase tracking-widest">Storage Protocol</label>
-                                <span class="text-[10px] font-black text-amber-300">CRITICAL</span>
-                            </div>
-                            <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                                <div class="h-full bg-amber-400 rounded-full w-[94%]"></div>
-                            </div>
-                        </div>
-
-                        <div class="pt-8 border-t border-white/10">
-                            <p class="text-branding-wide text-primary-soft opacity-80 mb-4">Core Operative Status</p>
-                            <div class="flex items-center gap-3">
-                                <div class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
-                                <span class="text-xs font-black uppercase tracking-widest">All Modules Optimized</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Decorative Elements -->
-                <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-            </x-card>
-
-            <x-card variant="premium" class="p-8">
-                <h4 class="text-lg font-black text-gray-900 tracking-tight mb-8">Strategic Shortcuts</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <x-button color="outline" class="rounded-2xl !py-6 !px-4 border-gray-50 bg-gray-50/30 hover:bg-white hover:shadow-lg hover:border-indigo-100 transition-all group flex flex-col items-center gap-3">
-                        <div class="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                        </div>
-                        <span class="text-branding text-brand-muted group-hover:text-primary">Add Lead</span>
-                    </x-button>
-                    
-                    <x-button color="outline" class="rounded-2xl !py-6 !px-4 border-gray-50 bg-gray-50/30 hover:bg-white hover:shadow-lg hover:border-indigo-100 transition-all group flex flex-col items-center gap-3">
-                        <div class="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-amber-500 group-hover:bg-amber-600 group-hover:text-white transition-all">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                        <span class="text-[9px] font-black uppercase text-gray-400 tracking-widest group-hover:text-amber-600">Invoice</span>
-                    </x-button>
-                </div>
-            </x-card>
+            </div>
         </div>
     </div>
 </x-app-container>

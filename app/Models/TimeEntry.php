@@ -24,6 +24,8 @@ class TimeEntry extends Model
         'approved',
         'approved_by',
         'approved_at',
+        'start_at',
+        'end_at',
     ];
 
     protected $casts = [
@@ -32,6 +34,8 @@ class TimeEntry extends Model
         'billable' => 'boolean',
         'approved' => 'boolean',
         'approved_at' => 'datetime',
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
     ];
 
     public function organization(): BelongsTo

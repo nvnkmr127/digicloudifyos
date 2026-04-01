@@ -1,24 +1,27 @@
 <x-app-container>
     <x-page-header title="Orders">
-        <!-- Action area for orders if needed -->
+        <x-button color="primary" href="{{ route('orders.create') }}" wire:navigate class="rounded-2xl shadow-lg px-8">
+            + New manual order
+        </x-button>
     </x-page-header>
 
     <x-card>
         <div class="flex flex-col sm:flex-row gap-4 mb-6">
-            <x-input type="search" placeholder="Search orders by ID or customer..." class="max-w-md" />
-            <x-select class="max-w-xs">
+            <x-input wire:model.live="search" type="search" placeholder="Search orders by ID or customer..." class="max-w-md" />
+            <x-select wire:model.live="status" class="max-w-xs">
                 <option value="">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
+                <option value="PENDING">Pending</option>
+                <option value="PROCESSING">Processing</option>
+                <option value="SHIPPED">Shipped</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="CANCELLED">Cancelled</option>
             </x-select>
         </div>
 
         <x-table>
             <x-slot name="header">
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left">Order ID</th>
+                    <th scope="col" class="px-6 py-3 text-left">Order #</th>
                     <th scope="col" class="px-6 py-3 text-left">Customer</th>
                     <th scope="col" class="px-6 py-3 text-left">Date</th>
                     <th scope="col" class="px-6 py-3 text-left">Status</th>
@@ -27,38 +30,46 @@
                 </tr>
             </x-slot>
 
-            @foreach([1001, 1002, 1003, 1004] as $order)
+            @forelse($orders as $order)
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap font-medium text-text-primary">
-                        #ORD-{{ $order }}
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-text-primary uppercase tracking-wider">
+                        #{{ $order->order_number }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-text-muted">
-                        Acme Corp Customer {{ $order }}
+                        {{ $order->client->name ?? 'Guest Client' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-text-muted">
-                        {{ now()->subDays($order % 5)->format('M d, Y') }}
+                        {{ $order->ordered_at->format('M d, Y') }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @if($order % 3 == 0)
-                            <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Processing</span>
-                        @elseif($order % 2 == 0)
-                            <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Delivered</span>
-                        @else
-                            <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                        @endif
+                        <span class="px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-widest
+                            {{ $order->status === 'DELIVERED' ? 'bg-green-100 text-green-700' : '' }}
+                            {{ $order->status === 'PROCESSING' ? 'bg-blue-100 text-blue-700' : '' }}
+                            {{ $order->status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                            {{ $order->status === 'CANCELLED' ? 'bg-red-100 text-red-700' : '' }}
+                        ">
+                            {{ $order->status }}
+                        </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-text-primary font-medium">
-                        ${{ number_format($order * 1.5, 2) }}
+                    <td class="px-6 py-4 whitespace-nowrap text-text-primary font-black">
+                        ${{ number_format($order->total_amount, 2) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="{{ route('orders.show', $order) }}" wire:navigate
-                            class="text-primary hover:text-indigo-900">View Details</a>
+                        <a href="{{ route('orders.show', $order->id) }}" wire:navigate
+                            class="text-indigo-600 hover:text-indigo-900 font-bold uppercase tracking-widest text-xs">View</a>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 uppercase tracking-widest text-xs font-bold">
+                        No orders found.
+                    </td>
+                </tr>
+            @endforelse
         </x-table>
+
+        <div class="mt-4">
+            {{ $orders->links() }}
+        </div>
     </x-card>
 </x-app-container>

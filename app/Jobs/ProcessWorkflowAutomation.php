@@ -144,6 +144,7 @@ class ProcessWorkflowAutomation implements ShouldQueue
             'send_email' => $this->sendEmail($config, $event),
             'trigger_webhook', 'send_whatsapp' => $this->triggerWebhook($config, $event),
             'assign_sales' => $this->assignSales($config, $event),
+            'calculate_lead_score' => $this->calculateLeadScore($event),
             default => Log::warning('Unknown action type', ['type' => $actionType]),
         };
 
@@ -156,20 +157,21 @@ class ProcessWorkflowAutomation implements ShouldQueue
     protected function sendNotification(array $config, WorkflowEvent $event): void
     {
         $message = $this->replacePlaceholders($config['message'] ?? 'Notification', $event->payload);
-        Log::info('Automation Notification', ['message' => $message]);
-
-        // Create a formal alert in the database
-        \App\Models\Alert::create([
+        
+        \App\Models\Notification::create([
             'organization_id' => $event->organization_id,
-            'campaign_id' => $event->payload['entity_id'] ?? null,
-            'alert_type' => $event->event_type,
-            'severity' => 'warning',
-            'title' => 'System Notification',
+            'trigger' => $event->event_type,
+            'title' => $config['title'] ?? 'System Alert',
             'message' => $message,
-            'payload' => $event->payload,
-            'triggered_at' => now(),
-            'status' => 'OPEN',
+            'channels' => $config['channels'] ?? 'WEB',
+            'metadata' => [
+                'entity_type' => $event->entity_type,
+                'entity_id' => $event->entity_id,
+            ],
+            'is_read' => false,
         ]);
+
+        Log::info('Automation Notification created', ['message' => $message]);
     }
 
     protected function createTask(array $config, WorkflowEvent $event): void
@@ -185,12 +187,41 @@ class ProcessWorkflowAutomation implements ShouldQueue
 
     protected function updateStatus(array $config, WorkflowEvent $event): void
     {
-        // Generic status update for entity
+        $entityType = $event->entity_type;
+        $entityId = $event->entity_id;
+        $newStatus = $config['status'] ?? null;
+
+        if (!$newStatus) return;
+
+        $modelClass = match ($entityType) {
+            'lead' => \App\Models\Lead::class,
+            'campaign' => \App\Models\Campaign::class,
+            'task' => \App\Models\Task::class,
+            'project' => \App\Models\Project::class,
+            default => null,
+        };
+
+        if ($modelClass) {
+            $entity = $modelClass::find($entityId);
+            if ($entity) {
+                $entity->update(['status' => $newStatus]);
+                Log::info("Automation: Updated {$entityType} status to {$newStatus}", ['id' => $entityId]);
+            }
+        }
     }
 
     protected function sendEmail(array $config, WorkflowEvent $event): void
     {
-        // Integration with Mailer
+        $to = $config['to'] ?? $event->payload['email'] ?? null;
+        $subject = $this->replacePlaceholders($config['subject'] ?? 'System Notification', $event->payload);
+        $body = $this->replacePlaceholders($config['body'] ?? '', $event->payload);
+
+        if ($to && $body) {
+            \Illuminate\Support\Facades\Mail::raw($body, function ($message) use ($to, $subject) {
+                $message->to($to)->subject($subject);
+            });
+            Log::info("Automation: Email sent to {$to}", ['subject' => $subject]);
+        }
     }
 
     protected function triggerWebhook(array $config, WorkflowEvent $event): void
@@ -290,6 +321,16 @@ class ProcessWorkflowAutomation implements ShouldQueue
                     'notes' => $crmLead->notes . "\n[System] Auto-assigned to {$assignedTo} via automation rule."
                 ]);
                 Log::info('Lead auto-assigned', ['lead_id' => $crmLead->id, 'to' => $assignedTo]);
+            }
+        }
+    }
+
+    protected function calculateLeadScore(WorkflowEvent $event): void
+    {
+        if (($event->payload['entity_type'] ?? '') === 'lead') {
+            $lead = \App\Models\Lead::find($event->payload['entity_id']);
+            if ($lead) {
+                (new \App\Services\LeadScoringService())->calculate($lead);
             }
         }
     }

@@ -15,6 +15,10 @@ class Organization extends Model
         'name',
         'slug',
         'timezone',
+        'email',
+        'phone',
+        'address',
+        'logo_url',
     ];
 
     public function users(): HasMany

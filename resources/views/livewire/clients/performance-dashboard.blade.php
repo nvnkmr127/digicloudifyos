@@ -107,5 +107,5 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </x-card>
 </div>

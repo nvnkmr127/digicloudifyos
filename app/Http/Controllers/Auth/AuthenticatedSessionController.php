@@ -79,6 +79,13 @@ class AuthenticatedSessionController extends Controller
             ]
         );
 
+        if (! $user->email_verified_at) {
+            $user->update([
+                'email_verified_at' => now(),
+                'status' => 'ACTIVE',
+            ]);
+        }
+
         Auth::login($user);
 
         request()->session()->regenerate();

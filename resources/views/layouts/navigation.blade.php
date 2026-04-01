@@ -27,6 +27,9 @@
                     <x-nav-link :href="route('leads.index')" :active="request()->routeIs('leads.*')">
                         {{ __('Leads') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('contacts.index')" :active="request()->routeIs('contacts.*')">
+                        {{ __('Contacts') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('creatives.index')" :active="request()->routeIs('creatives.*')">
                         {{ __('Creatives') }}
                     </x-nav-link>
@@ -77,6 +80,12 @@
                                             :href="route('proposals.index')">{{ __('Proposals') }}</x-dropdown-link>
                                         <x-dropdown-link
                                             :href="route('invoices.index')">{{ __('Invoices') }}</x-dropdown-link>
+                                        <x-dropdown-link
+                                            :href="route('broadcasts.index')">{{ __('Broadcasts') }}</x-dropdown-link>
+                                        <x-dropdown-link
+                                            :href="route('creative-requests.index')">{{ __('Creative Requests') }}</x-dropdown-link>
+                                        <x-dropdown-link
+                                            :href="route('feedback.index')">{{ __('Feedback') }}</x-dropdown-link>
                                     </div>
                                     <div>
                                         <x-dropdown-link
@@ -224,6 +233,9 @@
             <x-responsive-nav-link :href="route('orders.index')">{{ __('Orders') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('proposals.index')">{{ __('Proposals') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('invoices.index')">{{ __('Invoices') }}</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('broadcasts.index')">{{ __('Broadcasts') }}</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('creative-requests.index')">{{ __('Creative Requests') }}</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('feedback.index')">{{ __('Feedback') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('analytics.index')">{{ __('Analytics') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('team.index')">{{ __('Team') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('users.index')">{{ __('Users') }}</x-responsive-nav-link>

@@ -58,6 +58,46 @@ class Client extends Model
         return $this->hasMany(Lead::class);
     }
 
+    public function channelConnections(): HasMany
+    {
+        return $this->hasMany(ClientChannelConnection::class);
+    }
+
+    public function performanceSnapshots(): HasMany
+    {
+        return $this->hasMany(PerformanceSnapshot::class);
+    }
+
+    public function performanceAnomalies(): HasMany
+    {
+        return $this->hasMany(PerformanceAnomaly::class);
+    }
+
+    public function healthScores(): HasMany
+    {
+        return $this->hasMany(ClientHealthScore::class);
+    }
+
+    public function latestHealthScore(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ClientHealthScore::class)->latestOfMany('score_date');
+    }
+
+    public function aiInsights(): HasMany
+    {
+        return $this->hasMany(AiInsight::class);
+    }
+
+    public function getCurrentHealthScoreAttribute(): ?int
+    {
+        return $this->latestHealthScore?->overall_score;
+    }
+
+    public function scopeWithHealthScores($query)
+    {
+        return $query->with('latestHealthScore');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'ACTIVE');

@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\Client;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Bypass org global scope during model binding so policies/components can return 403 for cross-org access.
+Route::bind('client', fn ($value) => Client::withoutGlobalScope('organization')->findOrFail($value));
 
 // Facebook Webhooks
 Route::get('webhooks/facebook', [App\Http\Controllers\Webhooks\FacebookWebhookController::class, 'verify']);
@@ -36,8 +40,9 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/creatives/{id}', \App\Livewire\Creatives\RequestsBoard::class)->name('creatives.show');
 
     // Agency Management
-    Route::get('/workflow-monitoring', \App\Livewire\WorkflowMonitoring\Dashboard::class)->name('workflow.index');
-    Route::get('/reports', \App\Livewire\Reports\Dashboard::class)->name('reports.index');
+    Route::get('/workflow', \App\Livewire\WorkflowMonitoring\Dashboard::class)->name('workflow.index');
+    Route::get('/workflow/logs', \App\Livewire\WorkflowMonitoring\Logs::class)->name('workflow.logs');
+    Route::get('/reports', \App\Livewire\Reports\Index::class)->name('reports.index');
     Route::get('/alerts', \App\Livewire\Alerts\Index::class)->name('alerts.index');
     Route::get('/clients', \App\Livewire\Clients\Index::class)
         ->middleware('can:manage-organization')
@@ -58,6 +63,7 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/projects/{project}', \App\Livewire\Projects\DetailView::class)->name('projects.show');
     Route::get('/projects/{project}/edit', \App\Livewire\Projects\Edit::class)->name('projects.edit');
     Route::get('/pipelines', \App\Livewire\Pipelines\Index::class)->name('pipelines.index');
+    Route::get('/opportunities/create', \App\Livewire\Opportunities\Create::class)->name('opportunities.create');
     Route::get('/team', \App\Livewire\Team\Index::class)->name('team.index');
     Route::get('/users', \App\Livewire\Users\Index::class)
         ->middleware('can:manage-organization')
@@ -75,19 +81,34 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
 
     // Finance & Sales
     Route::get('/orders', \App\Livewire\Orders\Index::class)->name('orders.index');
+    Route::get('/orders/create', \App\Livewire\Orders\Create::class)->name('orders.create');
+    Route::get('/orders/{id}', \App\Livewire\Orders\Show::class)->name('orders.show');
+    Route::get('/settings', \App\Livewire\Settings\Index::class)->name('settings');
     Route::get('/proposals', \App\Livewire\Proposals\Index::class)->name('proposals.index');
+    Route::get('/proposals/create', \App\Livewire\Proposals\Create::class)->name('proposals.create');
     Route::get('/analytics', \App\Livewire\Analytics\Index::class)->name('analytics.index');
+    Route::get('/analytics-management', \App\Livewire\AnalyticsManagement\Dashboard::class)->name('analytics-management.dashboard');
     Route::get('/invoices', \App\Livewire\Invoices\Index::class)->name('invoices.index');
     Route::get('/invoices/create', \App\Livewire\Invoices\Create::class)->name('invoices.create');
     Route::get('/invoices/{invoice}', \App\Livewire\Invoices\DetailView::class)->name('invoices.show');
     Route::get('/invoices/{invoice}/edit', \App\Livewire\Invoices\Edit::class)->name('invoices.edit');
 
+    // CRM
+    Route::get('/contacts', \App\Livewire\Contacts\Index::class)->name('contacts.index');
+    Route::get('/contacts/create', \App\Livewire\Contacts\Create::class)->name('contacts.create');
+    Route::get('/contacts/{id}', \App\Livewire\Contacts\Show::class)->name('contacts.show');
+
     // Utilities
     Route::get('/automations', \App\Livewire\Automations\Index::class)->name('automations.index');
+    Route::get('/automations/create', \App\Livewire\Automations\Builder::class)->name('automations.create');
+    Route::get('/automations/{id}/edit', \App\Livewire\Automations\Builder::class)->name('automations.edit');
     Route::get('/time-tracking', \App\Livewire\TimeTracking\Index::class)->name('time-tracking.index');
     Route::get('/media', \App\Livewire\Media\Index::class)->name('media.index');
     Route::get('/calendars', \App\Livewire\Calendars\Index::class)->name('calendars.index');
     Route::get('/forms', \App\Livewire\Forms\Index::class)->name('forms.index');
+    Route::get('/forms/create', \App\Livewire\Forms\Create::class)->name('forms.create');
+    Route::get('/creative-requests', \App\Livewire\CreativeRequests\Index::class)->name('creative-requests.index');
+    Route::get('/feedback', \App\Livewire\Feedback\Index::class)->name('feedback.index');
     Route::get('/products', \App\Livewire\Products\Index::class)->name('products.index');
     Route::get('/products/create', \App\Livewire\Products\Create::class)->name('products.create');
     Route::get('/settings', \App\Livewire\Settings\Index::class)
@@ -121,6 +142,14 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/ads', \App\Livewire\Ads\Index::class)->name('ads.index');
     Route::get('/ads/analytics', \App\Livewire\Ads\Analytics::class)->name('ads.analytics');
     Route::get('/ads/leads', \App\Livewire\Ads\Leads::class)->name('ads.leads');
+
+    // Performance Intelligence
+    Route::get('/intelligence', \App\Livewire\Intelligence\Overview::class)->name('intelligence.overview');
+    Route::get('/intelligence/briefing', \App\Livewire\Intelligence\BriefingDashboard::class)->name('intelligence.briefing');
+    Route::get('/intelligence/briefing/{id}', \App\Livewire\Intelligence\BriefingDashboard::class)->name('intelligence.briefing.show');
+    Route::get('/intelligence/insights', \App\Livewire\Intelligence\InsightsFeed::class)->name('intelligence.insights');
+    Route::get('/intelligence/alerts', \App\Livewire\Intelligence\AlertCenter::class)->name('intelligence.alerts');
+    Route::get('/intelligence/client/{client}', \App\Livewire\Intelligence\ClientPerformanceCenter::class)->name('intelligence.client');
 });
 
 Route::middleware('auth')->group(function () {

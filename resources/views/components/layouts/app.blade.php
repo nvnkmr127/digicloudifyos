@@ -99,7 +99,7 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
-                    <!-- Notifications, etc. can go here -->
+                    @livewire('notifications.bell')
 
                     <!-- Settings Dropdown -->
                     <div class="flex items-center sm:ms-6">

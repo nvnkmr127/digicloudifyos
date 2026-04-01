@@ -14,6 +14,23 @@ class User extends Authenticatable
 {
     use HasFactory, HasUuids, Notifiable, OrganizationScoped;
 
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            if (in_array($user->role, ['OWNER', 'ADMIN', 'OPERATOR'])) {
+                Employee::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'organization_id' => $user->organization_id,
+                        'status' => 'active',
+                        'department' => 'Operations',
+                        'position' => $user->role,
+                    ]
+                );
+            }
+        });
+    }
+
     private const ROLE_ALIASES = [
         'SUPER-ADMIN' => 'OWNER',
         'SUPER_ADMIN' => 'OWNER',
@@ -69,6 +86,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function employee(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Employee::class);
+    }
 
     public function organization(): BelongsTo
     {

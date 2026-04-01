@@ -2,25 +2,24 @@
 
 namespace App\Livewire\Products;
 
-use Livewire\Component;
-
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Create extends Component
 {
-    public $name = '';
-    public $sku = '';
-    public $price = 0;
+    public $name;
+    public $sku;
+    public $price;
     public $stock = 0;
-    public $description = '';
+    public $description;
 
     protected $rules = [
         'name' => 'required|min:3',
-        'sku' => 'nullable|unique:products,sku',
+        'sku' => 'nullable|string',
         'price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
-        'description' => 'nullable',
+        'stock' => 'nullable|integer|min:0',
+        'description' => 'nullable|string',
     ];
 
     public function save()
@@ -28,16 +27,16 @@ class Create extends Component
         $this->validate();
 
         Product::create([
-            'organization_id' => Auth::user()->organization_id ?? null,
+            'organization_id' => Auth::user()->organization_id,
             'name' => $this->name,
-            'sku' => $this->sku ?: 'SKU-' . strtoupper(uniqid()),
+            'sku' => $this->sku,
             'price' => $this->price,
             'stock' => $this->stock,
             'description' => $this->description,
+            'status' => 'ACTIVE',
         ]);
 
-        session()->flash('success', 'Product created successfully.');
-
+        session()->flash('success', 'Product added to catalog.');
         return redirect()->route('products.index');
     }
 

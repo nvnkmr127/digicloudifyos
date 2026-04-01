@@ -64,7 +64,8 @@ class CreativeRequest extends Model
 
     public function feedback(): HasMany
     {
-        return $this->hasMany(CreativeFeedback::class);
+        return $this->hasMany(Feedback::class, 'entity_id')
+            ->where('entity_type', 'creative_request');
     }
 
     public function tasks(): HasMany

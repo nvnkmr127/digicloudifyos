@@ -45,15 +45,14 @@ trait OrganizationScoped
     protected static function bootOrganizationScoped(): void
     {
         static::creating(function ($model) {
-            if (empty($model->organization_id) && Auth::check() && Auth::user()) {
-                $model->organization_id = Auth::user()->organization_id;
+            if (empty($model->organization_id) && app()->bound('auth') && Auth::hasUser() && ($user = Auth::user())) {
+                $model->organization_id = $user->organization_id;
             }
         });
 
         static::addGlobalScope('organization', function (Builder $builder) {
-            if (Auth::check() && Auth::user()) {
-                $user = Auth::user();
-                $builder->where('organization_id', $user->organization_id);
+            if (app()->bound('auth') && Auth::hasUser() && ($user = Auth::user())) {
+                $builder->where($builder->getModel()->getTable().'.organization_id', $user->organization_id);
             }
         });
     }
