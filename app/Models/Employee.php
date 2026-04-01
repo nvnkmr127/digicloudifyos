@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\OrganizationScoped;
+use Illuminate\Support\Str;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -41,6 +42,21 @@ class Employee extends Model
         'work_hours_per_week' => 'integer',
         'performance_rating' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Employee $employee) {
+            if (! empty($employee->employee_code)) {
+                return;
+            }
+
+            do {
+                $candidate = 'EMP-' . Str::upper(Str::random(8));
+            } while (static::where('employee_code', $candidate)->exists());
+
+            $employee->employee_code = $candidate;
+        });
+    }
 
     public function organization(): BelongsTo
     {

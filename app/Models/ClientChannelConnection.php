@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ClientChannelConnection extends Model
 {
@@ -15,12 +16,15 @@ class ClientChannelConnection extends Model
     protected $fillable = [
         'organization_id',
         'client_id',
+        'integration_credential_id',
         'channel_type',
         'account_id',
         'account_name',
         'is_active',
         'connected_at',
         'last_synced_at',
+        'sync_disabled_at',
+        'last_sync_status',
         'metadata',
     ];
 
@@ -28,6 +32,7 @@ class ClientChannelConnection extends Model
         'is_active' => 'boolean',
         'connected_at' => 'datetime',
         'last_synced_at' => 'datetime',
+        'sync_disabled_at' => 'datetime',
         'metadata' => 'array',
     ];
 
@@ -39,6 +44,16 @@ class ClientChannelConnection extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function credential(): BelongsTo
+    {
+        return $this->belongsTo(IntegrationCredential::class, 'integration_credential_id');
+    }
+
+    public function syncRuns(): HasMany
+    {
+        return $this->hasMany(IntegrationSyncRun::class, 'client_channel_connection_id');
     }
 
     public function scopeActive($query)

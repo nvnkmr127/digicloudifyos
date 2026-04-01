@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Creatives;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class RequestsBoard extends Component
 {
+    use AuthorizesRequests;
+
     public $requests = [];
 
     public $statusGroups = [

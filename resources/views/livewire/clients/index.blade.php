@@ -47,6 +47,8 @@
                         {{ $client->campaigns_count }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="{{ route('clients.integrations', $client->id) }}" wire:navigate
+                            class="text-primary hover:text-indigo-900 mr-3">Integrations</a>
                         <a href="{{ route('clients.edit', $client->id) }}" wire:navigate
                             class="text-primary hover:text-indigo-900 mr-3">Edit</a>
                         <button type="button" class="text-red-600 hover:text-red-900"

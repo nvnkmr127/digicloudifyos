@@ -3,10 +3,13 @@
 namespace App\Livewire\Projects;
 
 use App\Models\Project;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class DetailView extends Component
 {
+    use AuthorizesRequests;
+
     public $project;
 
     public function mount($project)

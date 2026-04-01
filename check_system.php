@@ -1,44 +1,69 @@
 <?php
 
+use App\Models\Organization;
+use App\Models\User;
+use Illuminate\Contracts\Console\Kernel;
+
+if (PHP_VERSION_ID >= 80500) {
+    error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+}
+
 require __DIR__ . '/vendor/autoload.php';
+
 $app = require_once __DIR__ . '/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 try {
-    echo "Checking Database...\n";
-    $orgCount = \App\Models\Organization::count();
-    echo "Organization Count: " . $orgCount . "\n";
-    
-    $userCount = \App\Models\User::count();
-    echo "User Count: " . $userCount . "\n";
-    
-    if ($orgCount > 0) {
-        echo "Database connection and models are working.\n";
-    } else {
-        echo "WARNING: No organizations found. Seeding might have failed or not run.\n";
+    echo "Checking database...\n";
+
+    $organizationCount = Organization::count();
+    $userCount = User::count();
+
+    echo "Organizations: {$organizationCount}\n";
+    echo "Users: {$userCount}\n";
+
+    if ($organizationCount === 0) {
+        echo "Warning: no organizations found.\n";
     }
 
-    echo "\nChecking Logs...\n";
+    echo "\nChecking logs...\n";
+
     $logFile = storage_path('logs/laravel.log');
-    if (file_exists($logFile)) {
-        $logs = file_get_contents($logFile);
-        if (strpos($logs, 'ERROR') !== false) {
-             // Get last error
-             $lines = file($logFile);
-             $lastError = '';
-             for ($i = count($lines) - 1; $i >= 0; $i--<?php
 
-require __DIR__ . '/vend($
-reqs[$$app = require_once __DIR__ . '/bootstra  $kernel = $app->make(Illuminate\Contracts\Console\ b$kernel->bootstrap();
+    if (!file_exists($logFile)) {
+        echo "No application log file found yet.\n";
+        exit(0);
+    }
 
-try {
-    echo "Checking Database...\n";
-Er
-try {
-    echo "Chetr(    tE    $orgCount = \App\Models\Organ}     echo "Organization Count: " . $orgCount . "\nel    
-    $userCount = \App\Models\User::count();
-  f    n    echo "User Count: " . $userCount . "\ne)    
-    if ($orgCount > 0) {
-        echo et   sa     . "\n";
+    $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+    $since = (new DateTimeImmutable('now'))->modify('-30 minutes');
+    $errorLines = [];
+
+    foreach ($lines as $line) {
+        if (! (str_contains($line, 'ERROR') || str_contains($line, '.ERROR:'))) {
+            continue;
+        }
+
+        if (preg_match('/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/', $line, $matches) === 1) {
+            $timestamp = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $matches[1]);
+
+            if ($timestamp instanceof DateTimeImmutable && $timestamp < $since) {
+                continue;
+            }
+        }
+
+        $errorLines[] = $line;
+    }
+
+    if ($errorLines === []) {
+        echo "No recent error entries found.\n";
+        exit(0);
+    }
+
+    echo "Latest error (last 30m):\n";
+    echo end($errorLines) . "\n";
+} catch (Throwable $exception) {
+    fwrite(STDERR, "System check failed: {$exception->getMessage()}\n");
+    exit(1);
 }

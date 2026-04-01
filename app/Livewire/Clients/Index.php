@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Clients;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 use App\Models\Client;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class Index extends Component
 {
+    use AuthorizesRequests;
+
     public $search = '';
 
     public function delete($id)

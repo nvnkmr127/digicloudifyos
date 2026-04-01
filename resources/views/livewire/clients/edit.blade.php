@@ -9,41 +9,119 @@
 
     <x-card>
         <form wire:submit="update" class="space-y-6 max-w-2xl">
-            <div>
-                <label for="name" class="block text-sm font-medium text-text-primary">Client Name</label>
+            <x-form-field label="Client Name" name="name">
                 <x-input id="name" type="text" placeholder="e.g. Acme Corp" wire:model="name" />
-                @error('name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+            </x-form-field>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <x-form-field label="Email Address" name="email">
+                    <x-input id="email" type="email" placeholder="client@example.com" wire:model="email" />
+                </x-form-field>
+                <x-form-field label="Website" name="website_url">
+                    <x-input id="website_url" type="url" placeholder="https://example.com" wire:model="website_url" />
+                </x-form-field>
             </div>
 
-            <div>
-                <label for="email" class="block text-sm font-medium text-text-primary">Email Address</label>
-                <x-input id="email" type="email" placeholder="client@example.com" wire:model="email" />
-                @error('email') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+            <x-form-field label="Phone" name="phone">
+                <x-input id="phone" type="text" placeholder="+1 555 000 0000" wire:model="phone" />
+            </x-form-field>
 
             <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label for="industry" class="block text-sm font-medium text-text-primary">Industry</label>
+                <x-form-field label="Industry" name="industry">
                     <x-input id="industry" type="text" placeholder="e.g. Technology" wire:model="industry" />
-                    @error('industry') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                </div>
-                <div>
-                    <label for="external_ref" class="block text-sm font-medium text-text-primary">External ID</label>
+                </x-form-field>
+                <x-form-field label="External ID" name="external_ref">
                     <x-input id="external_ref" type="text" placeholder="CRM-12345" wire:model="external_ref" />
-                    @error('external_ref') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                </x-form-field>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <x-form-field label="Timezone" name="timezone">
+                    <x-input id="timezone" type="text" placeholder="e.g. America/New_York" wire:model="timezone" />
+                </x-form-field>
+                <x-form-field label="Currency" name="currency_code">
+                    <x-input id="currency_code" type="text" placeholder="e.g. USD" wire:model="currency_code" />
+                </x-form-field>
+            </div>
+
+            <div class="space-y-4 pt-2">
+                <div class="text-xs font-black text-gray-400 uppercase tracking-widest">Business Address</div>
+                <x-form-field label="Address Line 1" name="address_line1">
+                    <x-input id="address_line1" type="text" wire:model="address_line1" />
+                </x-form-field>
+                <x-form-field label="Address Line 2" name="address_line2">
+                    <x-input id="address_line2" type="text" wire:model="address_line2" />
+                </x-form-field>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <x-form-field label="City" name="city">
+                        <x-input id="city" type="text" wire:model="city" />
+                    </x-form-field>
+                    <x-form-field label="State" name="state">
+                        <x-input id="state" type="text" wire:model="state" />
+                    </x-form-field>
+                </div>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <x-form-field label="Postal Code" name="postal_code">
+                        <x-input id="postal_code" type="text" wire:model="postal_code" />
+                    </x-form-field>
+                    <x-form-field label="Country Code" name="country_code">
+                        <x-input id="country_code" type="text" placeholder="e.g. US" wire:model="country_code" />
+                    </x-form-field>
                 </div>
             </div>
 
-            <div>
-                <label for="status" class="block text-sm font-medium text-text-primary">Status</label>
-                <select id="status" wire:model="status"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <x-form-field label="Business Description" name="business_description">
+                <x-textarea id="business_description" rows="3" wire:model="business_description"></x-textarea>
+            </x-form-field>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <x-form-field label="Goals (one per line)" name="goalsText">
+                    <x-textarea id="goalsText" rows="4" wire:model="goalsText"></x-textarea>
+                </x-form-field>
+                <x-form-field label="Primary KPIs (one per line)" name="primaryKpisText">
+                    <x-textarea id="primaryKpisText" rows="4" wire:model="primaryKpisText"></x-textarea>
+                </x-form-field>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <x-form-field label="Target Audience (one per line)" name="targetAudienceText">
+                    <x-textarea id="targetAudienceText" rows="4" wire:model="targetAudienceText"></x-textarea>
+                </x-form-field>
+                <x-form-field label="Competitors (one per line)" name="competitorsText">
+                    <x-textarea id="competitorsText" rows="4" wire:model="competitorsText"></x-textarea>
+                </x-form-field>
+            </div>
+
+            <div class="space-y-4 pt-2">
+                <div class="text-xs font-black text-gray-400 uppercase tracking-widest">Privacy</div>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <x-form-field label="Privacy Contact Email" name="privacy_contact_email">
+                        <x-input id="privacy_contact_email" type="email" wire:model="privacy_contact_email" />
+                    </x-form-field>
+                    <x-form-field label="Data Retention (days)" name="data_retention_days">
+                        <x-input id="data_retention_days" type="number" wire:model="data_retention_days" />
+                    </x-form-field>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <label class="flex items-center gap-3 text-sm text-gray-700">
+                        <input type="checkbox" wire:model="gdpr_consent" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                        GDPR consent received
+                    </label>
+                    <label class="flex items-center gap-3 text-sm text-gray-700">
+                        <input type="checkbox" wire:model="ccpa_opt_out" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                        CCPA opt-out requested
+                    </label>
+                </div>
+            </div>
+
+            <x-form-field label="Status" name="status">
+                <x-select id="status" wire:model="status">
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
                     <option value="ARCHIVED">Archived</option>
-                </select>
-                @error('status') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-            </div>
+                </x-select>
+            </x-form-field>
 
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <x-button color="outline" href="{{ route('clients.index') }}" wire:navigate>Cancel</x-button>

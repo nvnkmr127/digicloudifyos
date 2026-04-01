@@ -46,13 +46,9 @@ class SendDailyBriefingEmail implements ShouldQueue
             $org = Organization::find($briefing->organization_id);
             if (!$org) continue;
 
-            // Get admins/owners for the organization
-            // Assuming your Organization model has users and they have roles
             $recipients = User::where('organization_id', $org->id)
-                ->whereHas('roles', function($q) {
-                    $q->whereIn('name', ['admin', 'owner']);
-                })
-                ->get();
+                ->get()
+                ->filter(fn (User $user) => $user->hasRole(['OWNER', 'ADMIN']));
 
             if ($recipients->isEmpty()) {
                 Log::warning("No recipients found for briefing for organization {$org->id}");
@@ -60,14 +56,10 @@ class SendDailyBriefingEmail implements ShouldQueue
             }
 
             try {
-                // In Phase 3 TASK-035 we will create this mailable
-                // For now, it will be a lint error but that's expected
-                if (class_exists(DailyBriefingMail::class)) {
-                    foreach ($recipients as $user) {
-                        Mail::to($user->email)->send(new DailyBriefingMail($briefing));
-                    }
+                foreach ($recipients as $user) {
+                    Mail::to($user->email)->send(new DailyBriefingMail($briefing));
                 }
-                
+
                 $briefing->markSent();
                 Log::info("Sent briefing for organization {$org->id} to " . $recipients->count() . " recipients.");
             } catch (\Exception $e) {

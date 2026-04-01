@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Pipelines;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class Index extends Component
 {
+    use AuthorizesRequests;
+
     public $selectedPipelineId = null;
 
     public function mount()

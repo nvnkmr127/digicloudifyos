@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\Campaign;
 use App\Models\Lead;
 use App\Models\Task;
+use App\Models\ShopifyDailyMetric;
+use App\Models\GoogleAnalyticsDailyMetric;
+use App\Models\WooCommerceDailyMetric;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -114,6 +117,25 @@ class AnalyticsService
         $totalMetrics['avg_conversion_rate'] = $totalMetrics['total_clicks'] > 0
             ? ($totalMetrics['total_conversions'] / $totalMetrics['total_clicks']) * 100
             : 0;
+
+        $shopifyRevenue = (float) ShopifyDailyMetric::where('organization_id', $organizationId)
+            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->sum('net_sales');
+
+        $wooRevenue = (float) WooCommerceDailyMetric::where('organization_id', $organizationId)
+            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->sum('net_sales');
+
+        $gaSessions = (int) GoogleAnalyticsDailyMetric::where('organization_id', $organizationId)
+            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->sum('sessions');
+
+        $totalRevenue = $shopifyRevenue + $wooRevenue;
+        $totalMetrics['total_revenue'] = $totalRevenue;
+        $totalMetrics['total_sessions'] = $gaSessions;
+        $totalMetrics['roi_estimate'] = $totalMetrics['total_spend'] > 0
+            ? (($totalRevenue - $totalMetrics['total_spend']) / $totalMetrics['total_spend']) * 100
+            : null;
 
         return $totalMetrics;
     }

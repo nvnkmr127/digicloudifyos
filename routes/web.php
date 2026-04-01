@@ -56,6 +56,15 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/clients/{client}/edit', \App\Livewire\Clients\Edit::class)
         ->middleware('can:manage-organization')
         ->name('clients.edit');
+    Route::get('/clients/{client}/integrations', \App\Livewire\Clients\Integrations::class)
+        ->middleware('can:manage-organization')
+        ->name('clients.integrations');
+    Route::get('/clients/{client}/privacy/export', [\App\Http\Controllers\Clients\PrivacyController::class, 'export'])
+        ->middleware('can:manage-organization')
+        ->name('clients.privacy.export');
+    Route::post('/clients/{client}/privacy/erase', [\App\Http\Controllers\Clients\PrivacyController::class, 'erase'])
+        ->middleware('can:manage-organization')
+        ->name('clients.privacy.erase');
 
     // Operational Modules
     Route::get('/projects', \App\Livewire\Projects\Index::class)->name('projects.index');
@@ -83,7 +92,6 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/orders', \App\Livewire\Orders\Index::class)->name('orders.index');
     Route::get('/orders/create', \App\Livewire\Orders\Create::class)->name('orders.create');
     Route::get('/orders/{id}', \App\Livewire\Orders\Show::class)->name('orders.show');
-    Route::get('/settings', \App\Livewire\Settings\Index::class)->name('settings');
     Route::get('/proposals', \App\Livewire\Proposals\Index::class)->name('proposals.index');
     Route::get('/proposals/create', \App\Livewire\Proposals\Create::class)->name('proposals.create');
     Route::get('/analytics', \App\Livewire\Analytics\Index::class)->name('analytics.index');
@@ -142,6 +150,14 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/ads', \App\Livewire\Ads\Index::class)->name('ads.index');
     Route::get('/ads/analytics', \App\Livewire\Ads\Analytics::class)->name('ads.analytics');
     Route::get('/ads/leads', \App\Livewire\Ads\Leads::class)->name('ads.leads');
+
+    // Integrations (OAuth)
+    Route::get('/integrations/oauth/{provider}', [\App\Http\Controllers\Integrations\OAuthController::class, 'redirect'])
+        ->middleware('can:manage-organization')
+        ->name('integrations.oauth.redirect');
+    Route::get('/integrations/oauth/{provider}/callback', [\App\Http\Controllers\Integrations\OAuthController::class, 'callback'])
+        ->middleware('can:manage-organization')
+        ->name('integrations.oauth.callback');
 
     // Performance Intelligence
     Route::get('/intelligence', \App\Livewire\Intelligence\Overview::class)->name('intelligence.overview');

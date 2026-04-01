@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Campaigns;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class DetailView extends Component
 {
+    use AuthorizesRequests;
+
     public $campaign;
     public $activeTab = 'creative'; // Default tab: creative, adsets, performance, audience
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Campaigns;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 use App\Models\Campaign;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 
 class CreateForm extends Component
 {
+    use AuthorizesRequests;
+
     public $client_id = '';
     public $ad_account_id = '';
     public $name = '';

@@ -2,6 +2,8 @@
 
 return [
     'ai_provider'   => env('AI_PROVIDER', 'gemini'),
+    'gemini_api_key' => env('GEMINI_API_KEY'),
+    'openai_api_key' => env('OPENAI_API_KEY'),
     'gemini_key'    => env('GEMINI_API_KEY'),
     'openai_key'    => env('OPENAI_API_KEY'),
     'thresholds'    => [

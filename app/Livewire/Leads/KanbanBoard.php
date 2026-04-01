@@ -3,11 +3,14 @@
 namespace App\Livewire\Leads;
 
 use App\Models\Lead;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class KanbanBoard extends Component
 {
+    use AuthorizesRequests;
+
     public $leads = [];
 
     public $sourceFilter = 'all';

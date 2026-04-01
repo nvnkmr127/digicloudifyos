@@ -12,6 +12,7 @@ class AutomationLog extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'organization_id',
         'workflow_rule_id',
         'event_id',
         'event_type',

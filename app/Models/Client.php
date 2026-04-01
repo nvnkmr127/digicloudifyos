@@ -9,18 +9,48 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped, SoftDeletes;
 
     protected $fillable = [
         'organization_id',
         'name',
         'email',
+        'website_url',
+        'phone',
         'external_ref',
         'industry',
+        'timezone',
+        'currency_code',
+        'address_line1',
+        'address_line2',
+        'city',
+        'state',
+        'postal_code',
+        'country_code',
+        'business_description',
+        'goals',
+        'target_audience',
+        'competitors',
+        'primary_kpis',
+        'gdpr_consent_at',
+        'ccpa_opt_out_at',
+        'data_retention_days',
+        'privacy_contact_email',
         'status',
+    ];
+
+    protected $casts = [
+        'goals' => 'array',
+        'target_audience' => 'array',
+        'competitors' => 'array',
+        'primary_kpis' => 'array',
+        'gdpr_consent_at' => 'datetime',
+        'ccpa_opt_out_at' => 'datetime',
+        'data_retention_days' => 'integer',
     ];
 
     public function organization(): BelongsTo

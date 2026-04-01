@@ -17,7 +17,11 @@ class Logs extends Component
 
     public function viewDetails($id)
     {
-        $this->selectedLog = AutomationLog::with(['rule'])->find($id);
+        $organizationId = Auth::user()->organization_id;
+
+        $this->selectedLog = AutomationLog::with(['rule'])
+            ->whereHas('rule', fn ($query) => $query->where('organization_id', $organizationId))
+            ->find($id);
     }
 
     public function closeInspector()
@@ -29,8 +33,8 @@ class Logs extends Component
     {
         $organizationId = Auth::user()->organization_id;
 
-        $logs = AutomationLog::where('organization_id', $organizationId)
-            ->with(['rule'])
+        $logs = AutomationLog::with(['rule'])
+            ->whereHas('rule', fn ($query) => $query->where('organization_id', $organizationId))
             ->when($this->search, function ($query) {
                 $query->whereHas('rule', function ($q) {
                     $q->where('name', 'like', '%' . $this->search . '%');

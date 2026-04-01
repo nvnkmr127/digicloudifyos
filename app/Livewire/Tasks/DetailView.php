@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Tasks;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class DetailView extends Component
 {
+    use AuthorizesRequests;
+
     public $task;
 
     public function mount($id)

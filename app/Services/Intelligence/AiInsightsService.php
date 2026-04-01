@@ -37,6 +37,7 @@ class AiInsightsService
                         'baseline' => (float) $a->baseline_value,
                         'current' => (float) $a->current_value,
                         'deviation' => (float) $a->deviation_percentage,
+                        'context' => $a->context ?? [],
                     ])->toArray()
                 ];
 
@@ -121,16 +122,24 @@ class AiInsightsService
     protected function callAiProvider(string $prompt): ?array
     {
         $provider = config('intelligence.ai_provider', 'gemini');
-        
+
         if ($provider === 'gemini') {
+            if (empty(config('intelligence.gemini_api_key'))) {
+                throw new AiInsightsException('Gemini API key required');
+            }
+
             return $this->callGemini($prompt);
         }
-        
+
         if ($provider === 'openai') {
+            if (empty(config('intelligence.openai_api_key'))) {
+                throw new AiInsightsException('OpenAI API key required');
+            }
+
             return $this->callOpenAi($prompt);
         }
-        
-        return null;
+
+        throw new AiInsightsException("Unsupported AI provider [{$provider}]");
     }
 
     protected function callGemini(string $prompt): ?array
@@ -188,12 +197,51 @@ class AiInsightsService
 
     protected function parseAndPersistInsights(array $insights, string $clientId, string $orgId, string $date): void
     {
-        // Handle both single object and list responses from AI
         if (isset($insights['insights'])) {
             $insights = $insights['insights'];
         }
 
+        if (!array_is_list($insights)) {
+            $insights = [$insights];
+        }
+
         foreach ($insights as $insight) {
+            if (!is_array($insight)) {
+                Log::warning('Invalid AI insight payload received', [
+                    'client_id' => $clientId,
+                    'organization_id' => $orgId,
+                    'insight' => $insight,
+                ]);
+                continue;
+            }
+
+            if (!isset($insight['title'])) {
+                Log::warning('Missing title in AI response', [
+                    'client_id' => $clientId,
+                    'organization_id' => $orgId,
+                    'insight' => $insight,
+                ]);
+                continue;
+            }
+
+            if (!isset($insight['issue_description'])) {
+                Log::warning('Missing issue_description in AI response', [
+                    'client_id' => $clientId,
+                    'organization_id' => $orgId,
+                    'insight' => $insight,
+                ]);
+                continue;
+            }
+
+            if (!isset($insight['recommended_action'])) {
+                Log::warning('Missing recommended_action in AI response', [
+                    'client_id' => $clientId,
+                    'organization_id' => $orgId,
+                    'insight' => $insight,
+                ]);
+                continue;
+            }
+
             AiInsight::create([
                 'organization_id' => $orgId,
                 'client_id' => $clientId,

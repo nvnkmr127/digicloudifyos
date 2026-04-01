@@ -33,12 +33,16 @@ Schedule::command('cleanup:old-data')->daily();
 
 // --- Performance Intelligence Pipeline ---
 use App\Jobs\Intelligence\FetchClientPerformanceData;
+use App\Jobs\Intelligence\ComputeCompetitiveBenchmarks;
 use App\Jobs\Intelligence\RunAnomalyDetection;
 use App\Jobs\Intelligence\GenerateAiInsights;
 use App\Jobs\Intelligence\GenerateDailyBriefing;
 use App\Jobs\Intelligence\SendDailyBriefingEmail;
+use App\Jobs\Integrations\RunDailyIntegrationSync;
 
+Schedule::job(new RunDailyIntegrationSync)->name('integrations:sync')->dailyAt('01:00')->withoutOverlapping();
 Schedule::job(new FetchClientPerformanceData)->name('intelligence:fetch')->dailyAt('02:00')->withoutOverlapping();
+Schedule::job(new ComputeCompetitiveBenchmarks)->name('intelligence:benchmarks')->dailyAt('03:00')->withoutOverlapping();
 Schedule::job(new RunAnomalyDetection)->name('intelligence:anomalies')->dailyAt('04:00')->withoutOverlapping();
 Schedule::job(new GenerateAiInsights)->name('intelligence:ai-insights')->dailyAt('05:00')->withoutOverlapping();
 Schedule::job(new GenerateDailyBriefing)->name('intelligence:briefing')->dailyAt('06:00')->withoutOverlapping();

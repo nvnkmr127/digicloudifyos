@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Leads;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class DetailView extends Component
 {
+    use AuthorizesRequests;
+
     public $lead;
 
     public function mount($id, \App\Repositories\LeadRepository $repository)

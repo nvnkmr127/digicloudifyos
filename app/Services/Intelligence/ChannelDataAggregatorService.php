@@ -8,6 +8,15 @@ use App\Models\FacebookLead;
 use App\Models\SocialPost;
 use App\Models\Client;
 use App\Models\DailyMetric;
+use App\Models\GoogleAnalyticsDailyMetric;
+use App\Models\GoogleSearchConsoleDailyMetric;
+use App\Models\ShopifyDailyMetric;
+use App\Models\WooCommerceDailyMetric;
+use App\Models\MetaPageDailyMetric;
+use App\Models\InstagramDailyMetric;
+use App\Models\TwitterDailyMetric;
+use App\Models\LinkedInOrganizationDailyMetric;
+use App\Models\GoogleMerchantCenterDailyMetric;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -168,6 +177,214 @@ class ChannelDataAggregatorService
         ];
     }
 
+    public function aggregateGa4(string $clientId, string $orgId, string $date): array
+    {
+        $metric = GoogleAnalyticsDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        return [
+            'conversions' => (int) $metric->conversions,
+            'revenue' => (float) $metric->revenue,
+            'raw_data' => [
+                'sessions' => (int) $metric->sessions,
+                'users' => (int) $metric->users,
+                'new_users' => (int) $metric->new_users,
+                'engaged_sessions' => (int) $metric->engaged_sessions,
+            ],
+        ];
+    }
+
+    public function aggregateSearchConsole(string $clientId, string $orgId, string $date): array
+    {
+        $metric = GoogleSearchConsoleDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        return [
+            'impressions' => (int) $metric->impressions,
+            'clicks' => (int) $metric->clicks,
+            'ctr' => $metric->ctr !== null ? (float) $metric->ctr : null,
+            'raw_data' => [
+                'avg_position' => $metric->avg_position !== null ? (float) $metric->avg_position : null,
+                'site_url' => $metric->site_url,
+            ],
+        ];
+    }
+
+    public function aggregateShopify(string $clientId, string $orgId, string $date): array
+    {
+        $metric = ShopifyDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        return [
+            'conversions' => (int) $metric->orders_count,
+            'revenue' => (float) $metric->net_sales,
+            'raw_data' => [
+                'orders_count' => (int) $metric->orders_count,
+                'gross_sales' => (float) $metric->gross_sales,
+                'refunds' => (float) $metric->refunds,
+                'currency' => $metric->currency_code,
+                'shop' => $metric->shop_domain,
+            ],
+        ];
+    }
+
+    public function aggregateWooCommerce(string $clientId, string $orgId, string $date): array
+    {
+        $metric = WooCommerceDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        return [
+            'conversions' => (int) $metric->orders_count,
+            'revenue' => (float) $metric->net_sales,
+            'raw_data' => [
+                'orders_count' => (int) $metric->orders_count,
+                'gross_sales' => (float) $metric->gross_sales,
+                'refunds' => (float) $metric->refunds,
+                'currency' => $metric->currency_code,
+                'store_url' => $metric->store_url,
+            ],
+        ];
+    }
+
+    public function aggregateFacebookOrganic(string $clientId, string $orgId, string $date): array
+    {
+        $metric = MetaPageDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        $impressions = (int) $metric->impressions;
+        $engagements = (int) $metric->post_engagements;
+
+        return [
+            'impressions' => $impressions,
+            'reach' => (int) $metric->reach,
+            'engagement_rate' => $impressions > 0 ? ($engagements / $impressions) : 0,
+            'raw_data' => [
+                'page_id' => $metric->page_id,
+                'page_name' => $metric->page_name,
+                'engaged_users' => (int) $metric->engaged_users,
+                'post_engagements' => $engagements,
+            ],
+        ];
+    }
+
+    public function aggregateInstagram(string $clientId, string $orgId, string $date): array
+    {
+        $metric = InstagramDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        return [
+            'impressions' => (int) $metric->impressions,
+            'reach' => (int) $metric->reach,
+            'raw_data' => [
+                'instagram_account_id' => $metric->instagram_account_id,
+                'profile_views' => (int) $metric->profile_views,
+                'website_clicks' => (int) $metric->website_clicks,
+            ],
+        ];
+    }
+
+    public function aggregateTwitter(string $clientId, string $orgId, string $date): array
+    {
+        $metric = TwitterDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        return [
+            'raw_data' => [
+                'followers' => (int) $metric->followers,
+                'following' => (int) $metric->following,
+                'tweets' => (int) $metric->tweets,
+                'listed' => (int) $metric->listed,
+                'username' => $metric->twitter_username,
+            ],
+        ];
+    }
+
+    public function aggregateLinkedInOrganic(string $clientId, string $orgId, string $date): array
+    {
+        $metric = LinkedInOrganizationDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        $impressions = (int) $metric->impressions;
+        $clicks = (int) $metric->clicks;
+
+        return [
+            'impressions' => $impressions,
+            'clicks' => $clicks,
+            'ctr' => $impressions > 0 ? ($clicks / $impressions) : null,
+            'raw_data' => [
+                'followers' => (int) $metric->followers,
+                'likes' => (int) $metric->likes,
+                'comments' => (int) $metric->comments,
+                'shares' => (int) $metric->shares,
+                'organization_urn' => $metric->linkedin_organization_urn,
+            ],
+        ];
+    }
+
+    public function aggregateMerchantCenter(string $clientId, string $orgId, string $date): array
+    {
+        $metric = GoogleMerchantCenterDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) return [];
+
+        $checked = (int) $metric->items_checked;
+        $disapproved = (int) $metric->items_disapproved;
+        $disapprovedRate = $checked > 0 ? ($disapproved / $checked) : 0;
+
+        return [
+            'raw_data' => [
+                'merchant_id' => $metric->merchant_id,
+                'items_checked' => $checked,
+                'items_disapproved' => $disapproved,
+                'items_pending' => (int) $metric->items_pending,
+                'items_approved' => (int) $metric->items_approved,
+                'issue_count' => (int) $metric->issue_count,
+                'issue_breakdown' => $metric->issue_breakdown,
+                'top_issue_examples' => $metric->top_issue_examples,
+                'feed_count' => (int) $metric->feed_count,
+                'feed_issue_count' => (int) $metric->feed_issue_count,
+                'feed_statuses' => $metric->feed_statuses,
+                'disapproved_rate' => $disapprovedRate,
+                'truncated' => (bool) $metric->truncated,
+            ],
+        ];
+    }
+
     /**
      * Entry point to aggregate all channel data for a client.
      */
@@ -189,6 +406,33 @@ class ChannelDataAggregatorService
 
         $conversions = $this->aggregateConversions($clientId, $orgId, $date);
         if (!empty($conversions)) $results['conversions'] = $conversions;
+
+        $ga4 = $this->aggregateGa4($clientId, $orgId, $date);
+        if (!empty($ga4)) $results['ga4'] = $ga4;
+
+        $gsc = $this->aggregateSearchConsole($clientId, $orgId, $date);
+        if (!empty($gsc)) $results['search_console'] = $gsc;
+
+        $shopify = $this->aggregateShopify($clientId, $orgId, $date);
+        if (!empty($shopify)) $results['shopify'] = $shopify;
+
+        $woo = $this->aggregateWooCommerce($clientId, $orgId, $date);
+        if (!empty($woo)) $results['woocommerce'] = $woo;
+
+        $fb = $this->aggregateFacebookOrganic($clientId, $orgId, $date);
+        if (!empty($fb)) $results['facebook_organic'] = $fb;
+
+        $ig = $this->aggregateInstagram($clientId, $orgId, $date);
+        if (!empty($ig)) $results['instagram'] = $ig;
+
+        $tw = $this->aggregateTwitter($clientId, $orgId, $date);
+        if (!empty($tw)) $results['twitter'] = $tw;
+
+        $li = $this->aggregateLinkedInOrganic($clientId, $orgId, $date);
+        if (!empty($li)) $results['linkedin_organic'] = $li;
+
+        $gmc = $this->aggregateMerchantCenter($clientId, $orgId, $date);
+        if (!empty($gmc)) $results['google_merchant_center'] = $gmc;
 
         return $results;
     }

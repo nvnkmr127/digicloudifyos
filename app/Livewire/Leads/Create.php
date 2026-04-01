@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Leads;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 use App\Models\Lead;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 
 class Create extends Component
 {
+    use AuthorizesRequests;
+
     public $name = '';
     public $email = '';
     public $phone = '';

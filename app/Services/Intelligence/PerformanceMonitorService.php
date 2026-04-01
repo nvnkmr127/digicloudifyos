@@ -85,6 +85,17 @@ class PerformanceMonitorService
 
             // Update snapshot with anomaly flags
             $snapshot->update(['anomaly_flags' => $anomalyTypes]);
+
+            $this->detectBenchmarkAnomalies($snapshot, $orgId, $clientId, $date, $channel);
+            $this->detectMerchantCenterHealthAnomalies($snapshot, $orgId, $clientId, $date, $channel);
+
+            $snapshot->update([
+                'anomaly_flags' => PerformanceAnomaly::where('snapshot_id', $snapshot->id)
+                    ->pluck('anomaly_type')
+                    ->unique()
+                    ->values()
+                    ->all(),
+            ]);
         }
 
         $this->calculateHealthScore($clientId, $orgId, $date);
@@ -95,6 +106,63 @@ class PerformanceMonitorService
         // Make it "More Powerful": Predictive Projections
         $this->calculateProjections($clientId, $orgId, $date);
     }
+
+    protected function detectBenchmarkAnomalies(PerformanceSnapshot $snapshot, string $orgId, string $clientId, string $date, string $channel): void
+    {
+        $bench = $snapshot->raw_data['benchmarks']['deltas'] ?? null;
+        if (! is_array($bench) || empty($bench)) return;
+
+        $candidates = [
+            ['metric' => 'ctr', 'better' => 'higher', 'threshold' => -15, 'severity' => 'medium'],
+            ['metric' => 'roas', 'better' => 'higher', 'threshold' => -20, 'severity' => 'high'],
+            ['metric' => 'cpc', 'better' => 'lower', 'threshold' => 20, 'severity' => 'medium'],
+            ['metric' => 'engagement_rate', 'better' => 'higher', 'threshold' => -20, 'severity' => 'medium'],
+        ];
+
+        foreach ($candidates as $c) {
+            $metric = $c['metric'];
+            if (! isset($bench[$metric]['diff_pct'])) continue;
+
+            $diffPct = $bench[$metric]['diff_pct'];
+            if ($diffPct === null) continue;
+            $diffPct = (float) $diffPct;
+
+            $isBad = $c['better'] === 'higher'
+                ? ($diffPct <= (float) $c['threshold'])
+                : ($diffPct >= (float) $c['threshold']);
+
+            if (! $isBad) continue;
+
+            $median = (float) ($bench[$metric]['median'] ?? 0);
+            $current = (float) ($bench[$metric]['current'] ?? 0);
+
+            PerformanceAnomaly::updateOrCreate(
+                [
+                    'organization_id' => $orgId,
+                    'client_id' => $clientId,
+                    'channel_type' => $channel,
+                    'anomaly_type' => 'below_industry_median',
+                    'snapshot_id' => $snapshot->id,
+                    'metric_name' => strtoupper($metric) . ' vs industry median',
+                ],
+                [
+                    'current_value' => $current,
+                    'baseline_value' => $median,
+                    'deviation_percentage' => $diffPct,
+                    'severity' => $c['severity'],
+                    'detected_at' => now(),
+                    'context' => [
+                        'benchmark_metric' => $metric,
+                        'benchmark_diff_pct' => $diffPct,
+                        'benchmark_median' => $median,
+                        'benchmark_current' => $current,
+                        'benchmark_type' => 'industry_median',
+                    ],
+                ]
+            );
+        }
+    }
+
 
     /**
      * Calculates projected EOM metrics based on current month progress.
@@ -270,5 +338,80 @@ class PerformanceMonitorService
             'organic' => 0.20,
             'budget' => 0.10
         ];
+    }
+
+    protected function detectMerchantCenterHealthAnomalies(PerformanceSnapshot $snapshot, string $orgId, string $clientId, string $date, string $channel): void
+    {
+        if ($channel !== 'google_merchant_center') return;
+
+        $raw = $snapshot->raw_data ?? [];
+        $itemsChecked = (int) ($raw['items_checked'] ?? 0);
+        $itemsDisapproved = (int) ($raw['items_disapproved'] ?? 0);
+        $issueCount = (int) ($raw['issue_count'] ?? 0);
+
+        if ($itemsChecked > 0) {
+            $rate = $itemsDisapproved / $itemsChecked;
+            if ($rate >= 0.15 && $itemsDisapproved >= 25) {
+                PerformanceAnomaly::updateOrCreate(
+                    [
+                        'organization_id' => $orgId,
+                        'client_id' => $clientId,
+                        'channel_type' => $channel,
+                        'anomaly_type' => 'merchant_disapproval_rate_high',
+                        'snapshot_id' => $snapshot->id,
+                        'metric_name' => 'Disapproval Rate',
+                    ],
+                    [
+                        'current_value' => $rate,
+                        'baseline_value' => null,
+                        'deviation_percentage' => null,
+                        'severity' => $rate >= 0.30 ? 'critical' : 'high',
+                        'detected_at' => now(),
+                        'context' => [
+                            'items_checked' => $itemsChecked,
+                            'items_disapproved' => $itemsDisapproved,
+                            'disapproval_rate' => $rate,
+                            'issue_breakdown' => $raw['issue_breakdown'] ?? null,
+                            'top_issue_examples' => $raw['top_issue_examples'] ?? null,
+                        ],
+                    ]
+                );
+            }
+        }
+
+        $baselineIssues = \App\Models\GoogleMerchantCenterDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->where('metric_date', '<', $date)
+            ->orderBy('metric_date', 'desc')
+            ->limit(7)
+            ->avg('issue_count');
+
+        if ($baselineIssues !== null && $baselineIssues > 0 && $issueCount > ($baselineIssues * 1.5) && $issueCount >= 50) {
+            $deviation = (($issueCount - $baselineIssues) / $baselineIssues) * 100;
+
+            PerformanceAnomaly::updateOrCreate(
+                [
+                    'organization_id' => $orgId,
+                    'client_id' => $clientId,
+                    'channel_type' => $channel,
+                    'anomaly_type' => 'merchant_issue_spike',
+                    'snapshot_id' => $snapshot->id,
+                    'metric_name' => 'Item Issues',
+                ],
+                [
+                    'current_value' => $issueCount,
+                    'baseline_value' => $baselineIssues,
+                    'deviation_percentage' => $deviation,
+                    'severity' => $issueCount > ($baselineIssues * 2) ? 'high' : 'medium',
+                    'detected_at' => now(),
+                    'context' => [
+                        'issue_breakdown' => $raw['issue_breakdown'] ?? null,
+                        'top_issue_examples' => $raw['top_issue_examples'] ?? null,
+                        'feed_statuses' => $raw['feed_statuses'] ?? null,
+                        'feed_issue_count' => $raw['feed_issue_count'] ?? null,
+                    ],
+                ]
+            );
+        }
     }
 }

@@ -27,7 +27,11 @@ class TestAiConnection extends Command
     public function handle(): void
     {
         $provider = config('intelligence.ai_provider', 'gemini');
-        $apiKey = config('intelligence.gemini_api_key');
+        $apiKey = match ($provider) {
+            'gemini' => config('intelligence.gemini_api_key'),
+            'openai' => config('intelligence.openai_api_key'),
+            default => null,
+        };
 
         $this->info("Testing AI Connectivity: {$provider}");
 
@@ -37,6 +41,11 @@ class TestAiConnection extends Command
         }
 
         $prompt = "Hello AI, respond with 'Neural Link Active' if you receive this message.";
+
+        if ($provider !== 'gemini') {
+            $this->error("Provider [{$provider}] is not supported by this command yet.");
+            return;
+        }
 
         $this->comment("Calling Gemini API...");
         $start = microtime(true);

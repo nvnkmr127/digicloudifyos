@@ -7,7 +7,9 @@ use App\Services\MetaAdsService;
 use App\Services\GoogleAdsService;
 use App\Services\LinkedInAdsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 
 class AdsIntegrationController extends Controller
 {
@@ -19,14 +21,32 @@ class AdsIntegrationController extends Controller
         }
 
         $service = $this->getService($platform);
-        return Redirect::away($service->getAuthUrl());
+        $state = Str::random(64);
+        session(["ads.oauth_state.{$platform}" => $state]);
+
+        $url = $this->appendQueryParams($service->getAuthUrl(), ['state' => $state]);
+        return Redirect::away($url);
     }
 
     public function callback(Request $request, string $platform)
     {
+        $expectedState = session("ads.oauth_state.{$platform}");
+        $incomingState = $request->query('state');
+
+        if (! is_string($expectedState) || ! is_string($incomingState) || ! hash_equals($expectedState, $incomingState)) {
+            return redirect()->route('settings', ['tab' => 'ads'])->with('error', 'Invalid OAuth state. Please try connecting again.');
+        }
+
+        session()->forget("ads.oauth_state.{$platform}");
+
         $service = $this->getService($platform);
 
-        $organizationId = auth()->user()->organization_id;
+        $user = Auth::user();
+        if (! $user instanceof \App\Models\User) {
+            abort(403);
+        }
+
+        $organizationId = $user->organization_id;
 
         // For now, we'll try to get client_id from session or default if not provided
         $clientId = session('current_connect_client_id');
@@ -68,5 +88,30 @@ class AdsIntegrationController extends Controller
             'linkedin' => new LinkedInAdsService(),
             default => throw new \Exception('Unsupported platform'),
         };
+    }
+
+    protected function appendQueryParams(string $url, array $params): string
+    {
+        $parts = parse_url($url);
+        $query = [];
+
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+
+        foreach ($params as $key => $value) {
+            $query[$key] = $value;
+        }
+
+        $scheme = $parts['scheme'] ?? 'https';
+        $host = $parts['host'] ?? '';
+        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+        $path = $parts['path'] ?? '';
+        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
+
+        $newQuery = http_build_query($query);
+        $qs = $newQuery !== '' ? '?' . $newQuery : '';
+
+        return "{$scheme}://{$host}{$port}{$path}{$qs}{$fragment}";
     }
 }

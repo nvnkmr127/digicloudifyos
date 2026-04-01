@@ -4,11 +4,14 @@ namespace App\Livewire\Tasks;
 
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class KanbanBoard extends Component
 {
+    use AuthorizesRequests;
+
     public $tasks = [];
 
     public $users = [];

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AdAccount extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',
@@ -48,6 +48,9 @@ class AdAccount extends Model
     protected $casts = [
         'token_expires_at' => 'datetime',
         'credentials' => 'array',
+        'access_token' => 'encrypted',
+        'refresh_token' => 'encrypted',
+        'facebook_page_token' => 'encrypted',
     ];
 
     public function organization(): BelongsTo

@@ -5,7 +5,7 @@
             <select wire:model.live="status" class="rounded-xl border-gray-300 text-sm">
                 <option value="">All Statuses</option>
                 <option value="success">Success</option>
-                <option value="failure">Failure</option>
+                <option value="failed">Failed</option>
                 <option value="pending">Pending</option>
             </select>
         </div>
@@ -34,7 +34,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-xs font-bold text-gray-500">
-                                {{ count($log->payload['actions_executed'] ?? []) }} steps
+                                {{ $log->details['actions_count'] ?? count($log->details['actions_executed'] ?? []) }} steps
                             </td>
                             <td class="px-6 py-4 text-xs text-gray-400 font-bold">
                                 {{ $log->created_at->format('M d, H:i:s') }}

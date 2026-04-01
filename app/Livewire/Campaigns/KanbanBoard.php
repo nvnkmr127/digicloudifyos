@@ -5,11 +5,14 @@ namespace App\Livewire\Campaigns;
 use App\Models\Campaign;
 use App\Models\Client;
 use App\Services\CampaignService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class KanbanBoard extends Component
 {
+    use AuthorizesRequests;
+
     public $campaigns = [];
 
     public $clients = [];
