@@ -15,13 +15,13 @@
                             Media</span>
                         <div class="flex -space-x-1">
                             <img class="w-6 h-6 rounded-full border border-white"
-                                src="https://ui-avatars.com/api/?name=A" />
+                                src="https://ui-avatars.com/api/?name=A" alt="" aria-hidden="true" />
                         </div>
                     </div>
                     <h4 class="font-medium text-text-primary mb-1">Q4 Brand Awareness</h4>
                     <p class="text-xs text-text-muted mb-3">Acme Corp</p>
                     <div class="w-full bg-gray-200 rounded-full h-1.5 mb-1">
-                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: 15%"></div>
+                        <div class="bg-blue-600 h-1.5 rounded-full w-[15%]"></div>
                     </div>
                 </div>
             </div>
@@ -35,13 +35,13 @@
                         <span class="px-2 text-xs font-semibold rounded-full bg-green-100 text-green-800">PPC</span>
                         <div class="flex -space-x-1">
                             <img class="w-6 h-6 rounded-full border border-white"
-                                src="https://ui-avatars.com/api/?name=B" />
+                                src="https://ui-avatars.com/api/?name=B" alt="" aria-hidden="true" />
                         </div>
                     </div>
                     <h4 class="font-medium text-text-primary mb-1">Google Ads Retargeting</h4>
                     <p class="text-xs text-text-muted mb-3">Global Tech</p>
                     <div class="w-full bg-gray-200 rounded-full h-1.5 mb-1">
-                        <div class="bg-green-500 h-1.5 rounded-full" style="width: 60%"></div>
+                        <div class="bg-green-500 h-1.5 rounded-full w-[60%]"></div>
                     </div>
                 </div>
             </div>

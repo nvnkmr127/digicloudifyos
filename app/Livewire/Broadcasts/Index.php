@@ -13,14 +13,20 @@ class Index extends Component
     use WithPagination;
 
     public $showCreateModal = false;
+
     public $search = '';
-    
+
     // Create Form Fields
     public $name = '';
+
     public $channel = 'EMAIL';
+
     public $target_segment = 'ALL_CONTACTS';
+
     public $automation_rule_id = '';
+
     public $scheduled_at = '';
+
     public $content_body = '';
 
     protected $rules = [
@@ -58,7 +64,7 @@ class Index extends Component
     public function render()
     {
         $broadcasts = Broadcast::where('organization_id', Auth::user()->organization_id)
-            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
             ->latest()
             ->paginate(10);
 
@@ -66,7 +72,7 @@ class Index extends Component
 
         return view('livewire.broadcasts.index', [
             'broadcasts' => $broadcasts,
-            'automationRules' => $automationRules
+            'automationRules' => $automationRules,
         ])->layout('layouts.app');
     }
 }

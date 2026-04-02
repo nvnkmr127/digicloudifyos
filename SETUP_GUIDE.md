@@ -22,7 +22,6 @@ This guide will help you set up the complete marketing agency management platfor
 ### 1. Install PHP Dependencies
 
 ```bash
-cd laravel-app
 composer install
 ```
 

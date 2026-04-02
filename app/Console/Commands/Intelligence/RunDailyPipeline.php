@@ -3,9 +3,9 @@
 namespace App\Console\Commands\Intelligence;
 
 use App\Jobs\Intelligence\FetchClientPerformanceData;
-use App\Jobs\Intelligence\RunAnomalyDetection;
 use App\Jobs\Intelligence\GenerateAiInsights;
 use App\Jobs\Intelligence\GenerateDailyBriefing;
+use App\Jobs\Intelligence\RunAnomalyDetection;
 use App\Jobs\Intelligence\SendDailyBriefingEmail;
 use Illuminate\Console\Command;
 
@@ -36,30 +36,30 @@ class RunDailyPipeline extends Command
         $this->info("Starting Intelligence Pipeline: Step = {$step}");
 
         if ($step === 'all' || $step === 'fetch') {
-            $this->info("Dispatching FetchClientPerformanceData...");
+            $this->info('Dispatching FetchClientPerformanceData...');
             FetchClientPerformanceData::dispatchSync();
         }
 
         if ($step === 'all' || $step === 'anomalies') {
-            $this->info("Evaluating Anomalies...");
+            $this->info('Evaluating Anomalies...');
             RunAnomalyDetection::dispatchSync();
         }
 
         if ($step === 'all' || $step === 'insights') {
-            $this->info("Generating AI Insights...");
+            $this->info('Generating AI Insights...');
             GenerateAiInsights::dispatchSync();
         }
 
         if ($step === 'all' || $step === 'briefing') {
-            $this->info("Compiling Daily Briefings...");
+            $this->info('Compiling Daily Briefings...');
             GenerateDailyBriefing::dispatchSync();
         }
 
         if ($step === 'all' || $step === 'email') {
-            $this->info("Sending Briefing Emails...");
+            $this->info('Sending Briefing Emails...');
             SendDailyBriefingEmail::dispatchSync();
         }
 
-        $this->info("Intelligence Pipeline Finished.");
+        $this->info('Intelligence Pipeline Finished.');
     }
 }

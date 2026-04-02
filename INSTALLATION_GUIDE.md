@@ -27,7 +27,6 @@ psql --version # Should show PostgreSQL 14+
 We've created an automated setup script that handles most of the installation:
 
 ```bash
-cd laravel-app
 ./setup.sh
 ```
 
@@ -48,7 +47,6 @@ If you prefer manual installation or the script fails, follow these steps:
 #### Step 1: Install PHP Dependencies
 
 ```bash
-cd laravel-app
 composer install
 ```
 
@@ -321,7 +319,7 @@ chown -R www-data:www-data storage bootstrap/cache
 server {
     listen 80;
     server_name your-domain.com;
-    root /path/to/laravel-app/public;
+    root /path/to/project/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -363,7 +361,7 @@ Or use Supervisor to keep it running.
 
 Add to crontab:
 ```bash
-* * * * * cd /path/to/laravel-app && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ## Environment Variables Reference

@@ -1,4 +1,4 @@
-@props(['status', 'type' => 'lead', 'class' => ''])
+@props(['status', 'type' => 'lead'])
 
 @php
     $status = strtolower($status);
@@ -25,6 +25,6 @@
     $color = $config[$type][$status] ?? ($config[$type][str_replace(' ', '_', $status)] ?? 'bg-gray-100 text-gray-600');
 @endphp
 
-<span {{ $attributes->merge(['class' => "px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm $color $class"]) }}>
+<span {{ $attributes->merge(['class' => "px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm $color"]) }}>
     {{ str_replace(['_', '-'], ' ', $status) }}
 </span>

@@ -28,14 +28,15 @@ class FetchClientPerformanceData implements ShouldQueue
      */
     public function handle(PerformanceMonitorService $monitor): void
     {
-        Log::info("FetchClientPerformanceData job started.");
-        
+        Log::info('FetchClientPerformanceData job started.');
+        $date = now()->subDay()->toDateString();
+
         $organizations = Organization::all();
 
         foreach ($organizations as $org) {
-            $monitor->runForOrganization($org->id);
+            $monitor->runForOrganization($org->id, $date);
         }
 
-        Log::info("FetchClientPerformanceData job completed.");
+        Log::info('FetchClientPerformanceData job completed.');
     }
 }

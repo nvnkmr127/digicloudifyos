@@ -9,8 +9,11 @@ use Livewire\Component;
 class Create extends Component
 {
     public $name = '';
+
     public $description = '';
+
     public $status = 'ACTIVE';
+
     public $fields = []; // items: {type, name, label, placeholder, required}
 
     protected $rules = [

@@ -53,4 +53,3 @@ class GoogleTokenService
         return $accessToken;
     }
 }
-

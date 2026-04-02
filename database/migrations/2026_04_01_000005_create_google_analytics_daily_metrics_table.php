@@ -43,4 +43,3 @@ return new class extends Migration
         Schema::dropIfExists('google_analytics_daily_metrics');
     }
 };
-

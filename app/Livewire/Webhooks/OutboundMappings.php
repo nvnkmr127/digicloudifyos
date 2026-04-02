@@ -11,11 +11,17 @@ use Livewire\Component;
 class OutboundMappings extends Component
 {
     public $mappingId = null;
+
     public $name = '';
+
     public $source_key = '';
+
     public $target_key = '';
+
     public $transform_rule = '';
+
     public $webhook_id = '';
+
     public $active = true;
 
     public function mount(): void
@@ -29,6 +35,7 @@ class OutboundMappings extends Component
     {
         if (! Schema::hasTable('webhook_mappings')) {
             session()->flash('error', 'Webhook mappings table is not available. Run migrations first.');
+
             return;
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Leads;
 
+use App\Repositories\LeadRepository;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
@@ -11,11 +12,11 @@ class DetailView extends Component
 
     public $lead;
 
-    public function mount($id, \App\Repositories\LeadRepository $repository)
+    public function mount($id, LeadRepository $repository)
     {
         $this->lead = $repository->find($id);
 
-        if (!$this->lead) {
+        if (! $this->lead) {
             abort(404);
         }
 

@@ -9,8 +9,8 @@ class OpportunityInsightPrompt
         $clientName = $data['client_name'];
         $industry = $data['industry'];
         $snapshots = $data['snapshots'];
-        
-        $snapshotText = "";
+
+        $snapshotText = '';
         foreach ($snapshots as $snap) {
             $snapshotText .= "- Channel: {$snap['channel_type']}, Date: {$snap['snapshot_date']}, Spend: \${$snap['spend']}, Conversions: {$snap['conversions']}, ROAS: {$snap['roas']}\n";
         }

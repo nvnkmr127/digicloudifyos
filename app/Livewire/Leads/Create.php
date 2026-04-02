@@ -2,23 +2,29 @@
 
 namespace App\Livewire\Leads;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
 use App\Models\Lead;
 use App\Models\User;
+use App\Services\LeadService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Create extends Component
 {
     use AuthorizesRequests;
 
     public $name = '';
+
     public $email = '';
+
     public $phone = '';
+
     public $source = '';
+
     public $status = 'New';
+
     public $assigned_user = '';
+
     public $notes = '';
 
     protected $rules = [
@@ -31,9 +37,9 @@ class Create extends Component
         'notes' => 'nullable|string',
     ];
 
-    protected function getService(): \App\Services\LeadService
+    protected function getService(): LeadService
     {
-        return app(\App\Services\LeadService::class);
+        return app(LeadService::class);
     }
 
     public function save()
@@ -63,7 +69,7 @@ class Create extends Component
         $users = User::where('organization_id', Auth::user()->organization_id)->get();
 
         return view('livewire.leads.create', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 }

@@ -9,9 +9,13 @@ use Livewire\Component;
 class Create extends Component
 {
     public $name;
+
     public $sku;
+
     public $price;
+
     public $stock = 0;
+
     public $description;
 
     protected $rules = [
@@ -37,6 +41,7 @@ class Create extends Component
         ]);
 
         session()->flash('success', 'Product added to catalog.');
+
         return redirect()->route('products.index');
     }
 

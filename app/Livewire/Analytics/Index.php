@@ -2,17 +2,20 @@
 
 namespace App\Livewire\Analytics;
 
+use App\Models\Client;
+use App\Models\Invoice;
+use App\Models\Project;
 use Livewire\Component;
 
 class Index extends Component
 {
     public function render()
     {
-        $revenue = \App\Models\Invoice::where('status', 'paid')->sum('paid_amount');
-        $pending = \App\Models\Invoice::where('status', '!=', 'paid')->sum('total_amount');
+        $revenue = Invoice::where('status', 'paid')->sum('paid_amount');
+        $pending = Invoice::where('status', '!=', 'paid')->sum('total_amount');
 
-        $clientsCount = \App\Models\Client::count();
-        $projectsCount = \App\Models\Project::count();
+        $clientsCount = Client::count();
+        $projectsCount = Project::count();
 
         // Calculate a dummy conversion rate / cac based on clients
         $conversionRate = $clientsCount > 0 ? 65 : 0; // Using dummy logic for funnel depth for now

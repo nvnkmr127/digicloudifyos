@@ -2,24 +2,32 @@
 
 namespace App\Livewire\Invoices;
 
-use Livewire\Component;
-
-use App\Models\Invoice;
 use App\Models\Client;
-use App\Models\Project;
+use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Project;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Edit extends Component
 {
     public Invoice $invoice;
+
     public $client_id;
+
     public $project_id;
+
     public $invoice_number;
+
     public $issue_date;
+
     public $due_date;
+
     public $status;
+
     public $notes;
+
     public $payment_terms;
 
     public $items = [];
@@ -42,8 +50,8 @@ class Edit extends Component
         $this->client_id = $invoice->client_id;
         $this->project_id = $invoice->project_id;
         $this->invoice_number = $invoice->invoice_number;
-        $this->issue_date = $invoice->issue_date ? \Carbon\Carbon::parse($invoice->issue_date)->format('Y-m-d') : '';
-        $this->due_date = $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('Y-m-d') : '';
+        $this->issue_date = $invoice->issue_date ? Carbon::parse($invoice->issue_date)->format('Y-m-d') : '';
+        $this->due_date = $invoice->due_date ? Carbon::parse($invoice->due_date)->format('Y-m-d') : '';
         $this->status = $invoice->status;
         $this->notes = $invoice->notes;
         $this->payment_terms = $invoice->payment_terms;

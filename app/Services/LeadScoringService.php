@@ -24,9 +24,15 @@ class LeadScoringService
         $score += $sourceScores[$lead->source] ?? 0;
 
         // 2. Data Completeness
-        if ($lead->email) $score += 5;
-        if ($lead->phone) $score += 5;
-        if ($lead->company) $score += 10;
+        if ($lead->email) {
+            $score += 5;
+        }
+        if ($lead->phone) {
+            $score += 5;
+        }
+        if ($lead->company) {
+            $score += 10;
+        }
 
         // 3. Status Weight
         $statusWeight = [
@@ -44,7 +50,7 @@ class LeadScoringService
 
         // Update lead with new score
         $lead->update(['score' => $score]);
-        
+
         Log::info("Lead Scoring: Lead {$lead->id} scored {$score}");
 
         return $score;

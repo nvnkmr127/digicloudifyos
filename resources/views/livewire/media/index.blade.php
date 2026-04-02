@@ -1,7 +1,7 @@
 <x-app-container>
     <x-page-header title="Media Library">
         <div class="flex items-center space-x-3">
-             <x-input wire:model.live="search" placeholder="Search assets..." class="w-64 rounded-xl" />
+             <x-input wire:model.live="search" placeholder="Search assets..." aria-label="Search assets" class="w-64 rounded-xl" />
              <div class="relative">
                 <input type="file" wire:model="upload" id="upload" class="hidden">
                 <label for="upload" class="cursor-pointer inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-xl font-black text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:shadow-outline-indigo transition shadow-lg shadow-indigo-100">
@@ -16,7 +16,7 @@
             <div class="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-indigo-100">
                 <div class="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
                     @if(Str::startsWith($asset->file_type, 'image/'))
-                        <img src="{{ Storage::url($asset->file_path) }}" class="object-cover w-full h-full group-hover:scale-110 transition duration-500">
+                        <img src="{{ Storage::url($asset->file_path) }}" alt="{{ $asset->name }}" class="object-cover w-full h-full group-hover:scale-110 transition duration-500">
                     @else
                         <svg class="w-12 h-12 text-gray-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg>
                     @endif

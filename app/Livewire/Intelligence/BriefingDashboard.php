@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Intelligence;
 
-use App\Models\DailyBriefing;
 use App\Models\BriefingActionItem;
+use App\Models\DailyBriefing;
 use Livewire\Component;
 
 class BriefingDashboard extends Component
 {
     public $briefing;
+
     public $activeTab = 'urgent';
 
     public function mount($id = null)
@@ -31,7 +32,7 @@ class BriefingDashboard extends Component
     {
         $item = BriefingActionItem::findOrFail($itemId);
         $item->complete(auth()->id());
-        
+
         session()->flash('message', 'Action item marked as completed.');
     }
 
@@ -40,7 +41,7 @@ class BriefingDashboard extends Component
         $items = [];
         if ($this->briefing) {
             $query = $this->briefing->actionItems()->with('client');
-            
+
             if ($this->activeTab === 'urgent') {
                 $items = $query->where('priority_level', 'urgent')->orderBy('sort_order')->get();
             } elseif ($this->activeTab === 'important') {

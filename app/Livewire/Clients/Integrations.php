@@ -4,23 +4,53 @@ namespace App\Livewire\Clients;
 
 use App\Models\Client;
 use App\Models\ClientChannelConnection;
+use App\Models\ClientCompetitor;
 use App\Models\IntegrationCredential;
 use App\Models\IntegrationSyncRun;
+use App\Models\SocialListeningSource;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Livewire\Component;
 
 class Integrations extends Component
 {
     public Client $client;
+
     public string $shopifyShop = '';
+
     public string $wooStoreUrl = '';
+
     public string $wooConsumerKey = '';
+
     public string $wooConsumerSecret = '';
+
+    public string $amazonSellerId = '';
+
+    public string $amazonMarketplaceId = '';
+
+    public string $amazonEndpoint = '';
+
+    public string $amazonAwsRegion = '';
+
+    public string $amazonAwsAccessKeyId = '';
+
+    public string $amazonAwsSecretAccessKey = '';
+
+    public string $amazonRefreshToken = '';
+
+    public string $metaCompetitorLabel = '';
+
+    public string $metaCompetitorPageId = '';
+
+    public string $rssCompetitorLabel = '';
+
+    public string $rssFeedUrl = '';
 
     public function mount(Client $client): void
     {
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User || ! $user->isAdmin()) {
+        if (! $user instanceof User || ! $user->isAdmin()) {
             abort(403);
         }
 
@@ -36,6 +66,7 @@ class Integrations extends Component
         $shop = trim($this->shopifyShop);
         if ($shop === '') {
             session()->flash('error', 'Enter a Shopify shop domain.');
+
             return;
         }
 
@@ -54,6 +85,7 @@ class Integrations extends Component
 
         if ($storeUrl === '' || $consumerKey === '' || $consumerSecret === '') {
             session()->flash('error', 'Enter store URL, consumer key, and consumer secret.');
+
             return;
         }
 
@@ -95,6 +127,140 @@ class Integrations extends Component
         session()->flash('success', 'WooCommerce connected successfully.');
     }
 
+    public function connectAmazon(): void
+    {
+        $sellerId = trim($this->amazonSellerId);
+        $marketplaceId = trim($this->amazonMarketplaceId) ?: (string) config('services.amazon_sp_api.marketplace_id', '');
+        $endpoint = trim($this->amazonEndpoint) ?: (string) config('services.amazon_sp_api.endpoint', '');
+        $region = trim($this->amazonAwsRegion) ?: (string) config('services.amazon_sp_api.aws_region', 'us-east-1');
+        $accessKeyId = trim($this->amazonAwsAccessKeyId);
+        $secretAccessKey = trim($this->amazonAwsSecretAccessKey);
+        $refreshToken = trim($this->amazonRefreshToken);
+
+        if ($marketplaceId === '' || $endpoint === '' || $region === '' || $accessKeyId === '' || $secretAccessKey === '' || $refreshToken === '') {
+            session()->flash('error', 'Enter marketplace, endpoint, region, AWS keys, and refresh token.');
+
+            return;
+        }
+
+        $credential = IntegrationCredential::create([
+            'organization_id' => $this->client->organization_id,
+            'provider' => 'amazon_sp_api',
+            'credential_type' => 'oauth',
+            'label' => $sellerId ?: 'Amazon SP-API',
+            'external_user_id' => $sellerId ?: $marketplaceId,
+            'access_token' => null,
+            'refresh_token' => $refreshToken,
+            'expires_at' => null,
+            'payload' => [
+                'seller_id' => $sellerId ?: null,
+                'marketplace_id' => $marketplaceId,
+                'endpoint' => $endpoint,
+                'aws_region' => $region,
+                'aws_access_key_id' => $accessKeyId,
+                'aws_secret_access_key' => $secretAccessKey,
+            ],
+            'last_verified_at' => null,
+        ]);
+
+        ClientChannelConnection::updateOrCreate(
+            [
+                'organization_id' => $this->client->organization_id,
+                'client_id' => $this->client->id,
+                'channel_type' => 'amazon',
+            ],
+            [
+                'integration_credential_id' => $credential->id,
+                'account_id' => $sellerId ?: null,
+                'account_name' => $sellerId ?: null,
+                'is_active' => true,
+                'connected_at' => now(),
+                'last_sync_status' => 'connected',
+                'metadata' => [
+                    'seller_id' => $sellerId ?: null,
+                    'marketplace_id' => $marketplaceId,
+                    'endpoint' => $endpoint,
+                    'aws_region' => $region,
+                ],
+            ]
+        );
+
+        $this->amazonAwsSecretAccessKey = '';
+        $this->amazonRefreshToken = '';
+
+        session()->flash('success', 'Amazon connected successfully.');
+    }
+
+    public function addMetaCompetitor(): void
+    {
+        $label = trim($this->metaCompetitorLabel);
+        $pageId = trim($this->metaCompetitorPageId);
+
+        if ($pageId === '') {
+            session()->flash('error', 'Enter a competitor Page ID.');
+
+            return;
+        }
+
+        ClientCompetitor::updateOrCreate(
+            [
+                'organization_id' => $this->client->organization_id,
+                'client_id' => $this->client->id,
+                'platform' => 'meta_page',
+                'identifier' => $pageId,
+            ],
+            [
+                'label' => $label ?: $pageId,
+                'is_active' => true,
+            ]
+        );
+
+        $this->metaCompetitorLabel = '';
+        $this->metaCompetitorPageId = '';
+
+        session()->flash('success', 'Competitor added.');
+    }
+
+    public function addRssFeed(): void
+    {
+        $label = trim($this->rssCompetitorLabel);
+        $feedUrl = trim($this->rssFeedUrl);
+
+        if ($label === '' || $feedUrl === '') {
+            session()->flash('error', 'Enter a competitor label and RSS feed URL.');
+
+            return;
+        }
+
+        $competitor = ClientCompetitor::firstOrCreate(
+            [
+                'organization_id' => $this->client->organization_id,
+                'client_id' => $this->client->id,
+                'platform' => 'brand',
+                'identifier' => $label,
+            ],
+            [
+                'label' => $label,
+                'is_active' => true,
+            ]
+        );
+
+        SocialListeningSource::create([
+            'organization_id' => $this->client->organization_id,
+            'client_id' => $this->client->id,
+            'client_competitor_id' => $competitor->id,
+            'source_type' => 'rss',
+            'source_label' => $label,
+            'source_url' => $feedUrl,
+            'is_active' => true,
+        ]);
+
+        $this->rssCompetitorLabel = '';
+        $this->rssFeedUrl = '';
+
+        session()->flash('success', 'RSS feed added.');
+    }
+
     public function render()
     {
         $connections = $this->client->channelConnections()
@@ -109,9 +275,31 @@ class Integrations extends Component
             ->limit(20)
             ->get();
 
+        $metaCompetitors = ClientCompetitor::where('organization_id', $this->client->organization_id)
+            ->where('client_id', $this->client->id)
+            ->where('platform', 'meta_page')
+            ->where('is_active', true)
+            ->orderBy('label')
+            ->get();
+
+        $rssSources = SocialListeningSource::where('organization_id', $this->client->organization_id)
+            ->where('client_id', $this->client->id)
+            ->where('source_type', 'rss')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $portalUrl = URL::temporarySignedRoute('client.portal', now()->addDays(30), [
+            'client' => $this->client->id,
+        ]);
+
         return view('livewire.clients.integrations', [
             'connections' => $connections,
             'recentRuns' => $recentRuns,
+            'metaCompetitors' => $metaCompetitors,
+            'rssSources' => $rssSources,
+            'portalUrl' => $portalUrl,
+            'brandKitUrl' => route('clients.brand-kit', $this->client->id),
         ]);
     }
 }

@@ -2,8 +2,12 @@
 
 namespace App\Jobs;
 
+use App\Models\AdInsight;
 use App\Models\Campaign;
-use App\Jobs\ProcessWorkflowAutomation;
+use App\Services\BaseAdsService;
+use App\Services\GoogleAdsService;
+use App\Services\LinkedInAdsService;
+use App\Services\MetaAdsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -36,7 +40,7 @@ class SyncCampaignMetrics implements ShouldQueue
                 'date' => $this->date,
             ]);
 
-            if (!$this->campaign->external_campaign_id) {
+            if (! $this->campaign->external_campaign_id) {
                 Log::warning('Campaign has no external ID, skipping metrics sync', [
                     'campaign_id' => $this->campaign->id,
                 ]);
@@ -47,11 +51,11 @@ class SyncCampaignMetrics implements ShouldQueue
             $platform = $this->campaign->adAccount->platform;
             $date = $this->date ?? now()->toDateString();
 
-            /** @var \App\Services\BaseAdsService $service */
+            /** @var BaseAdsService $service */
             $service = match ($platform) {
-                'META_ADS' => new \App\Services\MetaAdsService(),
-                'GOOGLE_ADS' => new \App\Services\GoogleAdsService(),
-                'LINKEDIN_ADS' => new \App\Services\LinkedInAdsService(),
+                'META_ADS' => new MetaAdsService,
+                'GOOGLE_ADS' => new GoogleAdsService,
+                'LINKEDIN_ADS' => new LinkedInAdsService,
                 default => null,
             };
 
@@ -104,13 +108,14 @@ class SyncCampaignMetrics implements ShouldQueue
 
     protected function evaluatePerformanceAutomations(string $date): void
     {
-        $insight = \App\Models\AdInsight::where('campaign_id', $this->campaign->id)
+        $insight = AdInsight::where('campaign_id', $this->campaign->id)
             ->where('date', $date)
             ->where('level', 'campaign')
             ->first();
 
-        if (!$insight)
+        if (! $insight) {
             return;
+        }
 
         $eventData = [
             'organization_id' => $this->campaign->organization_id,
@@ -134,7 +139,7 @@ class SyncCampaignMetrics implements ShouldQueue
         }
 
         // 3. Creative Fatigue (CTR drop > 30% compared to avgerage)
-        $avgCtr = \App\Models\AdInsight::where('campaign_id', $this->campaign->id)
+        $avgCtr = AdInsight::where('campaign_id', $this->campaign->id)
             ->where('level', 'campaign')
             ->where('date', '<', $date)
             ->avg('ctr');
@@ -147,7 +152,7 @@ class SyncCampaignMetrics implements ShouldQueue
         if ($this->campaign->daily_budget > 0 && $insight->spend > ($this->campaign->daily_budget * 1.2)) {
             ProcessWorkflowAutomation::dispatch('ads_budget_pacing', array_merge($eventData, [
                 'daily_budget' => $this->campaign->daily_budget,
-                'over_spend_ratio' => $insight->spend / $this->campaign->daily_budget
+                'over_spend_ratio' => $insight->spend / $this->campaign->daily_budget,
             ]));
         }
     }

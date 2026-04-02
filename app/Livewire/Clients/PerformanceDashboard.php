@@ -3,10 +3,9 @@
 namespace App\Livewire\Clients;
 
 use App\Models\Client;
-use App\Models\AdInsight;
 use App\Models\FacebookLead;
-use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class PerformanceDashboard extends Component
 {
@@ -18,7 +17,7 @@ class PerformanceDashboard extends Component
         $startDate = now()->subDays($this->dateRange)->toDateString();
 
         $clients = Client::where('organization_id', $organizationId)
-            ->with(['adAccounts.adInsights' => function($query) use ($startDate) {
+            ->with(['adAccounts.adInsights' => function ($query) use ($startDate) {
                 $query->where('date', '>=', $startDate)->where('level', 'account');
             }])
             ->get()
@@ -32,7 +31,7 @@ class PerformanceDashboard extends Component
                 foreach ($client->adAccounts as $account) {
                     $totalSpend += $account->adInsights->sum('spend');
                     $totalConversions += $account->adInsights->sum('conversions');
-                    
+
                     $avgRoas = $account->adInsights->avg('roas');
                     if ($avgRoas !== null) {
                         $totalRoasSum += $avgRoas;

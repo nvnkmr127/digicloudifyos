@@ -11,7 +11,7 @@ class Bell extends Component
     public function getListeners()
     {
         return [
-            "echo-private:organization." . Auth::user()->organization_id . ",NotificationCreated" => '$refresh',
+            'echo-private:organization.'.Auth::user()->organization_id.',NotificationCreated' => '$refresh',
             'notificationRead' => '$refresh',
         ];
     }
@@ -32,7 +32,7 @@ class Bell extends Component
 
         return view('livewire.notifications.bell', [
             'unreadCount' => $unreadCount,
-            'notifications' => $notifications
+            'notifications' => $notifications,
         ]);
     }
 }

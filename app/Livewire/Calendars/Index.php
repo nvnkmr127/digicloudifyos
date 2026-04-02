@@ -2,6 +2,11 @@
 
 namespace App\Livewire\Calendars;
 
+use App\Models\Project;
+use App\Models\SocialPost;
+use App\Models\Task;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Index extends Component
@@ -15,39 +20,39 @@ class Index extends Component
 
     public function previousMonth()
     {
-        $this->currentDate = \Carbon\Carbon::parse($this->currentDate . '-01')->subMonth()->format('Y-m');
+        $this->currentDate = Carbon::parse($this->currentDate.'-01')->subMonth()->format('Y-m');
     }
 
     public function nextMonth()
     {
-        $this->currentDate = \Carbon\Carbon::parse($this->currentDate . '-01')->addMonth()->format('Y-m');
+        $this->currentDate = Carbon::parse($this->currentDate.'-01')->addMonth()->format('Y-m');
     }
 
     public function render()
     {
-        $currentMonth = \Carbon\Carbon::parse($this->currentDate . '-01');
+        $currentMonth = Carbon::parse($this->currentDate.'-01');
         $startOfMonth = $currentMonth->copy()->startOfMonth();
         $endOfMonth = $currentMonth->copy()->endOfMonth();
 
-        $orgId = \Illuminate\Support\Facades\Auth::user()->organization_id;
+        $orgId = Auth::user()->organization_id;
 
         // Fetch Tasks
-        $tasks = \App\Models\Task::where('organization_id', $orgId)
+        $tasks = Task::where('organization_id', $orgId)
             ->whereBetween('due_at', [$startOfMonth, $endOfMonth])
             ->get();
 
         // Fetch Social Posts
-        $posts = \App\Models\SocialPost::where('organization_id', $orgId)
+        $posts = SocialPost::where('organization_id', $orgId)
             ->whereBetween('scheduled_at', [$startOfMonth, $endOfMonth])
             ->get();
 
         // Fetch Projects
-        $projects = \App\Models\Project::where('organization_id', $orgId)
+        $projects = Project::where('organization_id', $orgId)
             ->whereBetween('deadline', [$startOfMonth, $endOfMonth])
             ->get();
 
-        $startOfWeek = $startOfMonth->copy()->startOfWeek(\Carbon\Carbon::SUNDAY);
-        $endOfWeek = $endOfMonth->copy()->endOfWeek(\Carbon\Carbon::SATURDAY);
+        $startOfWeek = $startOfMonth->copy()->startOfWeek(Carbon::SUNDAY);
+        $endOfWeek = $endOfMonth->copy()->endOfWeek(Carbon::SATURDAY);
 
         $calendar = [];
         for ($date = $startOfWeek->copy(); $date->lte($endOfWeek); $date->addDay()) {
@@ -56,9 +61,9 @@ class Index extends Component
                 'day' => $date->day,
                 'isCurrentMonth' => $date->month === $currentMonth->month,
                 'items' => collect()
-                    ->merge($tasks->filter(fn($t) => $t->due_at->format('Y-m-d') === $dateString)->map(fn($t) => ['type' => 'task', 'title' => $t->title, 'color' => 'indigo']))
-                    ->merge($posts->filter(fn($p) => $p->scheduled_at->format('Y-m-d') === $dateString)->map(fn($p) => ['type' => 'social', 'title' => 'Social: ' . str($p->content)->limit(10), 'color' => 'pink']))
-                    ->merge($projects->filter(fn($pr) => $pr->deadline->format('Y-m-d') === $dateString)->map(fn($pr) => ['type' => 'project', 'title' => 'Deadline: ' . $pr->name, 'color' => 'amber']))
+                    ->merge($tasks->filter(fn ($t) => $t->due_at->format('Y-m-d') === $dateString)->map(fn ($t) => ['type' => 'task', 'title' => $t->title, 'color' => 'indigo']))
+                    ->merge($posts->filter(fn ($p) => $p->scheduled_at->format('Y-m-d') === $dateString)->map(fn ($p) => ['type' => 'social', 'title' => 'Social: '.str($p->content)->limit(10), 'color' => 'pink']))
+                    ->merge($projects->filter(fn ($pr) => $pr->deadline->format('Y-m-d') === $dateString)->map(fn ($pr) => ['type' => 'project', 'title' => 'Deadline: '.$pr->name, 'color' => 'amber'])),
             ];
         }
 

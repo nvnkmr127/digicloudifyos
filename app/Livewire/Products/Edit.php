@@ -2,18 +2,21 @@
 
 namespace App\Livewire\Products;
 
-use Livewire\Component;
-
 use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Edit extends Component
 {
     public Product $product;
+
     public $name;
+
     public $sku;
+
     public $price;
+
     public $stock;
+
     public $description;
 
     protected $rules = [
@@ -38,7 +41,7 @@ class Edit extends Component
     {
         $this->validate([
             'name' => 'required|min:3',
-            'sku' => 'nullable|unique:products,sku,' . $this->product->id,
+            'sku' => 'nullable|unique:products,sku,'.$this->product->id,
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'description' => 'nullable',

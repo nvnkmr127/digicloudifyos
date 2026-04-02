@@ -20,6 +20,11 @@ export default {
                     hover: '#4338ca',   // indigo-700
                     soft: '#eef2ff',   // indigo-50
                     dark: '#3730a3',    // indigo-800
+                    50: '#eef2ff',
+                    100: '#e0e7ff',
+                    600: '#4f46e5',
+                    700: '#4338ca',
+                    800: '#3730a3',
                 },
                 secondary: {
                     DEFAULT: '#f59e0b', // amber-500
@@ -45,6 +50,10 @@ export default {
                     DEFAULT: '#3b82f6', // blue-500
                     hover: '#2563eb',   // blue-600
                     soft: '#eff6ff',   // blue-50
+                },
+                facebook: {
+                    DEFAULT: '#1877F2',
+                    hover: '#166fe5',
                 },
                 brand: {
                     black: '#111827', // gray-900

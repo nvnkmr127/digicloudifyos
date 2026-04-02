@@ -2,21 +2,28 @@
 
 namespace App\Livewire\Leads;
 
-use Livewire\Component;
-
 use App\Models\Lead;
 use App\Models\User;
+use App\Services\LeadService;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Edit extends Component
 {
     public Lead $lead;
+
     public $name;
+
     public $email;
+
     public $phone;
+
     public $source;
+
     public $status;
+
     public $assigned_user;
+
     public $notes;
 
     protected $rules = [
@@ -41,9 +48,9 @@ class Edit extends Component
         $this->notes = $lead->notes;
     }
 
-    protected function getService(): \App\Services\LeadService
+    protected function getService(): LeadService
     {
-        return app(\App\Services\LeadService::class);
+        return app(LeadService::class);
     }
 
     public function update()
@@ -70,7 +77,7 @@ class Edit extends Component
         $users = User::where('organization_id', Auth::user()->organization_id)->get();
 
         return view('livewire.leads.edit', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 }

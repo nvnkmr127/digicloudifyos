@@ -48,4 +48,3 @@ return new class extends Migration
         Schema::dropIfExists('google_merchant_center_daily_metrics');
     }
 };
-

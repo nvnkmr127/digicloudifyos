@@ -15,15 +15,15 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('organization_id');
             $table->date('briefing_date');
-            
+
             $table->enum('status', ['generating', 'ready', 'sent'])->default('generating');
-            
+
             $table->integer('total_clients_analyzed')->default(0);
             $table->integer('critical_alerts_count')->default(0);
             $table->integer('opportunities_count')->default(0);
-            
+
             $table->json('summary')->nullable();
-            
+
             $table->timestamp('generated_at')->nullable();
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();

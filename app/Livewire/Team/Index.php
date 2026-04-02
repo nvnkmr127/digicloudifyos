@@ -2,13 +2,15 @@
 
 namespace App\Livewire\Team;
 
+use App\Models\Employee;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Index extends Component
 {
     public function removeMember($id)
     {
-        $employee = \App\Models\Employee::find($id);
+        $employee = Employee::find($id);
         if ($employee) {
             $employee->delete();
         }
@@ -16,13 +18,13 @@ class Index extends Component
 
     public function render()
     {
-        $orgId = \Illuminate\Support\Facades\Auth::user()->organization_id;
-        $employees = \App\Models\Employee::where('organization_id', $orgId)
+        $orgId = Auth::user()->organization_id;
+        $employees = Employee::where('organization_id', $orgId)
             ->with(['user'])
             ->get();
 
         return view('livewire.team.index', [
-            'employees' => $employees
+            'employees' => $employees,
         ]);
     }
 }

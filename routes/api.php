@@ -4,11 +4,15 @@ use App\Http\Controllers\Api\V1\AgencyController;
 use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\CampaignController;
 use App\Http\Controllers\Api\V1\ExportController;
+use App\Http\Controllers\Api\V1\SocialListeningIngestController;
 use App\Http\Controllers\Api\V1\WorkloadController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::post('social-listening/ingest', [SocialListeningIngestController::class, 'ingest'])
+        ->name('api.v1.social-listening.ingest');
+
+    Route::middleware(['auth:sanctum', 'organization'])->group(function () {
         Route::apiResource('campaigns', CampaignController::class);
 
         Route::get('campaigns/{campaign}/metrics', [CampaignController::class, 'metrics'])
@@ -27,4 +31,3 @@ Route::prefix('v1')->group(function () {
             ->name('api.v1.agency.dashboard');
     });
 });
-

@@ -43,4 +43,3 @@ return new class extends Migration
         Schema::dropIfExists('shopify_daily_metrics');
     }
 };
-

@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgb(243 244 246);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgb(209 213 219);
+        border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgb(156 163 175);
+    }
+}
+
 @layer components {
     .text-branding {
         @apply text-tiny font-black uppercase tracking-branding;

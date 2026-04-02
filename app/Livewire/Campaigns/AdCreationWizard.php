@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Campaigns;
 
-use Livewire\Component;
 use App\Models\AdAccount;
 use App\Models\Client;
 use App\Services\MetaAdsService;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class AdCreationWizard extends Component
 {
@@ -14,19 +14,27 @@ class AdCreationWizard extends Component
 
     // Step 1: Campaign
     public $client_id;
+
     public $ad_account_id;
+
     public $campaign_name;
+
     public $objective = 'OUTCOME_REACH';
 
     // Step 2: Ad Set
     public $ad_set_name;
+
     public $daily_budget = 10;
+
     public $locations = ['United States'];
 
     // Step 3: Ad
     public $ad_name;
+
     public $headline;
+
     public $body_text;
+
     public $creative_id; // For simplicity in this demo
 
     protected $rules = [
@@ -62,7 +70,7 @@ class AdCreationWizard extends Component
     {
         $this->validate($this->rules[3]);
 
-        $service = new MetaAdsService();
+        $service = new MetaAdsService;
         $adAccount = AdAccount::findOrFail($this->ad_account_id);
 
         try {
@@ -94,7 +102,7 @@ class AdCreationWizard extends Component
                 ->with('message', 'Campaign, Ad Set, and Ad created successfully on Meta!');
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Meta API Error: ' . $e->getMessage());
+            session()->flash('error', 'Meta API Error: '.$e->getMessage());
         }
     }
 

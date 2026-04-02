@@ -11,9 +11,10 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public $upload;
+
     public $search = '';
 
     protected $rules = [
@@ -49,12 +50,12 @@ class Index extends Component
     public function render()
     {
         $assets = CreativeAsset::where('organization_id', Auth::user()->organization_id)
-            ->when($this->search, fn($q) => $q->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
             ->latest()
             ->paginate(12);
 
         return view('livewire.media.index', [
-            'assets' => $assets
+            'assets' => $assets,
         ])->layout('layouts.app');
     }
 }

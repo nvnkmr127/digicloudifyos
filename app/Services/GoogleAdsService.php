@@ -3,19 +3,20 @@
 namespace App\Services;
 
 use App\Models\AdAccount;
-use App\Models\Campaign;
 use App\Models\AdSet;
-use App\Models\Ad;
+use App\Models\Campaign;
 use App\Models\DailyMetric;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class GoogleAdsService extends BaseAdsService
 {
     protected string $clientId;
+
     protected string $clientSecret;
+
     protected string $developerToken;
 
     public function __construct()
@@ -36,18 +37,19 @@ class GoogleAdsService extends BaseAdsService
             'access_type' => 'offline',
             'prompt' => 'consent',
         ];
-        return "https://accounts.google.com/o/oauth2/v2/auth?" . http_build_query($params);
+
+        return 'https://accounts.google.com/o/oauth2/v2/auth?'.http_build_query($params);
     }
 
     public function handleCallback(array $data, string $organizationId, string $clientId): AdAccount
     {
         $code = $data['code'] ?? null;
-        if (!$code) {
+        if (! $code) {
             throw new \Exception('No code provided for Google Ads callback');
         }
 
         $redirectUri = route('ads.callback', ['platform' => 'google']);
-        $response = Http::post("https://oauth2.googleapis.com/token", [
+        $response = Http::post('https://oauth2.googleapis.com/token', [
             'client_id' => $this->clientId,
             'client_secret' => $this->clientSecret,
             'redirect_uri' => $redirectUri,
@@ -56,7 +58,7 @@ class GoogleAdsService extends BaseAdsService
         ]);
 
         if ($response->failed()) {
-            throw new \Exception('Failed to get access token from Google: ' . $response->body());
+            throw new \Exception('Failed to get access token from Google: '.$response->body());
         }
 
         $tokenData = $response->json();
@@ -67,10 +69,10 @@ class GoogleAdsService extends BaseAdsService
         // Get accessible customers
         $customersResponse = Http::withToken($accessToken)
             ->withHeaders(['developer-token' => $this->developerToken])
-            ->get("https://googleads.googleapis.com/v16/customers:listAccessibleCustomers");
+            ->get('https://googleads.googleapis.com/v16/customers:listAccessibleCustomers');
 
         if ($customersResponse->failed()) {
-            throw new \Exception('Failed to fetch customers from Google: ' . $customersResponse->body());
+            throw new \Exception('Failed to fetch customers from Google: '.$customersResponse->body());
         }
 
         $resourceNames = $customersResponse->json()['resourceNames'] ?? [];
@@ -89,7 +91,7 @@ class GoogleAdsService extends BaseAdsService
             ],
             [
                 'client_id' => $clientId,
-                'account_name' => "Google Ads Account " . $customerId,
+                'account_name' => 'Google Ads Account '.$customerId,
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
                 'token_expires_at' => Carbon::now()->addSeconds($expiresIn),
@@ -98,7 +100,7 @@ class GoogleAdsService extends BaseAdsService
         );
     }
 
-    public function syncCampaigns(\App\Models\AdAccount $adAccount): Collection
+    public function syncCampaigns(AdAccount $adAccount): Collection
     {
         $this->ensureTokenIsValid($adAccount);
 
@@ -109,7 +111,8 @@ class GoogleAdsService extends BaseAdsService
             ]);
 
         if ($response->failed()) {
-            Log::error('FE Google sync campaigns failed: ' . $response->body());
+            Log::error('FE Google sync campaigns failed: '.$response->body());
+
             return collect();
         }
 
@@ -139,25 +142,25 @@ class GoogleAdsService extends BaseAdsService
         return $syncedCampaigns;
     }
 
-    public function syncAdSets(\App\Models\Campaign $campaign): Collection
+    public function syncAdSets(Campaign $campaign): Collection
     {
         // To be implemented for Google Ads
         return collect();
     }
 
-    public function syncAds(\App\Models\AdSet $adSet): Collection
+    public function syncAds(AdSet $adSet): Collection
     {
         // To be implemented for Google Ads
         return collect();
     }
 
-    public function syncInsights(\App\Models\AdAccount $adAccount, string $startDate, string $endDate, string $level): Collection
+    public function syncInsights(AdAccount $adAccount, string $startDate, string $endDate, string $level): Collection
     {
         // To be implemented for Google Ads
         return collect();
     }
 
-    public function syncMetrics(\App\Models\Campaign $campaign, string $startDate, string $endDate): Collection
+    public function syncMetrics(Campaign $campaign, string $startDate, string $endDate): Collection
     {
         $adAccount = $campaign->adAccount;
         $this->ensureTokenIsValid($adAccount);
@@ -174,7 +177,8 @@ class GoogleAdsService extends BaseAdsService
             ]);
 
         if ($response->failed()) {
-            Log::error('Google sync metrics failed: ' . $response->body());
+            Log::error('Google sync metrics failed: '.$response->body());
+
             return collect();
         }
 
@@ -212,11 +216,11 @@ class GoogleAdsService extends BaseAdsService
 
     protected function refreshAccessToken(AdAccount $adAccount): void
     {
-        if (!$adAccount->refresh_token) {
+        if (! $adAccount->refresh_token) {
             return;
         }
 
-        $response = Http::post("https://oauth2.googleapis.com/token", [
+        $response = Http::post('https://oauth2.googleapis.com/token', [
             'client_id' => $this->clientId,
             'client_secret' => $this->clientSecret,
             'refresh_token' => $adAccount->refresh_token,
@@ -232,17 +236,17 @@ class GoogleAdsService extends BaseAdsService
         }
     }
 
-    public function pauseCampaign(\App\Models\Campaign $campaign): bool
+    public function pauseCampaign(Campaign $campaign): bool
     {
         return false;
     }
 
-    public function archiveCampaign(\App\Models\Campaign $campaign): bool
+    public function archiveCampaign(Campaign $campaign): bool
     {
         return false;
     }
 
-    public function deleteCampaign(\App\Models\Campaign $campaign): bool
+    public function deleteCampaign(Campaign $campaign): bool
     {
         return false;
     }

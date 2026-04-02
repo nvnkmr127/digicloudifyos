@@ -6,9 +6,11 @@ use App\Models\DailyBriefing;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 
 class DailyBriefingMail extends Mailable implements ShouldQueue
 {
@@ -27,7 +29,7 @@ class DailyBriefingMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Daily Performance Intelligence Briefing - ' . \Illuminate\Support\Carbon::parse($this->briefing->briefing_date)->format('M j'),
+            subject: 'Daily Performance Intelligence Briefing - '.Carbon::parse($this->briefing->briefing_date)->format('M j'),
         );
     }
 
@@ -49,7 +51,7 @@ class DailyBriefingMail extends Mailable implements ShouldQueue
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

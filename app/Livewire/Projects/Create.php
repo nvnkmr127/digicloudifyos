@@ -2,29 +2,39 @@
 
 namespace App\Livewire\Projects;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
-use App\Models\Project;
 use App\Models\Client;
 use App\Models\Employee;
+use App\Models\Project;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Create extends Component
 {
     use AuthorizesRequests;
 
     public $client_id = '';
+
     public $name = '';
+
     public $description = '';
+
     public $project_code = '';
+
     public $status = 'active';
+
     public $priority = 'medium';
+
     public $start_date = '';
+
     public $end_date = '';
+
     public $budget = 0;
+
     public $billing_type = 'fixed';
+
     public $hourly_rate = 0;
+
     public $project_manager_id = '';
 
     protected $rules = [

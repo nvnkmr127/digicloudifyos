@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Client;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,7 +18,7 @@ class MerchantCenterOAuthStateTest extends TestCase
             'role' => 'ADMIN',
         ]);
 
-        if (! $admin instanceof \Illuminate\Contracts\Auth\Authenticatable) {
+        if (! $admin instanceof Authenticatable) {
             $this->fail('Admin user is not authenticatable.');
         }
 
@@ -28,7 +29,7 @@ class MerchantCenterOAuthStateTest extends TestCase
             'status' => 'ACTIVE',
         ]);
 
-        $response = $this->actingAs($admin)->get('/integrations/oauth/google_merchant_center?client_id=' . $client->id);
+        $response = $this->actingAs($admin)->get('/integrations/oauth/google_merchant_center?client_id='.$client->id);
         $response->assertRedirect();
 
         $state = session('integrations.oauth.state.google_merchant_center');
@@ -37,7 +38,6 @@ class MerchantCenterOAuthStateTest extends TestCase
 
         $location = $response->headers->get('Location');
         $this->assertIsString($location);
-        $this->assertStringContainsString('state=' . $state, $location);
+        $this->assertStringContainsString('state='.$state, $location);
     }
 }
-

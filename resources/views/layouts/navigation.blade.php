@@ -15,6 +15,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('dashboards.index')" :active="request()->routeIs('dashboards.*')">
+                        {{ __('Dashboards') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('campaigns.index')" :active="request()->routeIs('campaigns.*')">
                         {{ __('Campaigns') }}
                     </x-nav-link>
@@ -68,6 +71,18 @@
                                     <div>
                                         <x-dropdown-link
                                             :href="route('projects.index')">{{ __('Projects') }}</x-dropdown-link>
+                                        @can('view-analytics')
+                                            <x-dropdown-link
+                                                :href="route('playbooks.index')">{{ __('Playbooks') }}</x-dropdown-link>
+                                        @endcan
+                                        @can('manage-organization')
+                                            <x-dropdown-link
+                                                :href="route('service-packages.index')">{{ __('Service Packages') }}</x-dropdown-link>
+                                        @endcan
+                                        @can('view-analytics')
+                                            <x-dropdown-link
+                                                :href="route('deliverables.index')">{{ __('Deliverables') }}</x-dropdown-link>
+                                        @endcan
                                         <x-dropdown-link
                                             :href="route('pipelines.index')">{{ __('Pipelines') }}</x-dropdown-link>
                                         <x-dropdown-link
@@ -90,13 +105,35 @@
                                     <div>
                                         <x-dropdown-link
                                             :href="route('analytics.index')">{{ __('Analytics') }}</x-dropdown-link>
+                                        @can('view-analytics')
+                                            <x-dropdown-link
+                                                :href="route('seo.index')">{{ __('SEO Intelligence') }}</x-dropdown-link>
+                                            <x-dropdown-link
+                                                :href="route('site-health.index')">{{ __('Site Health') }}</x-dropdown-link>
+                                            <x-dropdown-link
+                                                :href="route('workload.index')">{{ __('Workload') }}</x-dropdown-link>
+                                            <x-dropdown-link
+                                                :href="route('productivity.index')">{{ __('Productivity') }}</x-dropdown-link>
+                                        @endcan
+                                        @can('manage-workflow')
+                                            <x-dropdown-link
+                                                :href="route('automation.rules')">{{ __('Automation Rules') }}</x-dropdown-link>
+                                            <x-dropdown-link
+                                                :href="route('automation.approvals')">{{ __('Automation Approvals') }}</x-dropdown-link>
+                                        @endcan
                                         <x-dropdown-link :href="route('team.index')">{{ __('Team') }}</x-dropdown-link>
-                                        <x-dropdown-link
-                                            :href="route('users.index')">{{ __('Users') }}</x-dropdown-link>
+                                        @can('manage-organization')
+                                            <x-dropdown-link
+                                                :href="route('users.index')">{{ __('Users') }}</x-dropdown-link>
+                                        @endcan
                                         <x-dropdown-link
                                             :href="route('automations.index')">{{ __('Automations') }}</x-dropdown-link>
                                         <x-dropdown-link
                                             :href="route('time-tracking.index')">{{ __('Time') }}</x-dropdown-link>
+                                        @can('manage-workflow')
+                                            <x-dropdown-link
+                                                :href="route('time-tracking.approvals')">{{ __('Time Approvals') }}</x-dropdown-link>
+                                        @endcan
                                         <x-dropdown-link
                                             :href="route('media.index')">{{ __('Media') }}</x-dropdown-link>
                                         <x-dropdown-link
@@ -105,8 +142,10 @@
                                             :href="route('forms.index')">{{ __('Forms') }}</x-dropdown-link>
                                         <x-dropdown-link
                                             :href="route('products.index')">{{ __('Products') }}</x-dropdown-link>
-                                        <x-dropdown-link
-                                            :href="route('settings')">{{ __('Settings') }}</x-dropdown-link>
+                                        @can('manage-organization')
+                                            <x-dropdown-link
+                                                :href="route('settings')">{{ __('Settings') }}</x-dropdown-link>
+                                        @endcan
                                     </div>
                                 </div>
                             </x-slot>
@@ -195,6 +234,9 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('dashboards.index')" :active="request()->routeIs('dashboards.*')">
+                {{ __('Dashboards') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('campaigns.index')" :active="request()->routeIs('campaigns.*')">
                 {{ __('Campaigns') }}
             </x-responsive-nav-link>
@@ -225,6 +267,15 @@
             <div class="border-t border-gray-200"></div>
             <div class="px-4 py-2 text-xs text-gray-400 capitalize">{{ __('All Modules') }}</div>
             <x-responsive-nav-link :href="route('projects.index')">{{ __('Projects') }}</x-responsive-nav-link>
+            @can('view-analytics')
+                <x-responsive-nav-link :href="route('playbooks.index')">{{ __('Playbooks') }}</x-responsive-nav-link>
+            @endcan
+            @can('manage-organization')
+                <x-responsive-nav-link :href="route('service-packages.index')">{{ __('Service Packages') }}</x-responsive-nav-link>
+            @endcan
+            @can('view-analytics')
+                <x-responsive-nav-link :href="route('deliverables.index')">{{ __('Deliverables') }}</x-responsive-nav-link>
+            @endcan
             <x-responsive-nav-link :href="route('pipelines.index')">{{ __('Pipelines') }}</x-responsive-nav-link>
             <x-responsive-nav-link
                 :href="route('conversations.index')">{{ __('Conversations') }}</x-responsive-nav-link>
@@ -237,16 +288,34 @@
             <x-responsive-nav-link :href="route('creative-requests.index')">{{ __('Creative Requests') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('feedback.index')">{{ __('Feedback') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('analytics.index')">{{ __('Analytics') }}</x-responsive-nav-link>
+            @can('view-analytics')
+                <x-responsive-nav-link :href="route('seo.index')">{{ __('SEO Intelligence') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('site-health.index')">{{ __('Site Health') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('workload.index')">{{ __('Workload') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('productivity.index')">{{ __('Productivity') }}</x-responsive-nav-link>
+            @endcan
+            @can('manage-workflow')
+                <x-responsive-nav-link :href="route('automation.rules')">{{ __('Automation Rules') }}</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('automation.approvals')">{{ __('Automation Approvals') }}</x-responsive-nav-link>
+            @endcan
             <x-responsive-nav-link :href="route('team.index')">{{ __('Team') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('users.index')">{{ __('Users') }}</x-responsive-nav-link>
+            @can('manage-organization')
+                <x-responsive-nav-link :href="route('users.index')">{{ __('Users') }}</x-responsive-nav-link>
+            @endcan
             <x-responsive-nav-link :href="route('automations.index')">{{ __('Automations') }}</x-responsive-nav-link>
             <x-responsive-nav-link
                 :href="route('time-tracking.index')">{{ __('Time Tracking') }}</x-responsive-nav-link>
+            @can('manage-workflow')
+                <x-responsive-nav-link
+                    :href="route('time-tracking.approvals')">{{ __('Time Approvals') }}</x-responsive-nav-link>
+            @endcan
             <x-responsive-nav-link :href="route('media.index')">{{ __('Media') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('calendars.index')">{{ __('Calendars') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('forms.index')">{{ __('Forms') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('products.index')">{{ __('Products') }}</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('settings')">{{ __('Settings') }}</x-responsive-nav-link>
+            @can('manage-organization')
+                <x-responsive-nav-link :href="route('settings')">{{ __('Settings') }}</x-responsive-nav-link>
+            @endcan
         </div>
 
         <!-- Responsive Settings Options -->

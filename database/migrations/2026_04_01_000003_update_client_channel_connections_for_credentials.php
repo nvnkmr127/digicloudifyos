@@ -34,7 +34,7 @@ return new class extends Migration
                 'ga4',
                 'instagram',
                 'facebook_organic',
-                'inbound_webhook'
+                'inbound_webhook',
             ])->change();
         });
     }

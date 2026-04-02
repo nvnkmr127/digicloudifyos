@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Client;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +17,7 @@ class IntegrationsOAuthStateTest extends TestCase
         $admin = User::factory()->create([
             'role' => 'ADMIN',
         ]);
-        if (! $admin instanceof \Illuminate\Contracts\Auth\Authenticatable) {
+        if (! $admin instanceof Authenticatable) {
             $this->fail('Admin user is not authenticatable.');
         }
 
@@ -27,7 +28,7 @@ class IntegrationsOAuthStateTest extends TestCase
             'status' => 'ACTIVE',
         ]);
 
-        $response = $this->actingAs($admin)->get('/integrations/oauth/google_analytics?client_id=' . $client->id);
+        $response = $this->actingAs($admin)->get('/integrations/oauth/google_analytics?client_id='.$client->id);
 
         $response->assertRedirect();
 
@@ -37,7 +38,7 @@ class IntegrationsOAuthStateTest extends TestCase
 
         $location = $response->headers->get('Location');
         $this->assertIsString($location);
-        $this->assertStringContainsString('state=' . $state, $location);
+        $this->assertStringContainsString('state='.$state, $location);
     }
 
     public function test_oauth_callback_rejects_invalid_state(): void
@@ -45,7 +46,7 @@ class IntegrationsOAuthStateTest extends TestCase
         $admin = User::factory()->create([
             'role' => 'ADMIN',
         ]);
-        if (! $admin instanceof \Illuminate\Contracts\Auth\Authenticatable) {
+        if (! $admin instanceof Authenticatable) {
             $this->fail('Admin user is not authenticatable.');
         }
 

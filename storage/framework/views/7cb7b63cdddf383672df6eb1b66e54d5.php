@@ -44,11 +44,21 @@ $maxWidth = [
     'xl' => 'sm:max-w-xl',
     '2xl' => 'sm:max-w-2xl',
 ][$maxWidth];
+
+$wireModelKey = collect(['wire:model.live', 'wire:model', 'wire:model.defer'])->first(fn ($key) => $attributes->has($key));
+$wireModel = $wireModelKey ? $attributes->get($wireModelKey) : null;
+$entangledShow = null;
+if (is_string($wireModel) && $wireModel !== '') {
+    $entangledShow = $wireModelKey === 'wire:model.live'
+        ? '@entangle(\''.$wireModel.'\').live'
+        : '@entangle(\''.$wireModel.'\')';
+}
 ?>
 
 <div
+    x-cloak
     x-data="{
-        show: <?php echo \Illuminate\Support\Js::from($show)->toHtml() ?>,
+        show: <?php echo e($entangledShow ?: '<?php echo \Illuminate\Support\Js::from($show)->toHtml() ?>'); ?>,
         focusables() {
             // All focusable element types...
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
@@ -80,7 +90,6 @@ $maxWidth = [
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
     x-show="show"
     class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
-    style="display: <?php echo e($show ? 'block' : 'none'); ?>;"
 >
     <div
         x-show="show"

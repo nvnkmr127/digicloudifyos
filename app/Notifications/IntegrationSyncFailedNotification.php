@@ -16,8 +16,7 @@ class IntegrationSyncFailedNotification extends Notification implements ShouldQu
         public string $channelType,
         public string $runDate,
         public string $errorMessage
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -27,13 +26,13 @@ class IntegrationSyncFailedNotification extends Notification implements ShouldQu
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Integration Sync Failed: ' . strtoupper($this->channelType))
-            ->greeting('Hello ' . $notifiable->full_name . '!')
+            ->subject('Integration Sync Failed: '.strtoupper($this->channelType))
+            ->greeting('Hello '.$notifiable->full_name.'!')
             ->line('A daily integration sync failed.')
-            ->line('**Client:** ' . $this->clientName)
-            ->line('**Integration:** ' . strtoupper($this->channelType))
-            ->line('**Date:** ' . $this->runDate)
-            ->line('**Error:** ' . $this->errorMessage)
+            ->line('**Client:** '.$this->clientName)
+            ->line('**Integration:** '.strtoupper($this->channelType))
+            ->line('**Date:** '.$this->runDate)
+            ->line('**Error:** '.$this->errorMessage)
             ->action('View Integrations', url('/clients'))
             ->line('Fix the connection or credentials and run sync again.');
     }
@@ -44,9 +43,8 @@ class IntegrationSyncFailedNotification extends Notification implements ShouldQu
             'client_name' => $this->clientName,
             'channel_type' => $this->channelType,
             'run_date' => $this->runDate,
-            'message' => 'Integration sync failed: ' . strtoupper($this->channelType) . ' — ' . $this->clientName,
+            'message' => 'Integration sync failed: '.strtoupper($this->channelType).' — '.$this->clientName,
             'error' => $this->errorMessage,
         ];
     }
 }
-

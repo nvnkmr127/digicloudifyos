@@ -2,11 +2,10 @@
 
 namespace App\Livewire\Clients;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
 use App\Models\Client;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Index extends Component
 {
@@ -33,9 +32,9 @@ class Index extends Component
         $clients = Client::where('organization_id', Auth::user()->organization_id)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhere('industry', 'like', '%' . $this->search . '%');
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%')
+                        ->orWhere('industry', 'like', '%'.$this->search.'%');
                 });
             })
             ->withCount(['campaigns', 'leads'])

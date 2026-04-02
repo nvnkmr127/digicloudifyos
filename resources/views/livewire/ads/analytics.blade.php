@@ -183,7 +183,7 @@
                                     <div class="flex items-center gap-4">
                                         @if($c['image_url'])
                                             <img src="{{ $c['image_url'] }}"
-                                                class="w-12 h-12 rounded-xl object-cover shadow-sm bg-gray-50" />
+                                                alt="{{ $c['asset_name'] }}" class="w-12 h-12 rounded-xl object-cover shadow-sm bg-gray-50" />
                                         @else
                                             <div
                                                 class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-400">
@@ -245,7 +245,7 @@
                         </div>
                         <div class="h-3 bg-gray-50 rounded-full overflow-hidden flex">
                             <div class="h-full bg-indigo-500 rounded-full transition-all duration-1000"
-                                style="width: {{ ($stats['leads'] / $maxAgeLeads) * 100 }}%"></div>
+                                :style="{ width: '{{ ($stats[\"leads\"] / $maxAgeLeads) * 100 }}%' }"></div>
                         </div>
                     </div>
                 @endforeach
@@ -269,7 +269,7 @@
                         </div>
                         <div class="h-1.5 bg-gray-50 rounded-full overflow-hidden">
                             <div class="h-full bg-indigo-400 rounded-full transition-all duration-1000"
-                                style="width: {{ ($stats['leads'] / $maxCityLeads) * 100 }}%"></div>
+                                :style="{ width: '{{ ($stats[\"leads\"] / $maxCityLeads) * 100 }}%' }"></div>
                         </div>
                     </div>
                 @empty
@@ -290,11 +290,11 @@
                 @endphp
                 <div class="relative w-48 h-48">
                     <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
-                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f3f4f6" stroke-width="3"></circle>
-                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#6366f1" stroke-width="3"
+                        <circle class="text-gray-100" cx="18" cy="18" r="15.915" fill="none" stroke="currentColor" stroke-width="3"></circle>
+                        <circle class="text-primary-600" cx="18" cy="18" r="15.915" fill="none" stroke="currentColor" stroke-width="3"
                             stroke-dasharray="{{ ($femaleLeads / $totalGenderLeads) * 100 }} 100" stroke-dashoffset="0">
                         </circle>
-                        <circle cx="18" cy="18" r="15.915" fill="none" stroke="#a855f7" stroke-width="3"
+                        <circle class="text-purple-500" cx="18" cy="18" r="15.915" fill="none" stroke="currentColor" stroke-width="3"
                             stroke-dasharray="{{ ($maleLeads / $totalGenderLeads) * 100 }} 100"
                             stroke-dashoffset="-{{ ($femaleLeads / $totalGenderLeads) * 100 }}"></circle>
                     </svg>
@@ -345,7 +345,7 @@
                         class="bg-indigo-50/30 p-6 rounded-3xl border border-indigo-100 flex items-center justify-between group hover:bg-white hover:shadow-lg transition-all">
                         <div class="flex items-center gap-4">
                             <img src="https://ui-avatars.com/api/?name={{ $label or 'P' }}&background=6366f1&color=fff"
-                                class="w-8 h-8 rounded-xl shadow-sm" />
+                                alt="" aria-hidden="true" class="w-8 h-8 rounded-xl shadow-sm" />
                             <span class="text-xs font-black uppercase tracking-widest text-gray-900">{{ $label }}</span>
                         </div>
                         <div class="text-right">

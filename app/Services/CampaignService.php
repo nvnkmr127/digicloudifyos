@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\CampaignCreated;
+use App\Events\CampaignDeleted;
+use App\Events\CampaignStatusChanged;
 use App\Models\Campaign;
 use App\Repositories\CampaignRepository;
 use Illuminate\Support\Collection;
@@ -31,7 +34,7 @@ class CampaignService
 
             $campaign = $this->repository->create($data);
 
-            event(new \App\Events\CampaignCreated($campaign));
+            event(new CampaignCreated($campaign));
 
             $this->clearCache($campaign->organization_id);
 
@@ -54,7 +57,7 @@ class CampaignService
             $campaign = $this->repository->update($campaign, $data);
 
             if (isset($data['status']) && $oldStatus !== $data['status']) {
-                event(new \App\Events\CampaignStatusChanged($campaign, $oldStatus));
+                event(new CampaignStatusChanged($campaign, $oldStatus));
             }
 
             $this->clearCache($campaign->organization_id);
@@ -77,7 +80,7 @@ class CampaignService
             $organizationId = $campaign->organization_id;
             $result = $this->repository->delete($campaign);
 
-            event(new \App\Events\CampaignDeleted($campaign));
+            event(new CampaignDeleted($campaign));
 
             $this->clearCache($organizationId);
 

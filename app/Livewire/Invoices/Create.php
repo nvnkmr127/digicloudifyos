@@ -2,27 +2,33 @@
 
 namespace App\Livewire\Invoices;
 
-use Livewire\Component;
-
-use App\Models\Invoice;
 use App\Models\Client;
-use App\Models\Project;
+use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Project;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Create extends Component
 {
     public $client_id = '';
+
     public $project_id = '';
+
     public $invoice_number = '';
+
     public $issue_date = '';
+
     public $due_date = '';
+
     public $status = 'draft';
+
     public $notes = '';
+
     public $payment_terms = '';
 
     public $items = [
-        ['description' => '', 'quantity' => 1, 'unit_price' => 0]
+        ['description' => '', 'quantity' => 1, 'unit_price' => 0],
     ];
 
     protected $rules = [
@@ -44,7 +50,7 @@ class Create extends Component
         // Simple auto-increment placeholder
         $lastInvoice = Invoice::where('organization_id', Auth::user()->organization_id)->latest()->first();
         $nextNum = $lastInvoice ? ((int) str_replace('INV-', '', $lastInvoice->invoice_number)) + 1 : 1;
-        $this->invoice_number = 'INV-' . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+        $this->invoice_number = 'INV-'.str_pad($nextNum, 4, '0', STR_PAD_LEFT);
     }
 
     public function addItem()

@@ -5,8 +5,8 @@ namespace App\Jobs\Integrations;
 use App\Models\ClientChannelConnection;
 use App\Models\GoogleAnalyticsDailyMetric;
 use App\Models\IntegrationSyncRun;
-use App\Services\Integrations\IntegrationAlertService;
 use App\Services\Integrations\GoogleTokenService;
+use App\Services\Integrations\IntegrationAlertService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,6 +19,7 @@ class SyncGoogleAnalyticsDailyMetrics implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [60, 300, 900];
 
     public function __construct(

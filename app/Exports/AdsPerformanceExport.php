@@ -3,15 +3,17 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class AdsPerformanceExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithTitle
+class AdsPerformanceExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithTitle
 {
     protected $data;
+
     protected $title;
+
     protected $headers;
 
     public function __construct($data, $title = 'Ads Performance', $headers = [])
@@ -41,7 +43,7 @@ class AdsPerformanceExport implements FromCollection, WithHeadings, WithMapping,
             'Leads',
             'CTR (%)',
             'CPL',
-            'ROAS'
+            'ROAS',
         ];
     }
 

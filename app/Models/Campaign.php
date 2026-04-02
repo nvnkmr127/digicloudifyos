@@ -12,7 +12,7 @@ use Laravel\Scout\Searchable;
 
 class Campaign extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, Searchable, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped, Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -94,10 +94,10 @@ class Campaign extends Model
         $symbol = $this->adAccount?->currency_symbol ?? '$';
 
         if ($this->daily_budget) {
-            return $symbol . number_format((float) $this->daily_budget, 2) . '/day';
+            return $symbol.number_format((float) $this->daily_budget, 2).'/day';
         }
         if ($this->lifetime_budget) {
-            return $symbol . number_format((float) $this->lifetime_budget, 2) . ' lifetime';
+            return $symbol.number_format((float) $this->lifetime_budget, 2).' lifetime';
         }
 
         return 'No budget set';

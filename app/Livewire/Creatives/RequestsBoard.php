@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Creatives;
 
+use App\Models\CreativeRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class RequestsBoard extends Component
@@ -25,7 +27,7 @@ class RequestsBoard extends Component
 
     public function refreshRequests()
     {
-        $allRequests = \App\Models\CreativeRequest::where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)
+        $allRequests = CreativeRequest::where('organization_id', Auth::user()->organization_id)
             ->with(['client', 'campaign', 'assignee'])
             ->orderBy('deadline', 'asc')
             ->get();
@@ -41,7 +43,7 @@ class RequestsBoard extends Component
 
     public function updateStatus($requestId, $newStatus)
     {
-        $request = \App\Models\CreativeRequest::findOrFail($requestId);
+        $request = CreativeRequest::findOrFail($requestId);
 
         $this->authorize('update', $request);
 

@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\AmazonSpDailyMetric;
 use App\Models\Campaign;
-use App\Models\Lead;
-use App\Models\Task;
-use App\Models\ShopifyDailyMetric;
 use App\Models\GoogleAnalyticsDailyMetric;
+use App\Models\Lead;
+use App\Models\ShopifyDailyMetric;
+use App\Models\Task;
 use App\Models\WooCommerceDailyMetric;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -77,7 +78,7 @@ class AnalyticsService
             'pending' => $tasks->where('status', 'pending')->count(),
             'in_progress' => $tasks->where('status', 'in_progress')->count(),
             'completed' => $tasks->where('status', 'completed')->count(),
-            'overdue' => $tasks->where('due_date', '<', now())->where('status', '!=', 'completed')->count(),
+            'overdue' => $tasks->where('deadline', '<', now())->where('status', '!=', 'completed')->count(),
             'by_priority' => $tasks->groupBy('priority')->map->count(),
             'completion_rate' => $tasks->count() > 0
                 ? ($tasks->where('status', 'completed')->count() / $tasks->count()) * 100
@@ -130,7 +131,11 @@ class AnalyticsService
             ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->sum('sessions');
 
-        $totalRevenue = $shopifyRevenue + $wooRevenue;
+        $amazonRevenue = (float) AmazonSpDailyMetric::where('organization_id', $organizationId)
+            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->sum('net_sales');
+
+        $totalRevenue = $shopifyRevenue + $wooRevenue + $amazonRevenue;
         $totalMetrics['total_revenue'] = $totalRevenue;
         $totalMetrics['total_sessions'] = $gaSessions;
         $totalMetrics['roi_estimate'] = $totalMetrics['total_spend'] > 0

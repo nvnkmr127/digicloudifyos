@@ -115,6 +115,25 @@
                 </div>
             </div>
 
+            <div class="space-y-4 pt-2">
+                <div class="text-xs font-black text-gray-400 uppercase tracking-widest">Service Packages</div>
+                <div class="space-y-2">
+                    @foreach($packages as $p)
+                        <label class="flex items-center gap-3 text-sm text-gray-700">
+                            <input type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                   value="{{ $p->id }}" wire:model="selectedServicePackages" />
+                            <span class="font-bold">{{ $p->name }}</span>
+                            <span class="text-xs text-gray-500">
+                                ({{ $p->cadence }}@{{ $p->cadence === 'weekly' ? 'W' : 'M' }}{{ $p->industry ? ' • ' . $p->industry : '' }})
+                            </span>
+                        </label>
+                    @endforeach
+                    @if($packages->isEmpty())
+                        <div class="text-sm text-gray-600">No service packages configured yet.</div>
+                    @endif
+                </div>
+            </div>
+
             <x-form-field label="Status" name="status">
                 <x-select id="status" wire:model="status">
                     <option value="ACTIVE">Active</option>

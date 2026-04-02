@@ -2,13 +2,13 @@
 
 namespace App\Services\Intelligence;
 
-use App\Models\PerformanceAnomaly;
+use App\Exceptions\AiInsightsException;
 use App\Models\AiInsight;
-use App\Models\PerformanceSnapshot;
 use App\Models\Client;
+use App\Models\PerformanceAnomaly;
+use App\Models\PerformanceSnapshot;
 use App\Services\Intelligence\Prompts\AnomalyInsightPrompt;
 use App\Services\Intelligence\Prompts\OpportunityInsightPrompt;
-use App\Exceptions\AiInsightsException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -27,18 +27,18 @@ class AiInsightsService
         if ($anomalies->isNotEmpty()) {
             try {
                 $client = Client::find($clientId);
-                
+
                 $data = [
                     'client_name' => $client->name,
                     'industry' => $client->industry ?? 'Marketing',
-                    'anomalies' => $anomalies->map(fn($a) => [
+                    'anomalies' => $anomalies->map(fn ($a) => [
                         'channel_type' => $a->channel_type,
                         'metric_name' => $a->metric_name,
                         'baseline' => (float) $a->baseline_value,
                         'current' => (float) $a->current_value,
                         'deviation' => (float) $a->deviation_percentage,
                         'context' => $a->context ?? [],
-                    ])->toArray()
+                    ])->toArray(),
                 ];
 
                 $prompt = AnomalyInsightPrompt::build($data);
@@ -50,7 +50,7 @@ class AiInsightsService
                     $this->fallbackInsights($clientId, $orgId, $date, $anomalies);
                 }
             } catch (\Exception $e) {
-                Log::error("AiInsights generation failed for client {$clientId}: " . $e->getMessage());
+                Log::error("AiInsights generation failed for client {$clientId}: ".$e->getMessage());
                 $this->fallbackInsights($clientId, $orgId, $date, $anomalies);
             }
         }
@@ -70,20 +70,22 @@ class AiInsightsService
             ->limit(21) // 7 days * 3 channels approx
             ->get();
 
-        if ($snapshots->isEmpty()) return;
+        if ($snapshots->isEmpty()) {
+            return;
+        }
 
         try {
             $client = Client::find($clientId);
             $data = [
                 'client_name' => $client->name,
                 'industry' => $client->industry ?? 'Marketing',
-                'snapshots' => $snapshots->map(fn($s) => [
+                'snapshots' => $snapshots->map(fn ($s) => [
                     'channel_type' => $s->channel_type,
                     'snapshot_date' => $s->snapshot_date->toDateString(),
                     'spend' => (float) $s->spend,
                     'conversions' => (float) $s->conversions,
                     'roas' => (float) $s->roas,
-                ])->toArray()
+                ])->toArray(),
             ];
 
             $prompt = OpportunityInsightPrompt::build($data);
@@ -93,7 +95,7 @@ class AiInsightsService
                 $this->parseAndPersistInsights($response, $clientId, $orgId, $date);
             }
         } catch (\Exception $e) {
-            Log::warning("Growth opportunity analysis failed for client {$clientId}: " . $e->getMessage());
+            Log::warning("Growth opportunity analysis failed for client {$clientId}: ".$e->getMessage());
         }
     }
 
@@ -112,7 +114,7 @@ class AiInsightsService
                 'category' => 'issue',
                 'title' => 'System Audit Required',
                 'issue_description' => "Anomaly detected: {$anomaly->anomaly_type} in {$anomaly->channel_type} for {$anomaly->metric_name}.",
-                'recommended_action' => "Manually investigate why {$anomaly->metric_name} shifted from " . round($anomaly->baseline_value, 2) . " to " . round($anomaly->current_value, 2),
+                'recommended_action' => "Manually investigate why {$anomaly->metric_name} shifted from ".round($anomaly->baseline_value, 2).' to '.round($anomaly->current_value, 2),
                 'expected_impact' => 'medium',
                 'effort_level' => 'low',
             ]);
@@ -145,30 +147,32 @@ class AiInsightsService
     protected function callGemini(string $prompt): ?array
     {
         $apiKey = config('intelligence.gemini_api_key');
-        if (!$apiKey) {
-            throw new AiInsightsException("Gemini API key not configured.");
+        if (! $apiKey) {
+            throw new AiInsightsException('Gemini API key not configured.');
         }
 
-        $model = "gemini-1.5-flash";
+        $model = 'gemini-1.5-flash';
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
         $response = Http::post($url, [
             'contents' => [
-                ['parts' => [['text' => $prompt]]]
+                ['parts' => [['text' => $prompt]]],
             ],
             'generationConfig' => [
                 'responseMimeType' => 'application/json',
-            ]
+            ],
         ]);
 
         if ($response->failed()) {
-            throw new AiInsightsException("Gemini API call failed: " . $response->status() . " - " . $response->body());
+            throw new AiInsightsException('Gemini API call failed: '.$response->status().' - '.$response->body());
         }
 
         $result = $response->json();
         $text = $result['candidates'][0]['content']['parts'][0]['text'] ?? null;
-        
-        if (!$text) return null;
+
+        if (! $text) {
+            return null;
+        }
 
         return json_decode($text, true);
     }
@@ -176,22 +180,26 @@ class AiInsightsService
     protected function callOpenAi(string $prompt): ?array
     {
         $apiKey = config('intelligence.openai_api_key');
-        if (!$apiKey) return null;
+        if (! $apiKey) {
+            return null;
+        }
 
         $response = Http::withToken($apiKey)->post('https://api.openai.com/v1/chat/completions', [
             'model' => 'gpt-4o-mini',
             'messages' => [
                 ['role' => 'system', 'content' => 'You are a senior marketing performance analyst. Return ONLY JSON.'],
-                ['role' => 'user', 'content' => $prompt]
+                ['role' => 'user', 'content' => $prompt],
             ],
-            'response_format' => ['type' => 'json_object']
+            'response_format' => ['type' => 'json_object'],
         ]);
 
-        if ($response->failed()) return null;
+        if ($response->failed()) {
+            return null;
+        }
 
         $result = $response->json();
         $text = $result['choices'][0]['message']['content'] ?? null;
-        
+
         return $text ? json_decode($text, true) : null;
     }
 
@@ -201,44 +209,48 @@ class AiInsightsService
             $insights = $insights['insights'];
         }
 
-        if (!array_is_list($insights)) {
+        if (! array_is_list($insights)) {
             $insights = [$insights];
         }
 
         foreach ($insights as $insight) {
-            if (!is_array($insight)) {
+            if (! is_array($insight)) {
                 Log::warning('Invalid AI insight payload received', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
                     'insight' => $insight,
                 ]);
+
                 continue;
             }
 
-            if (!isset($insight['title'])) {
+            if (! isset($insight['title'])) {
                 Log::warning('Missing title in AI response', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
                     'insight' => $insight,
                 ]);
+
                 continue;
             }
 
-            if (!isset($insight['issue_description'])) {
+            if (! isset($insight['issue_description'])) {
                 Log::warning('Missing issue_description in AI response', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
                     'insight' => $insight,
                 ]);
+
                 continue;
             }
 
-            if (!isset($insight['recommended_action'])) {
+            if (! isset($insight['recommended_action'])) {
                 Log::warning('Missing recommended_action in AI response', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
                     'insight' => $insight,
                 ]);
+
                 continue;
             }
 

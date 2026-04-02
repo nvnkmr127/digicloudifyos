@@ -16,20 +16,20 @@ return new class extends Migration
             $table->uuid('briefing_id');
             $table->uuid('client_id');
             $table->uuid('ai_insight_id')->nullable();
-            
+
             $table->integer('sort_order')->default(0);
             $table->enum('priority_level', ['urgent', 'important', 'opportunity']);
-            
+
             $table->string('title', 255);
             $table->text('description')->nullable();
             $table->text('action');
             $table->text('expected_impact')->nullable();
             $table->string('effort', 50)->nullable();
-            
+
             $table->boolean('is_completed')->default(false);
             $table->timestamp('completed_at')->nullable();
             $table->uuid('completed_by')->nullable();
-            
+
             $table->timestamps();
 
             $table->foreign('briefing_id')->references('id')->on('daily_briefings')->onDelete('cascade');

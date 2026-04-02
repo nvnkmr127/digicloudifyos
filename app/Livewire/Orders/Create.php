@@ -12,9 +12,11 @@ use Livewire\Component;
 class Create extends Component
 {
     public $client_id = '';
+
     public $status = 'PENDING';
+
     public $notes = '';
-    
+
     public $items = []; // {product_id, quantity, price}
 
     protected $rules = [
@@ -61,12 +63,12 @@ class Create extends Component
     {
         $this->validate();
 
-        $total = collect($this->items)->sum(fn($item) => $item['price'] * $item['quantity']);
+        $total = collect($this->items)->sum(fn ($item) => $item['price'] * $item['quantity']);
 
         $order = Order::create([
             'organization_id' => Auth::user()->organization_id,
             'client_id' => $this->client_id,
-            'order_number' => 'ORD-' . strtoupper(uniqid()),
+            'order_number' => 'ORD-'.strtoupper(uniqid()),
             'status' => $this->status,
             'total_amount' => $total,
             'ordered_at' => now(),
@@ -83,7 +85,7 @@ class Create extends Component
             ]);
         }
 
-        session()->flash('success', 'Order #' . $order->order_number . ' has been synchronized to the ledger.');
+        session()->flash('success', 'Order #'.$order->order_number.' has been synchronized to the ledger.');
 
         return redirect()->route('orders.index');
     }
@@ -91,6 +93,7 @@ class Create extends Component
     public function render()
     {
         $orgId = Auth::user()->organization_id;
+
         return view('livewire.orders.create', [
             'clients' => Client::where('organization_id', $orgId)->get(),
             'products' => Product::where('organization_id', $orgId)->get(),

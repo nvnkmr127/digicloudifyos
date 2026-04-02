@@ -5,14 +5,14 @@ namespace App\Livewire\Ads;
 use App\Models\AdAccount;
 use App\Models\AdInsight;
 use App\Models\FacebookLead;
-use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Index extends Component
 {
     public function render()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 

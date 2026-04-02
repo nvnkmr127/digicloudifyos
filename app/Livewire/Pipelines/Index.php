@@ -2,7 +2,10 @@
 
 namespace App\Livewire\Pipelines;
 
+use App\Models\Opportunity;
+use App\Models\Pipeline;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Index extends Component
@@ -13,7 +16,7 @@ class Index extends Component
 
     public function mount()
     {
-        $firstPipeline = \App\Models\Pipeline::where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)->first();
+        $firstPipeline = Pipeline::where('organization_id', Auth::user()->organization_id)->first();
         if ($firstPipeline) {
             $this->selectedPipelineId = $firstPipeline->id;
         }
@@ -21,22 +24,22 @@ class Index extends Component
 
     public function updateOpportunityStage($opportunityId, $newStageId)
     {
-        $opportunity = \App\Models\Opportunity::findOrFail($opportunityId);
+        $opportunity = Opportunity::findOrFail($opportunityId);
         $this->authorize('update', $opportunity);
         $opportunity->update(['pipeline_stage_id' => $newStageId]);
     }
 
     public function render()
     {
-        $orgId = \Illuminate\Support\Facades\Auth::user()->organization_id;
-        $pipelines = \App\Models\Pipeline::where('organization_id', $orgId)->get();
+        $orgId = Auth::user()->organization_id;
+        $pipelines = Pipeline::where('organization_id', $orgId)->get();
         $selectedPipeline = null;
 
         if ($this->selectedPipelineId) {
-            $selectedPipeline = \App\Models\Pipeline::where('organization_id', $orgId)
+            $selectedPipeline = Pipeline::where('organization_id', $orgId)
                 ->with(['stages.opportunities.contact'])
                 ->findOrFail($this->selectedPipelineId);
-            
+
             $this->authorize('view', $selectedPipeline);
         }
 

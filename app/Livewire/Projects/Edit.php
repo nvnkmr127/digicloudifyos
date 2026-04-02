@@ -2,27 +2,39 @@
 
 namespace App\Livewire\Projects;
 
-use Livewire\Component;
-
-use App\Models\Project;
 use App\Models\Client;
 use App\Models\Employee;
+use App\Models\Project;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Edit extends Component
 {
     public Project $project;
+
     public $client_id;
+
     public $name;
+
     public $description;
+
     public $project_code;
+
     public $status;
+
     public $priority;
+
     public $start_date;
+
     public $end_date;
+
     public $budget;
+
     public $billing_type;
+
     public $hourly_rate;
+
     public $project_manager_id;
 
     protected $rules = [
@@ -49,8 +61,8 @@ class Edit extends Component
         $this->project_code = $project->project_code;
         $this->status = $project->status;
         $this->priority = $project->priority;
-        $this->start_date = $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') : '';
-        $this->end_date = $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('Y-m-d') : '';
+        $this->start_date = $project->start_date ? Carbon::parse($project->start_date)->format('Y-m-d') : '';
+        $this->end_date = $project->end_date ? Carbon::parse($project->end_date)->format('Y-m-d') : '';
         $this->budget = $project->budget;
         $this->billing_type = $project->billing_type;
         $this->hourly_rate = $project->hourly_rate;

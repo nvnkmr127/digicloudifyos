@@ -89,24 +89,33 @@ class PerformanceSnapshot extends Model
 
     public function getCtrChangePercent(): ?float
     {
-        if (!$this->baseline_ctr || $this->baseline_ctr == 0) return null;
+        if (! $this->baseline_ctr || $this->baseline_ctr == 0) {
+            return null;
+        }
+
         return (($this->ctr - $this->baseline_ctr) / $this->baseline_ctr) * 100;
     }
 
     public function getCpcChangePercent(): ?float
     {
-        if (!$this->baseline_cpc || $this->baseline_cpc == 0) return null;
+        if (! $this->baseline_cpc || $this->baseline_cpc == 0) {
+            return null;
+        }
+
         return (($this->cpc - $this->baseline_cpc) / $this->baseline_cpc) * 100;
     }
 
     public function getRoasChangePercent(): ?float
     {
-        if (!$this->baseline_roas || $this->baseline_roas == 0) return null;
+        if (! $this->baseline_roas || $this->baseline_roas == 0) {
+            return null;
+        }
+
         return (($this->roas - $this->baseline_roas) / $this->baseline_roas) * 100;
     }
 
     public function hasAnomalies(): bool
     {
-        return !empty($this->anomaly_flags);
+        return ! empty($this->anomaly_flags);
     }
 }

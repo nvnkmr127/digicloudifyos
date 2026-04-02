@@ -2,14 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Campaign;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class StoreCampaignRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', \App\Models\Campaign::class);
+        return $this->user()->can('create', Campaign::class);
     }
 
     public function rules(): array
@@ -65,7 +67,7 @@ class StoreCampaignRequest extends FormRequest
         $validated = parent::validated($key, $default);
 
         if (! isset($validated['daily_budget']) && ! isset($validated['lifetime_budget'])) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'budget' => ['Either daily budget or lifetime budget must be set.'],
             ]);
         }

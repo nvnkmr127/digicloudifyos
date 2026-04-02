@@ -3,6 +3,7 @@
 namespace App\Livewire\Intelligence;
 
 use App\Models\AiInsight;
+use App\Models\Client;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -11,9 +12,13 @@ class InsightsFeed extends Component
     use WithPagination;
 
     public $filter = 'all';
+
     public $clientFilter = '';
+
     public $priorityFilter = '';
+
     public $showCompleted = false;
+
     public $showDismissed = false;
 
     protected $queryString = [
@@ -45,7 +50,7 @@ class InsightsFeed extends Component
         $query = AiInsight::where('organization_id', auth()->user()->organization_id)
             ->with('client');
 
-        if (!$this->showCompleted) {
+        if (! $this->showCompleted) {
             $query->active();
         }
 
@@ -65,7 +70,7 @@ class InsightsFeed extends Component
 
         return view('livewire.intelligence.insights-feed', [
             'insights' => $query->latest('insight_date')->paginate(15),
-            'clients' => \App\Models\Client::where('organization_id', auth()->user()->organization_id)->get(),
+            'clients' => Client::where('organization_id', auth()->user()->organization_id)->get(),
         ])->layout('layouts.app');
     }
 }

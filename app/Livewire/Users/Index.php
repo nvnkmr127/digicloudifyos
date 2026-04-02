@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Users;
 
-use Livewire\Component;
-
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Index extends Component
 {
@@ -19,6 +18,7 @@ class Index extends Component
 
         if ($id === Auth::id()) {
             session()->flash('error', 'You cannot delete yourself.');
+
             return;
         }
 
@@ -38,15 +38,15 @@ class Index extends Component
         $users = User::where('organization_id', Auth::user()->organization_id)
             ->when($this->search, function ($query) {
                 $query->where(function ($nestedQuery) {
-                    $nestedQuery->where('full_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                    $nestedQuery->where('full_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 });
             })
             ->orderBy('full_name')
             ->get();
 
         return view('livewire.users.index', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 }

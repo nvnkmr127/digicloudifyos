@@ -2,20 +2,25 @@
 
 namespace App\Livewire\Opportunities;
 
+use App\Models\Contact;
 use App\Models\Opportunity;
 use App\Models\Pipeline;
 use App\Models\PipelineStage;
-use App\Models\Contact;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Create extends Component
 {
     public $name;
+
     public $monetary_value = 0;
+
     public $pipeline_id;
+
     public $pipeline_stage_id;
+
     public $contact_id;
+
     public $status = 'open';
 
     protected $rules = [

@@ -16,7 +16,7 @@
 
     <div class="space-y-8">
         <!-- Header Card -->
-        <x-card class="border-none shadow-xl shadow-gray-100 bg-gradient-to-br from-white to-[#FDFDFF]">
+        <x-card class="border-none shadow-xl shadow-gray-100 bg-gradient-to-br from-white to-brand-light">
             <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
                 <div class="h-20 w-20 bg-indigo-600 rounded-card-premium flex items-center justify-center text-white text-3xl font-black shadow-2xl shadow-indigo-200">
                     {{ substr($lead->name, 0, 1) }}

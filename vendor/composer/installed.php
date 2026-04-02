@@ -3,7 +3,7 @@
         'name' => 'digicloudify/laravel-app',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '954149a94936cd0be7f4c94bd4a17e566fd6bb62',
+        'reference' => 'efed5403508fe4e05a49a4a791f7076e8fd88a1b',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -79,7 +79,7 @@
         'digicloudify/laravel-app' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '954149a94936cd0be7f4c94bd4a17e566fd6bb62',
+            'reference' => 'efed5403508fe4e05a49a4a791f7076e8fd88a1b',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

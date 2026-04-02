@@ -2,19 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\AdAccount;
-use App\Models\Campaign;
-use App\Models\AdSet;
 use App\Models\Ad;
+use App\Models\AdAccount;
+use App\Models\AdSet;
+use App\Models\Campaign;
 use App\Models\DailyMetric;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class LinkedInAdsService extends BaseAdsService
 {
     protected string $clientId;
+
     protected string $clientSecret;
 
     public function __construct()
@@ -32,18 +33,19 @@ class LinkedInAdsService extends BaseAdsService
             'redirect_uri' => $redirectUri,
             'scope' => 'r_ads r_ads_reporting rw_ads',
         ];
-        return "https://www.linkedin.com/oauth/v2/authorization?" . http_build_query($params);
+
+        return 'https://www.linkedin.com/oauth/v2/authorization?'.http_build_query($params);
     }
 
     public function handleCallback(array $data, string $organizationId, string $clientId): AdAccount
     {
         $code = $data['code'] ?? null;
-        if (!$code) {
+        if (! $code) {
             throw new \Exception('No code provided for LinkedIn Ads callback');
         }
 
         $redirectUri = route('ads.callback', ['platform' => 'linkedin']);
-        $response = Http::asForm()->post("https://www.linkedin.com/oauth/v2/accessToken", [
+        $response = Http::asForm()->post('https://www.linkedin.com/oauth/v2/accessToken', [
             'grant_type' => 'authorization_code',
             'code' => $code,
             'redirect_uri' => $redirectUri,
@@ -52,7 +54,7 @@ class LinkedInAdsService extends BaseAdsService
         ]);
 
         if ($response->failed()) {
-            throw new \Exception('Failed to get access token from LinkedIn: ' . $response->body());
+            throw new \Exception('Failed to get access token from LinkedIn: '.$response->body());
         }
 
         $tokenData = $response->json();
@@ -61,13 +63,13 @@ class LinkedInAdsService extends BaseAdsService
 
         // Fetch User's Ad Accounts
         $accountsResponse = Http::withToken($accessToken)
-            ->get("https://api.linkedin.com/v2/adAccountsV2", [
+            ->get('https://api.linkedin.com/v2/adAccountsV2', [
                 'q' => 'search',
-                'search' => '(status:(values:List(ACTIVE)))'
+                'search' => '(status:(values:List(ACTIVE)))',
             ]);
 
         if ($accountsResponse->failed()) {
-            throw new \Exception('Failed to fetch ad accounts from LinkedIn: ' . $accountsResponse->body());
+            throw new \Exception('Failed to fetch ad accounts from LinkedIn: '.$accountsResponse->body());
         }
 
         $accounts = $accountsResponse->json()['elements'];
@@ -96,16 +98,17 @@ class LinkedInAdsService extends BaseAdsService
         );
     }
 
-    public function syncCampaigns(\App\Models\AdAccount $adAccount): Collection
+    public function syncCampaigns(AdAccount $adAccount): Collection
     {
         $response = Http::withToken($adAccount->access_token)
-            ->get("https://api.linkedin.com/v2/adCampaignsV2", [
+            ->get('https://api.linkedin.com/v2/adCampaignsV2', [
                 'q' => 'search',
-                'search' => "(account:(values:List(urn:li:sponsoredAccount:{$adAccount->external_account_id})))"
+                'search' => "(account:(values:List(urn:li:sponsoredAccount:{$adAccount->external_account_id})))",
             ]);
 
         if ($response->failed()) {
-            Log::error('LinkedIn sync campaigns failed: ' . $response->body());
+            Log::error('LinkedIn sync campaigns failed: '.$response->body());
+
             return collect();
         }
 
@@ -135,25 +138,25 @@ class LinkedInAdsService extends BaseAdsService
         return $syncedCampaigns;
     }
 
-    public function syncAdSets(\App\Models\Campaign $campaign): Collection
+    public function syncAdSets(Campaign $campaign): Collection
     {
         // To be implemented for LinkedIn Ads
         return collect();
     }
 
-    public function syncAds(\App\Models\AdSet $adSet): Collection
+    public function syncAds(AdSet $adSet): Collection
     {
         // To be implemented for LinkedIn Ads
         return collect();
     }
 
-    public function syncInsights(\App\Models\AdAccount $adAccount, string $startDate, string $endDate, string $level): Collection
+    public function syncInsights(AdAccount $adAccount, string $startDate, string $endDate, string $level): Collection
     {
         // To be implemented for LinkedIn Ads
         return collect();
     }
 
-    public function syncMetrics(\App\Models\Campaign $campaign, string $startDate, string $endDate): Collection
+    public function syncMetrics(Campaign $campaign, string $startDate, string $endDate): Collection
     {
         $adAccount = $campaign->adAccount;
 
@@ -164,7 +167,7 @@ class LinkedInAdsService extends BaseAdsService
         $dateRange = "(start:(day:{$start->day},month:{$start->month},year:{$start->year}),end:(day:{$end->day},month:{$end->month},year:{$end->year}))";
 
         $response = Http::withToken($adAccount->access_token)
-            ->get("https://api.linkedin.com/v2/adAnalyticsV2", [
+            ->get('https://api.linkedin.com/v2/adAnalyticsV2', [
                 'q' => 'analytics',
                 'pivot' => 'CAMPAIGN',
                 'dateRange' => $dateRange,
@@ -174,7 +177,8 @@ class LinkedInAdsService extends BaseAdsService
             ]);
 
         if ($response->failed()) {
-            Log::error('LinkedIn sync metrics failed: ' . $response->body());
+            Log::error('LinkedIn sync metrics failed: '.$response->body());
+
             return collect();
         }
 
@@ -206,17 +210,17 @@ class LinkedInAdsService extends BaseAdsService
         return $syncedMetrics;
     }
 
-    public function pauseCampaign(\App\Models\Campaign $campaign): bool
+    public function pauseCampaign(Campaign $campaign): bool
     {
         return false;
     }
 
-    public function archiveCampaign(\App\Models\Campaign $campaign): bool
+    public function archiveCampaign(Campaign $campaign): bool
     {
         return false;
     }
 
-    public function deleteCampaign(\App\Models\Campaign $campaign): bool
+    public function deleteCampaign(Campaign $campaign): bool
     {
         return false;
     }

@@ -110,6 +110,11 @@
                     </a>
 
                     <a class="w-full inline-flex justify-center px-4 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition"
+                       href="{{ route('integrations.oauth.redirect', ['provider' => 'google_business_profile', 'client_id' => $client->id]) }}">
+                        Connect Google Business Profile
+                    </a>
+
+                    <a class="w-full inline-flex justify-center px-4 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition"
                        href="{{ route('integrations.oauth.redirect', ['provider' => 'meta_organic', 'client_id' => $client->id]) }}">
                         Connect Facebook/Instagram (Organic)
                     </a>
@@ -152,6 +157,34 @@
                 </div>
 
                 <div class="pt-2 space-y-3">
+                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest">Amazon</div>
+                    <x-form-field label="Seller ID (optional)" name="amazonSellerId">
+                        <x-input id="amazonSellerId" type="text" wire:model="amazonSellerId" />
+                    </x-form-field>
+                    <x-form-field label="Marketplace ID" name="amazonMarketplaceId">
+                        <x-input id="amazonMarketplaceId" type="text" placeholder="{{ config('services.amazon_sp_api.marketplace_id') }}" wire:model="amazonMarketplaceId" />
+                    </x-form-field>
+                    <x-form-field label="Endpoint" name="amazonEndpoint">
+                        <x-input id="amazonEndpoint" type="text" placeholder="{{ config('services.amazon_sp_api.endpoint') }}" wire:model="amazonEndpoint" />
+                    </x-form-field>
+                    <x-form-field label="AWS Region" name="amazonAwsRegion">
+                        <x-input id="amazonAwsRegion" type="text" placeholder="{{ config('services.amazon_sp_api.aws_region') }}" wire:model="amazonAwsRegion" />
+                    </x-form-field>
+                    <x-form-field label="AWS Access Key ID" name="amazonAwsAccessKeyId">
+                        <x-input id="amazonAwsAccessKeyId" type="text" wire:model="amazonAwsAccessKeyId" />
+                    </x-form-field>
+                    <x-form-field label="AWS Secret Access Key" name="amazonAwsSecretAccessKey">
+                        <x-input id="amazonAwsSecretAccessKey" type="password" wire:model="amazonAwsSecretAccessKey" />
+                    </x-form-field>
+                    <x-form-field label="LWA Refresh Token" name="amazonRefreshToken">
+                        <x-input id="amazonRefreshToken" type="password" wire:model="amazonRefreshToken" />
+                    </x-form-field>
+                    <x-button color="primary" type="button" class="w-full justify-center" wire:click="connectAmazon">
+                        Connect Amazon
+                    </x-button>
+                </div>
+
+                <div class="pt-2 space-y-3">
                     <div class="text-xs font-black text-gray-400 uppercase tracking-widest">Ads</div>
                     <a class="w-full inline-flex justify-center px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-black transition"
                        href="{{ route('ads.redirect', ['platform' => 'meta', 'client_id' => $client->id]) }}">
@@ -167,8 +200,72 @@
                     </a>
                 </div>
 
+                <div class="pt-2 space-y-4">
+                    <div class="text-xs font-black text-gray-400 uppercase tracking-widest">Competitors</div>
+
+                    <div class="space-y-3">
+                        <div class="text-xs font-bold text-gray-700">Meta Ad Library (Page ID)</div>
+                        <x-form-field label="Competitor Name" name="metaCompetitorLabel">
+                            <x-input id="metaCompetitorLabel" type="text" wire:model="metaCompetitorLabel" />
+                        </x-form-field>
+                        <x-form-field label="Facebook Page ID" name="metaCompetitorPageId">
+                            <x-input id="metaCompetitorPageId" type="text" wire:model="metaCompetitorPageId" />
+                        </x-form-field>
+                        <x-button color="primary" type="button" class="w-full justify-center" wire:click="addMetaCompetitor">
+                            Add Meta Competitor
+                        </x-button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="text-xs font-bold text-gray-700">RSS Listening</div>
+                        <x-form-field label="Competitor Name" name="rssCompetitorLabel">
+                            <x-input id="rssCompetitorLabel" type="text" wire:model="rssCompetitorLabel" />
+                        </x-form-field>
+                        <x-form-field label="RSS Feed URL" name="rssFeedUrl">
+                            <x-input id="rssFeedUrl" type="url" wire:model="rssFeedUrl" />
+                        </x-form-field>
+                        <x-button color="primary" type="button" class="w-full justify-center" wire:click="addRssFeed">
+                            Add RSS Feed
+                        </x-button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-xs font-bold text-gray-700">Current</div>
+
+                        <div class="space-y-2">
+                            @foreach($metaCompetitors as $comp)
+                                <div class="p-3 border border-gray-100 rounded-2xl bg-white">
+                                    <div class="text-sm font-bold text-gray-900 truncate">{{ $comp->label }}</div>
+                                    <div class="text-xs text-gray-500 truncate">Page ID: {{ $comp->identifier }}</div>
+                                </div>
+                            @endforeach
+
+                            @foreach($rssSources as $src)
+                                <div class="p-3 border border-gray-100 rounded-2xl bg-white">
+                                    <div class="text-sm font-bold text-gray-900 truncate">{{ $src->source_label ?? 'RSS' }}</div>
+                                    <div class="text-xs text-gray-500 truncate">{{ $src->source_url }}</div>
+                                </div>
+                            @endforeach
+
+                            @if($metaCompetitors->isEmpty() && $rssSources->isEmpty())
+                                <div class="p-3 border border-dashed border-gray-200 rounded-2xl text-sm text-gray-600">
+                                    No competitors added yet.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
                 <div class="pt-2 space-y-3">
                     <div class="text-xs font-black text-gray-400 uppercase tracking-widest">Privacy</div>
+                    <a class="w-full inline-flex justify-center px-4 py-2.5 bg-white border border-gray-200 text-gray-800 text-sm font-bold rounded-xl hover:bg-gray-50 transition"
+                       href="{{ $portalUrl }}" target="_blank" rel="noreferrer">
+                        Client Portal Link
+                    </a>
+                    <a class="w-full inline-flex justify-center px-4 py-2.5 bg-white border border-gray-200 text-gray-800 text-sm font-bold rounded-xl hover:bg-gray-50 transition"
+                       href="{{ $brandKitUrl }}">
+                        Brand Kit
+                    </a>
                     <a class="w-full inline-flex justify-center px-4 py-2.5 bg-white border border-gray-200 text-gray-800 text-sm font-bold rounded-xl hover:bg-gray-50 transition"
                        href="{{ route('clients.privacy.export', $client->id) }}">
                         Export Client Data (JSON)

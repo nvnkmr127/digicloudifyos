@@ -12,7 +12,9 @@ class Logs extends Component
     use WithPagination;
 
     public $search = '';
+
     public $status = '';
+
     public $selectedLog = null;
 
     public function viewDetails($id)
@@ -37,7 +39,7 @@ class Logs extends Component
             ->whereHas('rule', fn ($query) => $query->where('organization_id', $organizationId))
             ->when($this->search, function ($query) {
                 $query->whereHas('rule', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%');
+                    $q->where('name', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->status, function ($query) {
@@ -47,7 +49,7 @@ class Logs extends Component
             ->paginate(20);
 
         return view('livewire.workflow-monitoring.logs', [
-            'logs' => $logs
+            'logs' => $logs,
         ])->layout('layouts.app');
     }
 }

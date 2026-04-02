@@ -2,23 +2,28 @@
 
 namespace App\Livewire\Automations;
 
-use App\Models\WorkflowRule;
 use App\Models\WorkflowAction;
+use App\Models\WorkflowRule;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Builder extends Component
 {
     public $name = '';
+
     public $description = '';
+
     public $event_type = 'lead_created';
+
     public $is_active = true;
+
     public $conditions = [];
+
     public $actions = [];
 
     protected $rules = [
         'name' => 'required|string|max:255',
-        'event_type' => 'required'
+        'event_type' => 'required',
     ];
 
     public function mount($id = null)
@@ -30,7 +35,7 @@ class Builder extends Component
             $this->event_type = $rule->event_type;
             $this->is_active = $rule->is_active;
             $this->conditions = $rule->conditions ?? [];
-            
+
             foreach ($rule->actions as $action) {
                 $this->actions[] = [
                     'id' => $action->id,
@@ -89,7 +94,7 @@ class Builder extends Component
 
         // Simple sync: delete old and create new (MVP style)
         $rule->actions()->delete();
-        
+
         foreach ($this->actions as $actionData) {
             WorkflowAction::create([
                 'workflow_rule_id' => $rule->id,
@@ -99,6 +104,7 @@ class Builder extends Component
         }
 
         session()->flash('message', 'Automation rule saved successfully.');
+
         return redirect()->route('automations.index');
     }
 

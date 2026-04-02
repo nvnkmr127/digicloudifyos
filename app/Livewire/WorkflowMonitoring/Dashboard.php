@@ -2,19 +2,22 @@
 
 namespace App\Livewire\WorkflowMonitoring;
 
+use App\Models\AutomationLog;
+use App\Models\WorkflowRule;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Dashboard extends Component
 {
     public function render()
     {
-        $organizationId = \Illuminate\Support\Facades\Auth::user()->organization_id;
+        $organizationId = Auth::user()->organization_id;
 
-        $rules = \App\Models\WorkflowRule::where('organization_id', $organizationId)
+        $rules = WorkflowRule::where('organization_id', $organizationId)
             ->withCount(['logs'])
             ->get();
 
-        $recentLogs = \App\Models\AutomationLog::where('organization_id', $organizationId)
+        $recentLogs = AutomationLog::where('organization_id', $organizationId)
             ->with(['rule'])
             ->orderBy('created_at', 'desc')
             ->limit(10)

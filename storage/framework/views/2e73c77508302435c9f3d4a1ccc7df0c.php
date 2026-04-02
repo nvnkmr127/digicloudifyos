@@ -14,45 +14,9 @@
 
     <!-- Scripts -->
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-
-        :root {
-            --primary: #4F46E5;
-            --primary-hover: #4338CA;
-        }
-
-        .bg-primary {
-            background-color: var(--primary);
-        }
-
-        .text-primary {
-            color: var(--primary);
-        }
-
-        /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #F3F4F6;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #D1D5DB;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #9CA3AF;
-        }
-    </style>
 </head>
 
-<body class="font-sans antialiased bg-[#F9FAFB] text-[#111827]" x-data="{ sidebarOpen: false }">
+<body class="font-sans antialiased bg-brand-light text-text-primary" x-data="{ sidebarOpen: false }">
     <div class="h-screen flex overflow-hidden">
         <!-- Mobile Sidebar Overlay -->
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
@@ -92,7 +56,7 @@
             <header
                 class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
                 <div class="flex items-center">
-                    <button @click="sidebarOpen = true" class="md:hidden text-gray-500 hover:text-gray-700 mr-4">
+                    <button @click="sidebarOpen = true" class="md:hidden text-gray-500 hover:text-gray-700 mr-4" aria-label="Open sidebar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16"></path>
@@ -121,6 +85,7 @@
 <?php $component->withAttributes(['align' => 'right','width' => '48']); ?>
                              <?php $__env->slot('trigger', null, []); ?> 
                                 <button
+                                    aria-label="User menu"
                                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                                     <div class="flex items-center">
                                         <div
@@ -254,7 +219,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 p-6 overflow-y-auto bg-[#F9FAFB]">
+            <main class="flex-1 p-6 overflow-y-auto bg-brand-light">
                 <?php echo e($slot ?? ''); ?>
 
                 <?php echo $__env->yieldContent('content'); ?>
@@ -313,4 +278,5 @@
     </div>
 </body>
 
-</html><?php /**PATH /Users/naveenadicharla/Documents/DC OS/resources/views/layouts/app.blade.php ENDPATH**/ ?>
+</html>
+<?php /**PATH /Users/naveenadicharla/Documents/DC OS/resources/views/layouts/app.blade.php ENDPATH**/ ?>

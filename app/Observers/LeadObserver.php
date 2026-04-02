@@ -2,9 +2,9 @@
 
 namespace App\Observers;
 
-use App\Models\Lead;
-use App\Models\FacebookLead;
 use App\Jobs\ProcessWorkflowAutomation;
+use App\Models\FacebookLead;
+use App\Models\Lead;
 
 class LeadObserver
 {

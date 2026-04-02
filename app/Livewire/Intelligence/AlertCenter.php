@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Intelligence;
 
-use App\Models\PerformanceAnomaly;
 use App\Models\Client;
+use App\Models\PerformanceAnomaly;
 use Livewire\Component;
 
 class AlertCenter extends Component
 {
     public $sevFilter = 'all';
+
     public $clientFilter = '';
 
     public function resolve($anomalyId)

@@ -41,4 +41,3 @@ return new class extends Migration
         Schema::dropIfExists('google_search_console_daily_metrics');
     }
 };
-

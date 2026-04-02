@@ -16,30 +16,30 @@ return new class extends Migration
             $table->uuid('organization_id');
             $table->uuid('client_id');
             $table->uuid('anomaly_id')->nullable();
-            
+
             $table->string('channel_type', 100)->nullable();
             $table->date('insight_date');
-            
+
             $table->enum('priority', ['critical', 'high', 'medium', 'low', 'opportunity'])->default('medium');
             $table->enum('category', ['ad_performance', 'budget', 'organic', 'conversion', 'opportunity']);
-            
+
             $table->string('title', 255);
             $table->text('issue_description');
             $table->text('root_cause')->nullable();
             $table->text('recommended_action');
             $table->text('expected_impact')->nullable();
-            
+
             $table->enum('effort_level', ['low', 'medium', 'high'])->default('low');
             $table->enum('urgency', ['today', 'this_week', 'next_week'])->default('this_week');
-            
+
             $table->boolean('is_dismissed')->default(false);
             $table->timestamp('dismissed_at')->nullable();
             $table->uuid('dismissed_by')->nullable();
-            
+
             $table->boolean('is_completed')->default(false);
             $table->timestamp('completed_at')->nullable();
             $table->uuid('completed_by')->nullable();
-            
+
             $table->json('raw_ai_response')->nullable();
             $table->timestamps();
 

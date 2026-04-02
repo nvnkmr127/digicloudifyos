@@ -1,3 +1,9 @@
-<button {{ $attributes->merge(['type' => 'submit', 'class' => 'inline-flex items-center px-4 py-2 bg-primary border border-transparent rounded-button font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-hover focus:bg-primary-hover active:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition ease-in-out duration-150']) }}>
+@props(['type' => 'submit'])
+
+<x-button
+    variant="primary"
+    type="{{ $type }}"
+    {{ $attributes->except('type')->merge(['class' => 'font-semibold text-xs uppercase tracking-widest']) }}
+>
     {{ $slot }}
-</button>
+</x-button>

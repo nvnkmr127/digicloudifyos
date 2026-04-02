@@ -35,4 +35,20 @@ return [
         'client_id' => env('TWITTER_CLIENT_ID'),
         'client_secret' => env('TWITTER_CLIENT_SECRET'),
     ],
+
+    'amazon_sp_api' => [
+        'lwa_client_id' => env('AMAZON_LWA_CLIENT_ID'),
+        'lwa_client_secret' => env('AMAZON_LWA_CLIENT_SECRET'),
+        'aws_region' => env('AMAZON_SPAPI_AWS_REGION', 'us-east-1'),
+        'endpoint' => env('AMAZON_SPAPI_ENDPOINT', 'https://sellingpartnerapi-na.amazon.com'),
+        'marketplace_id' => env('AMAZON_SPAPI_MARKETPLACE_ID', 'ATVPDKIKX0DER'),
+    ],
+
+    'social_listening' => [
+        'webhook_secret' => env('SOCIAL_LISTENING_WEBHOOK_SECRET'),
+    ],
+
+    'pagespeed' => [
+        'api_key' => env('PAGESPEED_API_KEY'),
+    ],
 ];

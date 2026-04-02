@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Conversations;
 
+use App\Models\Conversation;
+use App\Models\Message;
 use Livewire\Component;
 
 class Index extends Component
@@ -12,7 +14,7 @@ class Index extends Component
 
     public function mount()
     {
-        $first = \App\Models\Conversation::first();
+        $first = Conversation::first();
         if ($first) {
             $this->selectedConversationId = $first->id;
         }
@@ -29,12 +31,12 @@ class Index extends Component
             return;
         }
 
-        $conv = \App\Models\Conversation::find($this->selectedConversationId);
+        $conv = Conversation::find($this->selectedConversationId);
         if (! $conv) {
             return;
         }
 
-        \App\Models\Message::create([
+        Message::create([
             'conversation_id' => $conv->id,
             'body' => $this->messageBody,
             'direction' => 'outbound',
@@ -47,7 +49,7 @@ class Index extends Component
 
     public function render()
     {
-        $conversations = \App\Models\Conversation::with([
+        $conversations = Conversation::with([
             'contact',
             'messages' => function ($q) {
                 $q->latest('sent_at');
@@ -56,7 +58,7 @@ class Index extends Component
 
         $selectedConversation = null;
         if ($this->selectedConversationId) {
-            $selectedConversation = \App\Models\Conversation::with([
+            $selectedConversation = Conversation::with([
                 'contact',
                 'messages' => function ($q) {
                     $q->orderBy('sent_at', 'asc');

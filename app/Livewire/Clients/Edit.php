@@ -2,38 +2,66 @@
 
 namespace App\Livewire\Clients;
 
-use Livewire\Component;
-
 use App\Models\Client;
+use App\Models\ClientServicePackage;
+use App\Models\ServicePackage;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Edit extends Component
 {
     public Client $client;
+
     public $name;
+
     public $email;
+
     public $website_url;
+
     public $phone;
+
     public $industry;
+
     public $timezone;
+
     public $currency_code;
+
     public $address_line1;
+
     public $address_line2;
+
     public $city;
+
     public $state;
+
     public $postal_code;
+
     public $country_code;
+
     public $business_description;
+
     public $goalsText;
+
     public $targetAudienceText;
+
     public $competitorsText;
+
     public $primaryKpisText;
+
     public $gdpr_consent;
+
     public $ccpa_opt_out;
+
     public $data_retention_days;
+
     public $privacy_contact_email;
+
     public $external_ref;
+
     public $status;
+
+    public array $selectedServicePackages = [];
 
     protected $rules = [
         'name' => 'required|min:3',
@@ -66,13 +94,16 @@ class Edit extends Component
     {
         $items = is_array($value) ? $value : [];
         $items = collect($items)->map(fn ($v) => trim((string) $v))->filter()->values()->all();
+
         return implode("\n", $items);
     }
 
     protected function textToList(?string $text): array
     {
         $text = trim((string) $text);
-        if ($text === '') return [];
+        if ($text === '') {
+            return [];
+        }
 
         return collect(preg_split("/\r\n|\n|\r/", $text))
             ->map(fn ($v) => trim((string) $v))
@@ -84,7 +115,7 @@ class Edit extends Component
     public function mount(Client $client)
     {
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User || ! $user->isAdmin()) {
+        if (! $user instanceof User || ! $user->isAdmin()) {
             abort(403);
         }
 
@@ -117,12 +148,19 @@ class Edit extends Component
         $this->privacy_contact_email = $client->privacy_contact_email;
         $this->external_ref = $client->external_ref;
         $this->status = $client->status;
+
+        $this->selectedServicePackages = ClientServicePackage::where('organization_id', $user->organization_id)
+            ->where('client_id', $client->id)
+            ->where('is_active', true)
+            ->pluck('service_package_id')
+            ->values()
+            ->all();
     }
 
     public function update()
     {
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User || ! $user->isAdmin()) {
+        if (! $user instanceof User || ! $user->isAdmin()) {
             abort(403);
         }
 
@@ -159,6 +197,27 @@ class Edit extends Component
             'status' => $this->status,
         ]);
 
+        $selected = collect($this->selectedServicePackages)->map(fn ($v) => (string) $v)->filter()->values()->all();
+
+        ClientServicePackage::where('organization_id', $user->organization_id)
+            ->where('client_id', $this->client->id)
+            ->whereNotIn('service_package_id', $selected)
+            ->update(['is_active' => false]);
+
+        foreach ($selected as $pkgId) {
+            ClientServicePackage::updateOrCreate(
+                [
+                    'organization_id' => $user->organization_id,
+                    'client_id' => $this->client->id,
+                    'service_package_id' => $pkgId,
+                ],
+                [
+                    'is_active' => true,
+                    'started_at' => now(),
+                ]
+            );
+        }
+
         session()->flash('success', 'Client updated successfully.');
 
         return redirect()->route('clients.index');
@@ -167,10 +226,17 @@ class Edit extends Component
     public function render()
     {
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User || ! $user->isAdmin()) {
+        if (! $user instanceof User || ! $user->isAdmin()) {
             abort(403);
         }
 
-        return view('livewire.clients.edit');
+        $packages = ServicePackage::where('organization_id', $user->organization_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'industry', 'cadence']);
+
+        return view('livewire.clients.edit', [
+            'packages' => $packages,
+        ]);
     }
 }

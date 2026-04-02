@@ -2,39 +2,61 @@
 
 namespace App\Livewire\Clients;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
 use App\Models\Client;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Create extends Component
 {
     use AuthorizesRequests;
 
     public $name = '';
+
     public $email = '';
+
     public $website_url = '';
+
     public $phone = '';
+
     public $industry = '';
+
     public $timezone = '';
+
     public $currency_code = '';
+
     public $address_line1 = '';
+
     public $address_line2 = '';
+
     public $city = '';
+
     public $state = '';
+
     public $postal_code = '';
+
     public $country_code = '';
+
     public $business_description = '';
+
     public $goalsText = '';
+
     public $targetAudienceText = '';
+
     public $competitorsText = '';
+
     public $primaryKpisText = '';
+
     public $gdpr_consent = false;
+
     public $ccpa_opt_out = false;
+
     public $data_retention_days = null;
+
     public $privacy_contact_email = '';
+
     public $external_ref = '';
+
     public $status = 'ACTIVE';
 
     protected $rules = [
@@ -67,7 +89,9 @@ class Create extends Component
     protected function textToList(?string $text): array
     {
         $text = trim((string) $text);
-        if ($text === '') return [];
+        if ($text === '') {
+            return [];
+        }
 
         return collect(preg_split("/\r\n|\n|\r/", $text))
             ->map(fn ($v) => trim((string) $v))

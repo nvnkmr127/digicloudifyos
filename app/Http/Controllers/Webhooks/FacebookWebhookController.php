@@ -21,12 +21,13 @@ class FacebookWebhookController extends Controller
 
         if ($mode === 'subscribe' && $token === $verifyToken) {
             Log::info('Facebook Webhook Verified Successfully');
+
             return response($challenge, 200);
         }
 
         Log::warning('Facebook Webhook Verification Failed', [
             'received_token' => $token,
-            'mode' => $mode
+            'mode' => $mode,
         ]);
 
         return response('Unauthorized', 403);
@@ -40,15 +41,17 @@ class FacebookWebhookController extends Controller
         // 1. Verify Payload Signature
         $signature = $request->header('X-Hub-Signature-256');
         $appSecret = config('services.facebook.client_secret');
-        
+
         if ($signature && $appSecret) {
-            $expectedSignature = 'sha256=' . hash_hmac('sha256', $request->getContent(), $appSecret);
-            if (!hash_equals($expectedSignature, $signature)) {
+            $expectedSignature = 'sha256='.hash_hmac('sha256', $request->getContent(), $appSecret);
+            if (! hash_equals($expectedSignature, $signature)) {
                 Log::warning('Facebook Webhook Signature Verification Failed');
+
                 return response('Invalid Signature', 401);
             }
-        } elseif (!$signature && app()->environment('production')) {
+        } elseif (! $signature && app()->environment('production')) {
             Log::warning('Facebook Webhook Missing Signature in Production');
+
             return response('Missing Signature', 401);
         }
 

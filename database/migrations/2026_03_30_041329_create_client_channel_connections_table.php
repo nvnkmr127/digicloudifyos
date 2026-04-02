@@ -22,7 +22,7 @@ return new class extends Migration
                 'ga4',
                 'instagram',
                 'facebook_organic',
-                'inbound_webhook'
+                'inbound_webhook',
             ]);
             $table->string('account_id', 255)->nullable();
             $table->string('account_name', 255)->nullable();

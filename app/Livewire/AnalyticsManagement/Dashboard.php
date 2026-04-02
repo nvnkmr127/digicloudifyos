@@ -3,10 +3,10 @@
 namespace App\Livewire\AnalyticsManagement;
 
 use App\Models\Client;
-use App\Models\Project;
-use App\Models\Invoice;
-use App\Models\TimeEntry;
 use App\Models\Employee;
+use App\Models\Invoice;
+use App\Models\Project;
+use App\Models\TimeEntry;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -20,7 +20,7 @@ class Dashboard extends Component
         $activeClients = Client::where('organization_id', $organizationId)->where('status', 'ACTIVE')->count();
         $totalProjects = Project::where('organization_id', $organizationId)->count();
         $completedProjects = Project::where('organization_id', $organizationId)->where('status', 'completed')->count();
-        
+
         $totalRevenue = Invoice::where('organization_id', $organizationId)->where('status', 'paid')->sum('total_amount');
         $pendingRevenue = Invoice::where('organization_id', $organizationId)->where('status', '!=', 'paid')->sum('total_amount');
 
@@ -39,7 +39,7 @@ class Dashboard extends Component
                 'pending' => $pendingRevenue,
                 'team_size' => $teamSize,
                 'monthly_hours' => $totalHoursThisMonth,
-            ]
+            ],
         ])->layout('layouts.app');
     }
 }

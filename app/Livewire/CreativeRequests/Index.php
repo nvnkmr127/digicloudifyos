@@ -12,13 +12,18 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = 'ALL';
+
     public $showCreateModal = false;
 
     // Create Form
     public $title = '';
+
     public $description = '';
+
     public $priority = 'Medium';
+
     public $due_date = '';
 
     protected $rules = [
@@ -49,13 +54,13 @@ class Index extends Component
     public function render()
     {
         $requests = CreativeRequest::where('organization_id', Auth::user()->organization_id)
-            ->when($this->statusFilter !== 'ALL', fn($q) => $q->where('status', $this->statusFilter))
-            ->when($this->search, fn($q) => $q->where('title', 'like', '%' . $this->search . '%'))
+            ->when($this->statusFilter !== 'ALL', fn ($q) => $q->where('status', $this->statusFilter))
+            ->when($this->search, fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
             ->latest()
             ->paginate(10);
 
         return view('livewire.creative-requests.index', [
-            'requests' => $requests
+            'requests' => $requests,
         ])->layout('layouts.app');
     }
 }

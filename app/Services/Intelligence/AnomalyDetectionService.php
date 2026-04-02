@@ -2,9 +2,7 @@
 
 namespace App\Services\Intelligence;
 
-use App\Models\Client;
-use App\Models\AdAccount;
-use Carbon\Carbon;
+use App\Models\Campaign;
 
 class AnomalyDetectionService
 {
@@ -82,7 +80,9 @@ class AnomalyDetectionService
      */
     public function detectCreativeFatigue(array $snapshot, array $baselines, $clientId, $orgId, $channel): ?array
     {
-        if (!isset($snapshot['ctr'], $snapshot['cpc'], $baselines['ctr'], $baselines['cpc'])) return null;
+        if (! isset($snapshot['ctr'], $snapshot['cpc'], $baselines['ctr'], $baselines['cpc'])) {
+            return null;
+        }
 
         $ctrDeviation = $baselines['ctr'] > 0 ? (($snapshot['ctr'] - $baselines['ctr']) / $baselines['ctr']) * 100 : 0;
         $cpcDeviation = $baselines['cpc'] > 0 ? (($snapshot['cpc'] - $baselines['cpc']) / $baselines['cpc']) * 100 : 0;
@@ -91,7 +91,7 @@ class AnomalyDetectionService
         if ($ctrDeviation < -20 && $cpcDeviation > 15) {
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'creative_fatigue', 'CTR & CPC Correlation', $snapshot['ctr'], $baselines['ctr'], $ctrDeviation, [
                 'cpc_increase' => round($cpcDeviation, 2),
-                'technical_diagnosis' => 'High probability of creative saturation in target audience.'
+                'technical_diagnosis' => 'High probability of creative saturation in target audience.',
             ]);
         }
 
@@ -103,10 +103,12 @@ class AnomalyDetectionService
      */
     public function detectFunnelFriction(array $snapshot, array $baselines, $clientId, $orgId, $channel): ?array
     {
-        if (!isset($snapshot['clicks'], $snapshot['conversions'], $baselines['clicks'], $baselines['conversions'])) return null;
+        if (! isset($snapshot['clicks'], $snapshot['conversions'], $baselines['clicks'], $baselines['conversions'])) {
+            return null;
+        }
 
         $clickDeviation = $baselines['clicks'] > 0 ? (($snapshot['clicks'] - $baselines['clicks']) / $baselines['clicks']) * 100 : 0;
-        
+
         $currentCvr = $snapshot['clicks'] > 0 ? ($snapshot['conversions'] / $snapshot['clicks']) : 0;
         $baselineCvr = $baselines['clicks'] > 0 ? ($baselines['conversions'] / $baselines['clicks']) : 0;
         $cvrDeviation = $baselineCvr > 0 ? (($currentCvr - $baselineCvr) / $baselineCvr) * 100 : 0;
@@ -115,7 +117,7 @@ class AnomalyDetectionService
         if (abs($clickDeviation) < 15 && $cvrDeviation < -30) {
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'funnel_friction', 'Traffic/Conversion Gap', $currentCvr, $baselineCvr, $cvrDeviation, [
                 'traffic_stability' => 'Stable',
-                'technical_diagnosis' => 'Potential landing page error, tracking pixel failure, or conversion path blockage.'
+                'technical_diagnosis' => 'Potential landing page error, tracking pixel failure, or conversion path blockage.',
             ]);
         }
 
@@ -130,6 +132,7 @@ class AnomalyDetectionService
 
         if ($baseline > 0 && $current < ($baseline * (1 - $threshold / 100))) {
             $deviation = (($current - $baseline) / $baseline) * 100;
+
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'ctr_drop', 'CTR', $current, $baseline, $deviation);
         }
 
@@ -144,6 +147,7 @@ class AnomalyDetectionService
 
         if ($baseline > 0 && $current > ($baseline * (1 + $threshold / 100))) {
             $deviation = (($current - $baseline) / $baseline) * 100;
+
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'cpc_spike', 'CPC', $current, $baseline, $deviation);
         }
 
@@ -158,6 +162,7 @@ class AnomalyDetectionService
 
         if ($current < $minThreshold) {
             $deviation = $baseline > 0 ? ((($current - $baseline) / $baseline) * 100) : -100;
+
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'roas_decline', 'ROAS', $current, $baseline, $deviation);
         }
 
@@ -166,38 +171,44 @@ class AnomalyDetectionService
 
     public function detectBudgetOverpace(array $snapshot, $clientId, $orgId, $channel): ?array
     {
-        if (!in_array($channel, ['meta_ads', 'google_ads'])) return null;
+        if (! in_array($channel, ['meta_ads', 'google_ads'])) {
+            return null;
+        }
 
         $threshold = $this->thresholds['budget_overrun'] ?? 10;
         $spend = $snapshot['spend'];
-        
-        $targetBudget = \App\Models\Campaign::where('client_id', $clientId)
+
+        $targetBudget = Campaign::where('client_id', $clientId)
             ->where('organization_id', $orgId)
             ->where('status', 'running')
             ->sum('daily_budget');
 
         if ($targetBudget > 0 && $spend > ($targetBudget * (1 + $threshold / 100))) {
             $deviation = (($spend - $targetBudget) / $targetBudget) * 100;
+
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'budget_overrun', 'Daily Spend', $spend, $targetBudget, $deviation);
         }
 
-        return null; 
+        return null;
     }
 
     public function detectBudgetUnderpace(array $snapshot, $clientId, $orgId, $channel): ?array
     {
-        if (!in_array($channel, ['meta_ads', 'google_ads'])) return null;
+        if (! in_array($channel, ['meta_ads', 'google_ads'])) {
+            return null;
+        }
 
         $threshold = $this->thresholds['budget_underpace'] ?? 40;
         $spend = $snapshot['spend'];
-        
-        $targetBudget = \App\Models\Campaign::where('client_id', $clientId)
+
+        $targetBudget = Campaign::where('client_id', $clientId)
             ->where('organization_id', $orgId)
             ->where('status', 'running')
             ->sum('daily_budget');
 
         if ($targetBudget > 0 && $spend < ($targetBudget * (1 - $threshold / 100))) {
             $deviation = (($spend - $targetBudget) / $targetBudget) * 100;
+
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'budget_underpace', 'Daily Spend', $spend, $targetBudget, $deviation);
         }
 
@@ -212,6 +223,7 @@ class AnomalyDetectionService
 
         if ($baseline > 0 && $current < ($baseline * (1 - $threshold / 100))) {
             $deviation = (($current - $baseline) / $baseline) * 100;
+
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'engagement_drop', 'Engagement Rate', $current, $baseline, $deviation);
         }
 
@@ -226,6 +238,7 @@ class AnomalyDetectionService
 
         if ($baseline > 0 && $current < ($baseline * (1 - $threshold / 100))) {
             $deviation = (($current - $baseline) / $baseline) * 100;
+
             return $this->buildAnomalyArray($clientId, $orgId, $channel, 'lead_drop', 'Leads', $current, $baseline, $deviation);
         }
 
@@ -235,9 +248,16 @@ class AnomalyDetectionService
     protected function calculateSeverity(float $deviationPct): string
     {
         $abs = abs($deviationPct);
-        if ($abs >= 50) return 'critical';
-        if ($abs >= 30) return 'high';
-        if ($abs >= 20) return 'medium';
+        if ($abs >= 50) {
+            return 'critical';
+        }
+        if ($abs >= 30) {
+            return 'high';
+        }
+        if ($abs >= 20) {
+            return 'medium';
+        }
+
         return 'low';
     }
 

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\AdAccount;
+use App\Services\MetaAdsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,6 +16,7 @@ class SyncAdsCreatives implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 300;
 
     /**
@@ -37,12 +39,13 @@ class SyncAdsCreatives implements ShouldQueue
             ]);
 
             $service = match ($this->adAccount->platform) {
-                'META_ADS' => new \App\Services\MetaAdsService(),
+                'META_ADS' => new MetaAdsService,
                 default => null,
             };
 
-            if (!$service) {
+            if (! $service) {
                 Log::warning('No service found for platform creatives sync', ['platform' => $this->adAccount->platform]);
+
                 return;
             }
 

@@ -16,21 +16,21 @@ return new class extends Migration
             $table->uuid('organization_id');
             $table->uuid('client_id');
             $table->date('score_date');
-            
+
             $table->unsignedTinyInteger('overall_score');
             $table->unsignedTinyInteger('ad_performance_score')->nullable();
             $table->unsignedTinyInteger('organic_score')->nullable();
             $table->unsignedTinyInteger('conversion_score')->nullable();
             $table->unsignedTinyInteger('budget_efficiency_score')->nullable();
-            
+
             $table->json('score_breakdown')->nullable();
             $table->enum('trend', ['improving', 'stable', 'declining'])->default('stable');
-            
+
             $table->timestamps();
 
             $table->unique(['client_id', 'score_date'], 'client_score_date_unique');
             $table->index(['organization_id', 'score_date']);
-            
+
             $table->foreign('organization_id')->references('id')->on('organizations')->onDelete('cascade');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
         });

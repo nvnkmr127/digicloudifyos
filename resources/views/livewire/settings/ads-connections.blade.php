@@ -1,4 +1,28 @@
-<x-card>
+<x-card
+    x-data="{
+        showPageSelector: @entangle('showPageSelector'),
+        focusables(el) {
+            let selector = 'a, button, input:not([type=\\'hidden\\']), textarea, select, details, [tabindex]:not([tabindex=\\'-1\\'])'
+            return [...el.querySelectorAll(selector)].filter(el => ! el.hasAttribute('disabled'))
+        },
+        firstFocusable(el) { return this.focusables(el)[0] },
+        lastFocusable(el) { return this.focusables(el).slice(-1)[0] },
+        nextFocusable(el) { return this.focusables(el)[this.nextFocusableIndex(el)] || this.firstFocusable(el) },
+        prevFocusable(el) { return this.focusables(el)[this.prevFocusableIndex(el)] || this.lastFocusable(el) },
+        nextFocusableIndex(el) { return (this.focusables(el).indexOf(document.activeElement) + 1) % (this.focusables(el).length + 1) },
+        prevFocusableIndex(el) { return Math.max(0, this.focusables(el).indexOf(document.activeElement)) - 1 },
+    }"
+    x-init="
+        $watch('showPageSelector', value => {
+            if (value) {
+                document.body.classList.add('overflow-y-hidden')
+                $nextTick(() => firstFocusable($refs.pageSelectorModal)?.focus())
+            } else {
+                document.body.classList.remove('overflow-y-hidden')
+            }
+        })
+    "
+>
     @if (session()->has('success'))
         <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm font-medium">
             {{ session('success') }}
@@ -30,7 +54,7 @@
                         @endforeach
                     </select>
                     
-                    <a href="{{ route('ads.redirect', ['platform' => 'meta', 'client_id' => $selectedClientId]) }}" class="inline-flex items-center px-4 py-2 bg-[#1877F2] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#166fe5] shadow-sm transition ease-in-out duration-150">
+                    <a href="{{ route('ads.redirect', ['platform' => 'meta', 'client_id' => $selectedClientId]) }}" class="inline-flex items-center px-4 py-2 bg-facebook border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-facebook-hover shadow-sm transition ease-in-out duration-150">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -131,10 +155,10 @@
                                         <div class="flex items-center gap-2 text-green-600 font-bold">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                             Linked
-                                            <button wire:click="openPageSelector('{{ $account->id }}')" class="text-[10px] text-text-muted hover:text-primary underline uppercase tracking-widest ml-1 font-black">Change</button>
+                                            <button wire:click="openPageSelector('{{ $account->id }}')" wire:loading.attr="disabled" wire:target="openPageSelector" class="text-[10px] text-text-muted hover:text-primary underline uppercase tracking-widest ml-1 font-black">Change</button>
                                         </div>
                                     @else
-                                        <button wire:click="openPageSelector('{{ $account->id }}')" class="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-branding text-gray-600 hover:bg-white hover:border-primary hover:text-primary transition duration-150">
+                                        <button wire:click="openPageSelector('{{ $account->id }}')" wire:loading.attr="disabled" wire:target="openPageSelector" class="inline-flex items-center px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-branding text-gray-600 hover:bg-white hover:border-primary hover:text-primary transition duration-150">
                                             Connect Page
                                         </button>
                                     @endif
@@ -169,20 +193,39 @@
 
         <!-- Page Selector Modal -->
         @if($showPageSelector)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div
+            x-ref="pageSelectorModal"
+            x-on:keydown.escape.window="$wire.set('showPageSelector', false)"
+            x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable($refs.pageSelectorModal).focus()"
+            x-on:keydown.shift.tab.prevent="prevFocusable($refs.pageSelectorModal).focus()"
+            class="fixed inset-0 z-50 overflow-y-auto"
+            aria-labelledby="page-selector-modal-title"
+            role="dialog"
+            aria-modal="true"
+        >
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showPageSelector', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100">
                     <div class="bg-white p-8">
                         <div class="mb-6">
-                            <h3 class="text-2xl font-black text-text-primary tracking-tight" id="modal-title">Select Facebook Page</h3>
+                            <h3 class="text-2xl font-black text-text-primary tracking-tight" id="page-selector-modal-title">Select Facebook Page</h3>
                             <p class="text-sm text-text-muted font-bold mt-1 uppercase tracking-widest">For Lead Generation Sync</p>
                         </div>
+
+                        @if($pageSelectorError)
+                            <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm font-bold">
+                                {{ $pageSelectorError }}
+                            </div>
+                        @endif
+
+                        <div wire:loading wire:target="openPageSelector" class="py-8 text-center text-sm text-text-muted font-bold uppercase tracking-widest">
+                            Loading pages…
+                        </div>
                         
-                        <div class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                        <div wire:loading.remove wire:target="openPageSelector" class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                             @forelse($pages as $page)
-                                <button wire:click="connectPage('{{ $page['id'] }}', '{{ $page['access_token'] }}')" class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-primary-50 hover:border-primary-100 hover:scale-[1.02] transition-all group">
+                                <button wire:click="connectPage('{{ $page['id'] }}', '{{ $page['access_token'] }}')" wire:loading.attr="disabled" wire:target="connectPage" class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-primary-50 hover:border-primary-100 hover:scale-[1.02] transition-all group">
                                     <div class="flex items-center gap-4">
                                         <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary font-black group-hover:bg-primary group-hover:text-white transition cursor-pointer">
                                             {{ substr($page['name'], 0, 1) }}
@@ -214,7 +257,7 @@
     @else
         <div class="text-center py-12 px-6 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/30">
             <div
-                class="w-16 h-16 bg-[#1877F2]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#1877F2]">
+                class="w-16 h-16 bg-facebook/10 rounded-full flex items-center justify-center mx-auto mb-4 text-facebook">
                 <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -224,7 +267,7 @@
             <p class="text-sm text-text-muted mb-6 max-w-sm mx-auto">Connecting your Facebook account allows you to securely
                 access ad accounts and pull real-time data into your dashboard.</p>
             <a href="{{ route('ads.redirect', ['platform' => 'meta']) }}"
-                class="inline-flex items-center px-6 py-2.5 bg-[#1877F2] border border-transparent rounded-lg font-bold text-sm text-white shadow-lg shadow-blue-500/30 hover:bg-[#166fe5] hover:shadow-blue-500/40 transition-all">
+                class="inline-flex items-center px-6 py-2.5 bg-facebook border border-transparent rounded-lg font-bold text-sm text-white shadow-lg shadow-blue-500/30 hover:bg-facebook-hover hover:shadow-blue-500/40 transition-all">
                 Connect your account
             </a>
         </div>

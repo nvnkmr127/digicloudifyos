@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\ClientChannelConnection;
 use App\Models\IntegrationCredential;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -55,6 +56,16 @@ class OAuthController extends Controller
                 ],
                 $state
             )),
+            'google_business_profile' => redirect()->away($this->googleAuthUrl(
+                $provider,
+                [
+                    'openid',
+                    'email',
+                    'profile',
+                    'https://www.googleapis.com/auth/business.manage',
+                ],
+                $state
+            )),
             'shopify' => redirect()->away($this->shopifyAuthUrl($request, $provider, $state)),
             'meta_organic' => redirect()->away($this->metaAuthUrl($provider, $state)),
             'twitter' => redirect()->away($this->twitterAuthUrl($provider, $state)),
@@ -75,7 +86,7 @@ class OAuthController extends Controller
         session()->forget("integrations.oauth.state.{$provider}");
 
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User) {
+        if (! $user instanceof User) {
             abort(403);
         }
 
@@ -106,6 +117,8 @@ class OAuthController extends Controller
             return match ($provider) {
                 'google_analytics' => $this->handleGoogleCallback($client, $provider, $code),
                 'google_search_console' => $this->handleGoogleCallback($client, $provider, $code),
+                'google_merchant_center' => $this->handleGoogleCallback($client, $provider, $code),
+                'google_business_profile' => $this->handleGoogleCallback($client, $provider, $code),
                 'shopify' => $this->handleShopifyCallback($request, $client, $provider, $code),
                 'meta_organic' => $this->handleMetaCallback($client, $provider, $code),
                 'twitter' => $this->handleTwitterCallback($request, $client, $provider, $code),
@@ -113,7 +126,7 @@ class OAuthController extends Controller
                 default => abort(404),
             };
         } catch (\Throwable $e) {
-            Log::error("OAuth callback failed for {$provider}: " . $e->getMessage());
+            Log::error("OAuth callback failed for {$provider}: ".$e->getMessage());
 
             return redirect()->route('clients.integrations', $client->id)
                 ->with('error', 'Failed to connect. Please try again.');
@@ -135,7 +148,7 @@ class OAuthController extends Controller
             'state' => $state,
         ];
 
-        return 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
+        return 'https://accounts.google.com/o/oauth2/v2/auth?'.http_build_query($params);
     }
 
     protected function handleGoogleCallback(Client $client, string $provider, string $code)
@@ -151,7 +164,7 @@ class OAuthController extends Controller
         ]);
 
         if ($tokenResponse->failed()) {
-            throw new \RuntimeException("Google token exchange failed: " . $tokenResponse->body());
+            throw new \RuntimeException('Google token exchange failed: '.$tokenResponse->body());
         }
 
         $token = $tokenResponse->json();
@@ -193,6 +206,7 @@ class OAuthController extends Controller
             'google_analytics' => 'ga4',
             'google_search_console' => 'google_search_console',
             'google_merchant_center' => 'google_merchant_center',
+            'google_business_profile' => 'google_business_profile',
             default => $provider,
         };
         $metadata = [];
@@ -234,10 +248,39 @@ class OAuthController extends Controller
                 $first = $ids[0] ?? null;
                 if (is_array($first) && isset($first['merchantId'])) {
                     $accountId = (string) $first['merchantId'];
-                    $accountName = 'Merchant ' . $accountId;
+                    $accountName = 'Merchant '.$accountId;
                     $metadata['authinfo'] = $first;
                 }
                 $metadata['merchant_accounts_count'] = is_array($ids) ? count($ids) : 0;
+            }
+        }
+
+        if ($provider === 'google_business_profile') {
+            $accounts = Http::withToken($accessToken)->get('https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+            if ($accounts->successful()) {
+                $list = $accounts->json()['accounts'] ?? [];
+                $firstAcc = $list[0] ?? null;
+                $accountName = is_array($firstAcc) ? ($firstAcc['name'] ?? null) : null;
+                $metadata['accounts_count'] = is_array($list) ? count($list) : 0;
+                $metadata['account'] = $firstAcc;
+
+                if (is_string($accountName) && $accountName !== '') {
+                    $locations = Http::withToken($accessToken)->get('https://mybusinessbusinessinformation.googleapis.com/v1/'.$accountName.'/locations', [
+                        'readMask' => 'name,title,storefrontAddress,websiteUri,phoneNumbers',
+                        'pageSize' => 100,
+                    ]);
+
+                    if ($locations->successful()) {
+                        $locs = $locations->json()['locations'] ?? [];
+                        $firstLoc = $locs[0] ?? null;
+                        if (is_array($firstLoc)) {
+                            $accountId = isset($firstLoc['name']) ? (string) $firstLoc['name'] : null;
+                            $accountName = isset($firstLoc['title']) ? (string) $firstLoc['title'] : $accountId;
+                            $metadata['location'] = $firstLoc;
+                            $metadata['locations_count'] = is_array($locs) ? count($locs) : 0;
+                        }
+                    }
+                }
             }
         }
 
@@ -278,7 +321,7 @@ class OAuthController extends Controller
         $redirectUri = route('integrations.oauth.callback', ['provider' => $provider]);
         $scopes = config('services.shopify.scopes', 'read_orders,read_products');
 
-        return "https://{$shop}/admin/oauth/authorize?" . http_build_query([
+        return "https://{$shop}/admin/oauth/authorize?".http_build_query([
             'client_id' => config('services.shopify.client_id', ''),
             'scope' => $scopes,
             'redirect_uri' => $redirectUri,
@@ -291,7 +334,7 @@ class OAuthController extends Controller
         $redirectUri = route('integrations.oauth.callback', ['provider' => $provider]);
         $appId = config('services.facebook.client_id', '');
 
-        return "https://www.facebook.com/v25.0/dialog/oauth?" . http_build_query([
+        return 'https://www.facebook.com/v25.0/dialog/oauth?'.http_build_query([
             'client_id' => $appId,
             'redirect_uri' => $redirectUri,
             'response_type' => 'code',
@@ -318,7 +361,7 @@ class OAuthController extends Controller
         $challenge = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
         session(["integrations.oauth.pkce.{$provider}" => $verifier]);
 
-        return 'https://twitter.com/i/oauth2/authorize?' . http_build_query([
+        return 'https://twitter.com/i/oauth2/authorize?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $clientId,
             'redirect_uri' => $redirectUri,
@@ -334,7 +377,7 @@ class OAuthController extends Controller
         $redirectUri = route('integrations.oauth.callback', ['provider' => $provider]);
         $clientId = config('services.linkedin.client_id', '');
 
-        return 'https://www.linkedin.com/oauth/v2/authorization?' . http_build_query([
+        return 'https://www.linkedin.com/oauth/v2/authorization?'.http_build_query([
             'response_type' => 'code',
             'client_id' => $clientId,
             'redirect_uri' => $redirectUri,
@@ -357,7 +400,7 @@ class OAuthController extends Controller
         ]);
 
         if ($tokenResponse->failed()) {
-            throw new \RuntimeException("Shopify token exchange failed: " . $tokenResponse->body());
+            throw new \RuntimeException('Shopify token exchange failed: '.$tokenResponse->body());
         }
 
         $token = $tokenResponse->json();
@@ -544,7 +587,7 @@ class OAuthController extends Controller
 
         $tokenResponse = Http::asForm()
             ->withHeaders([
-                'Authorization' => 'Basic ' . base64_encode($clientId . ':' . $clientSecret),
+                'Authorization' => 'Basic '.base64_encode($clientId.':'.$clientSecret),
             ])
             ->post('https://api.twitter.com/2/oauth2/token', [
                 'grant_type' => 'authorization_code',

@@ -3,21 +3,26 @@
 namespace App\Services;
 
 use App\Models\AdAccount;
-use App\Models\Campaign;
 use App\Models\AdSet;
-use App\Models\Ad;
-use App\Models\DailyMetric;
+use App\Models\Campaign;
 use Illuminate\Support\Collection;
 
 abstract class BaseAdsService
 {
     abstract public function getAuthUrl(): string;
+
     abstract public function handleCallback(array $data, string $organizationId, string $clientId): AdAccount;
-    abstract public function syncCampaigns(\App\Models\AdAccount $adAccount): Collection;
-    abstract public function syncAdSets(\App\Models\Campaign $campaign): Collection;
-    abstract public function syncAds(\App\Models\AdSet $adSet): Collection;
-    abstract public function syncMetrics(\App\Models\Campaign $campaign, string $startDate, string $endDate): Collection;
+
+    abstract public function syncCampaigns(AdAccount $adAccount): Collection;
+
+    abstract public function syncAdSets(Campaign $campaign): Collection;
+
+    abstract public function syncAds(AdSet $adSet): Collection;
+
+    abstract public function syncMetrics(Campaign $campaign, string $startDate, string $endDate): Collection;
+
     abstract public function syncInsights(AdAccount $adAccount, string $startDate, string $endDate, string $level): Collection;
+
     public function syncBreakdowns(AdAccount $adAccount, string $startDate, string $endDate, string $level = 'campaign', array $breakdowns = []): Collection
     {
         return collect();
@@ -37,9 +42,11 @@ abstract class BaseAdsService
         }
     }
 
-    abstract public function pauseCampaign(\App\Models\Campaign $campaign): bool;
-    abstract public function archiveCampaign(\App\Models\Campaign $campaign): bool;
-    abstract public function deleteCampaign(\App\Models\Campaign $campaign): bool;
+    abstract public function pauseCampaign(Campaign $campaign): bool;
+
+    abstract public function archiveCampaign(Campaign $campaign): bool;
+
+    abstract public function deleteCampaign(Campaign $campaign): bool;
 
     protected function refreshAccessToken(AdAccount $adAccount): void
     {

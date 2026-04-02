@@ -2,19 +2,22 @@
 
 namespace App\Livewire\Users;
 
-use Livewire\Component;
-
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Livewire\Component;
 
 class Create extends Component
 {
     public $full_name = '';
+
     public $email = '';
+
     public $role = 'ANALYST';
+
     public $status = 'ACTIVE';
+
     public $password = '';
 
     public function save()

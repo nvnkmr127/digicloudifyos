@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class SyncAllCampaignMetrics extends Command
 {
     protected $signature = 'ads:sync-metrics {--campaign= : Specific campaign local id}';
+
     protected $description = 'Sync metrics and hierarchy for all active ad campaigns';
 
     public function handle()
@@ -27,6 +28,7 @@ class SyncAllCampaignMetrics extends Command
 
         if ($campaigns->isEmpty()) {
             $this->warn('No active ad campaigns found for sync.');
+
             return self::SUCCESS;
         }
 

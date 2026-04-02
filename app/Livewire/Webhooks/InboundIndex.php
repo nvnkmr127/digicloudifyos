@@ -11,10 +11,15 @@ use Livewire\Component;
 class InboundIndex extends Component
 {
     public $inboundWebhookId = null;
+
     public $name = '';
+
     public $provider = 'custom';
+
     public $verify_token = '';
+
     public $signing_secret = '';
+
     public $active = true;
 
     public function mount(): void
@@ -28,6 +33,7 @@ class InboundIndex extends Component
     {
         if (! Schema::hasTable('inbound_webhooks')) {
             session()->flash('error', 'Inbound webhook table is not available. Run migrations first.');
+
             return;
         }
 

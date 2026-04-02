@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -56,24 +59,24 @@ class AuthenticatedSessionController extends Controller
             abort(404);
         }
 
-        $email = strtolower($normalizedRole) . '@example.com';
+        $email = strtolower($normalizedRole).'@example.com';
 
-        $org = \App\Models\Organization::firstOrCreate([
+        $org = Organization::firstOrCreate([
             'slug' => 'default-org',
         ], [
             'name' => 'Default Organization',
             'timezone' => 'UTC',
         ]);
 
-        $user = \App\Models\User::firstOrCreate(
+        $user = User::firstOrCreate(
             [
                 'organization_id' => $org->id,
                 'email' => $email,
             ],
             [
-                'full_name' => ucfirst(strtolower($normalizedRole)) . ' User',
+                'full_name' => ucfirst(strtolower($normalizedRole)).' User',
                 'role' => $normalizedRole,
-                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'password' => Hash::make('password'),
                 'status' => 'ACTIVE',
                 'email_verified_at' => now(),
             ]

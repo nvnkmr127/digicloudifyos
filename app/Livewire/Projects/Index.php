@@ -2,11 +2,10 @@
 
 namespace App\Livewire\Projects;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
 use App\Models\Project;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Index extends Component
 {
@@ -28,14 +27,14 @@ class Index extends Component
         $projects = Project::where('organization_id', Auth::user()->organization_id)
             ->with(['client', 'projectManager'])
             ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('project_code', 'like', '%' . $this->search . '%');
+                $query->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('project_code', 'like', '%'.$this->search.'%');
             })
             ->latest()
             ->paginate(10);
 
         return view('livewire.projects.index', [
-            'projects' => $projects
+            'projects' => $projects,
         ]);
     }
 }

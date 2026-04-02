@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AdAccount;
-use App\Services\MetaAdsService;
+use App\Jobs\SyncAdInsights;
+use App\Jobs\SyncAdsStructure;
+use App\Models\Client;
+use App\Models\User;
 use App\Services\GoogleAdsService;
 use App\Services\LinkedInAdsService;
+use App\Services\MetaAdsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 
@@ -25,6 +29,7 @@ class AdsIntegrationController extends Controller
         session(["ads.oauth_state.{$platform}" => $state]);
 
         $url = $this->appendQueryParams($service->getAuthUrl(), ['state' => $state]);
+
         return Redirect::away($url);
     }
 
@@ -42,7 +47,7 @@ class AdsIntegrationController extends Controller
         $service = $this->getService($platform);
 
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User) {
+        if (! $user instanceof User) {
             abort(403);
         }
 
@@ -51,27 +56,28 @@ class AdsIntegrationController extends Controller
         // For now, we'll try to get client_id from session or default if not provided
         $clientId = session('current_connect_client_id');
 
-        if (!$clientId) {
+        if (! $clientId) {
             // Fallback: use first available client or throw error
-            $client = \App\Models\Client::where('organization_id', $organizationId)->first();
+            $client = Client::where('organization_id', $organizationId)->first();
             $clientId = $client ? $client->id : null;
         }
 
-        if (!$clientId) {
+        if (! $clientId) {
             return redirect()->route('settings', ['tab' => 'ads'])->with('error', 'No client found to associate with this ad account.');
         }
 
         try {
             $adAccount = $service->handleCallback($request->all(), $organizationId, $clientId);
             // 3. Dispatch initial sync jobs
-            \App\Jobs\SyncAdsStructure::dispatch($adAccount);
-            \App\Jobs\SyncAdInsights::dispatch($adAccount, now()->subDays(30)->toDateString(), now()->toDateString());
+            SyncAdsStructure::dispatch($adAccount);
+            SyncAdInsights::dispatch($adAccount, now()->subDays(30)->toDateString(), now()->toDateString());
 
             return redirect()->route('settings', ['tab' => 'ads'])
-                ->with('success', ucfirst($platform) . ' Ads connected and sync started!');
+                ->with('success', ucfirst($platform).' Ads connected and sync started!');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Ads Callback Error: " . $e->getMessage());
-            return redirect()->route('settings', ['tab' => 'ads'])->with('error', "Failed to connect {$platform} account: " . $e->getMessage());
+            Log::error('Ads Callback Error: '.$e->getMessage());
+
+            return redirect()->route('settings', ['tab' => 'ads'])->with('error', "Failed to connect {$platform} account: ".$e->getMessage());
         }
     }
 
@@ -83,9 +89,9 @@ class AdsIntegrationController extends Controller
     protected function getService(string $platform)
     {
         return match ($platform) {
-            'meta' => new MetaAdsService(),
-            'google' => new GoogleAdsService(),
-            'linkedin' => new LinkedInAdsService(),
+            'meta' => new MetaAdsService,
+            'google' => new GoogleAdsService,
+            'linkedin' => new LinkedInAdsService,
             default => throw new \Exception('Unsupported platform'),
         };
     }
@@ -105,12 +111,12 @@ class AdsIntegrationController extends Controller
 
         $scheme = $parts['scheme'] ?? 'https';
         $host = $parts['host'] ?? '';
-        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+        $port = isset($parts['port']) ? ':'.$parts['port'] : '';
         $path = $parts['path'] ?? '';
-        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
+        $fragment = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
 
         $newQuery = http_build_query($query);
-        $qs = $newQuery !== '' ? '?' . $newQuery : '';
+        $qs = $newQuery !== '' ? '?'.$newQuery : '';
 
         return "{$scheme}://{$host}{$port}{$path}{$qs}{$fragment}";
     }

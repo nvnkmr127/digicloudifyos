@@ -17,9 +17,9 @@ class LeadService
 
     public function getAllForOrganization(string $organizationId, array $filters = []): Collection
     {
-        $cacheKey = "leads.org.{$organizationId}." . md5(serialize($filters));
+        $cacheKey = "leads.org.{$organizationId}.".md5(serialize($filters));
 
-        return $this->withCache($cacheKey, ["org.{$organizationId}", "leads"], function () use ($organizationId, $filters) {
+        return $this->withCache($cacheKey, ["org.{$organizationId}", 'leads'], function () use ($organizationId, $filters) {
             return $this->repository->getByOrganization($organizationId, $filters);
         });
     }

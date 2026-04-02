@@ -2,9 +2,9 @@
 
 namespace App\Jobs\Intelligence;
 
-use App\Models\DailyBriefing;
-use App\Models\BriefingActionItem;
 use App\Models\AiInsight;
+use App\Models\BriefingActionItem;
+use App\Models\DailyBriefing;
 use App\Models\Organization;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,10 +30,10 @@ class GenerateDailyBriefing implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info("GenerateDailyBriefing job started.");
+        Log::info('GenerateDailyBriefing job started.');
 
         $organizations = Organization::all();
-        $date = today()->toDateString();
+        $date = now()->subDay()->toDateString();
 
         foreach ($organizations as $org) {
             $briefing = DailyBriefing::updateOrCreate(
@@ -55,7 +55,7 @@ class GenerateDailyBriefing implements ShouldQueue
             $opportunityCount = 0;
 
             foreach ($insights as $index => $insight) {
-                $priorityLevel = match($insight->priority) {
+                $priorityLevel = match ($insight->priority) {
                     'critical', 'high' => 'urgent',
                     'opportunity' => 'opportunity',
                     default => 'important',
@@ -75,8 +75,12 @@ class GenerateDailyBriefing implements ShouldQueue
                 ]);
 
                 $itemsCount++;
-                if ($priorityLevel === 'urgent') $urgentCount++;
-                if ($priorityLevel === 'opportunity') $opportunityCount++;
+                if ($priorityLevel === 'urgent') {
+                    $urgentCount++;
+                }
+                if ($priorityLevel === 'opportunity') {
+                    $opportunityCount++;
+                }
             }
 
             $briefing->update([
@@ -88,6 +92,6 @@ class GenerateDailyBriefing implements ShouldQueue
             ]);
         }
 
-        Log::info("GenerateDailyBriefing job completed.");
+        Log::info('GenerateDailyBriefing job completed.');
     }
 }

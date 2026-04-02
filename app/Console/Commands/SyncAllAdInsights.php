@@ -46,6 +46,7 @@ class SyncAllAdInsights extends Command
 
         if ($accounts->isEmpty()) {
             $this->warn('No active ad accounts found to sync.');
+
             return self::SUCCESS;
         }
 

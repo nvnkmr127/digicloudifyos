@@ -3,26 +3,24 @@
 namespace App\Services\Intelligence;
 
 use App\Models\AdInsight;
-use App\Models\Campaign;
-use App\Models\FacebookLead;
-use App\Models\SocialPost;
+use App\Models\AmazonSpDailyMetric;
 use App\Models\Client;
-use App\Models\DailyMetric;
-use App\Models\GoogleAnalyticsDailyMetric;
-use App\Models\GoogleSearchConsoleDailyMetric;
-use App\Models\ShopifyDailyMetric;
-use App\Models\WooCommerceDailyMetric;
-use App\Models\MetaPageDailyMetric;
-use App\Models\InstagramDailyMetric;
-use App\Models\TwitterDailyMetric;
-use App\Models\LinkedInOrganizationDailyMetric;
-use App\Models\GoogleMerchantCenterDailyMetric;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-
-use App\Models\Lead;
 use App\Models\ConversionEvent;
+use App\Models\DailyMetric;
 use App\Models\FunnelMetric;
+use App\Models\GoogleAnalyticsDailyMetric;
+use App\Models\GoogleBusinessProfileDailyMetric;
+use App\Models\GoogleMerchantCenterDailyMetric;
+use App\Models\GoogleSearchConsoleDailyMetric;
+use App\Models\InstagramDailyMetric;
+use App\Models\Lead;
+use App\Models\LinkedInOrganizationDailyMetric;
+use App\Models\MetaPageDailyMetric;
+use App\Models\ShopifyDailyMetric;
+use App\Models\SocialPost;
+use App\Models\TwitterDailyMetric;
+use App\Models\WooCommerceDailyMetric;
+use Illuminate\Support\Facades\DB;
 
 class ChannelDataAggregatorService
 {
@@ -50,7 +48,9 @@ class ChannelDataAggregatorService
             ->groupBy('date')
             ->first();
 
-        if (!$metrics || $metrics->total_impressions == 0) return [];
+        if (! $metrics || $metrics->total_impressions == 0) {
+            return [];
+        }
 
         return [
             'impressions' => (int) $metrics->total_impressions,
@@ -71,8 +71,8 @@ class ChannelDataAggregatorService
     public function aggregateGoogleAds(string $clientId, string $orgId, string $date): array
     {
         $metrics = DailyMetric::whereHas('campaign', function ($query) use ($clientId, $orgId) {
-                $query->where('client_id', $clientId)->where('organization_id', $orgId);
-            })
+            $query->where('client_id', $clientId)->where('organization_id', $orgId);
+        })
             ->whereDate('date', $date)
             ->select(
                 DB::raw('SUM(spend) as total_spend'),
@@ -84,7 +84,9 @@ class ChannelDataAggregatorService
             ->groupBy('date')
             ->first();
 
-        if (!$metrics || $metrics->total_impressions == 0) return [];
+        if (! $metrics || $metrics->total_impressions == 0) {
+            return [];
+        }
 
         $impressions = (int) $metrics->total_impressions;
         $clicks = (int) $metrics->total_clicks;
@@ -115,7 +117,9 @@ class ChannelDataAggregatorService
             ->whereDate('published_at', $date)
             ->get();
 
-        if ($posts->isEmpty()) return [];
+        if ($posts->isEmpty()) {
+            return [];
+        }
 
         $totalReach = 0;
         $totalEngagement = 0;
@@ -184,7 +188,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         return [
             'conversions' => (int) $metric->conversions,
@@ -205,7 +211,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         return [
             'impressions' => (int) $metric->impressions,
@@ -225,7 +233,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         return [
             'conversions' => (int) $metric->orders_count,
@@ -247,7 +257,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         return [
             'conversions' => (int) $metric->orders_count,
@@ -269,7 +281,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         $impressions = (int) $metric->impressions;
         $engagements = (int) $metric->post_engagements;
@@ -294,7 +308,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         return [
             'impressions' => (int) $metric->impressions,
@@ -314,7 +330,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         return [
             'raw_data' => [
@@ -334,7 +352,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         $impressions = (int) $metric->impressions;
         $clicks = (int) $metric->clicks;
@@ -360,7 +380,9 @@ class ChannelDataAggregatorService
             ->whereDate('metric_date', $date)
             ->first();
 
-        if (! $metric) return [];
+        if (! $metric) {
+            return [];
+        }
 
         $checked = (int) $metric->items_checked;
         $disapproved = (int) $metric->items_disapproved;
@@ -385,54 +407,149 @@ class ChannelDataAggregatorService
         ];
     }
 
+    public function aggregateGoogleBusinessProfile(string $clientId, string $orgId, string $date): array
+    {
+        $metric = GoogleBusinessProfileDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) {
+            return [];
+        }
+
+        $impressions = (int) ($metric->impressions_search_desktop + $metric->impressions_search_mobile + $metric->impressions_maps_desktop + $metric->impressions_maps_mobile);
+
+        return [
+            'impressions' => $impressions,
+            'clicks' => (int) $metric->website_clicks,
+            'leads' => (int) $metric->call_clicks,
+            'conversions' => (int) $metric->call_clicks,
+            'spend' => 0,
+            'revenue' => 0,
+            'raw_data' => [
+                'website_clicks' => (int) $metric->website_clicks,
+                'call_clicks' => (int) $metric->call_clicks,
+                'directions_requests' => (int) $metric->directions_requests,
+                'impressions_search_desktop' => (int) $metric->impressions_search_desktop,
+                'impressions_search_mobile' => (int) $metric->impressions_search_mobile,
+                'impressions_maps_desktop' => (int) $metric->impressions_maps_desktop,
+                'impressions_maps_mobile' => (int) $metric->impressions_maps_mobile,
+            ],
+        ];
+    }
+
+    public function aggregateAmazon(string $clientId, string $orgId, string $date): array
+    {
+        $metric = AmazonSpDailyMetric::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
+            ->whereDate('metric_date', $date)
+            ->first();
+
+        if (! $metric) {
+            return [];
+        }
+
+        return [
+            'conversions' => (int) $metric->orders_count,
+            'revenue' => (float) $metric->net_sales,
+            'raw_data' => [
+                'orders_count' => (int) $metric->orders_count,
+                'gross_sales' => (float) $metric->gross_sales,
+                'currency' => $metric->currency_code,
+                'marketplace_id' => $metric->marketplace_id,
+                'seller_id' => $metric->seller_id,
+                'truncated' => (bool) $metric->truncated,
+            ],
+        ];
+    }
+
     /**
      * Entry point to aggregate all channel data for a client.
      */
     public function aggregateAll(string $clientId, string $orgId, string $date): array
     {
         $results = [];
-        
+
         $meta = $this->aggregateMetaAds($clientId, $orgId, $date);
-        if (!empty($meta)) $results['meta_ads'] = $meta;
+        if (! empty($meta)) {
+            $results['meta_ads'] = $meta;
+        }
 
         $google = $this->aggregateGoogleAds($clientId, $orgId, $date);
-        if (!empty($google)) $results['google_ads'] = $google;
+        if (! empty($google)) {
+            $results['google_ads'] = $google;
+        }
 
         $social = $this->aggregateSocialOrganic($clientId, $orgId, $date);
-        if (!empty($social)) $results['social_organic'] = $social;
+        if (! empty($social)) {
+            $results['social_organic'] = $social;
+        }
 
         $leads = $this->aggregateLeads($clientId, $orgId, $date);
-        if (!empty($leads) && $leads['leads'] > 0) $results['leads'] = $leads;
+        if (! empty($leads) && $leads['leads'] > 0) {
+            $results['leads'] = $leads;
+        }
 
         $conversions = $this->aggregateConversions($clientId, $orgId, $date);
-        if (!empty($conversions)) $results['conversions'] = $conversions;
+        if (! empty($conversions)) {
+            $results['conversions'] = $conversions;
+        }
 
         $ga4 = $this->aggregateGa4($clientId, $orgId, $date);
-        if (!empty($ga4)) $results['ga4'] = $ga4;
+        if (! empty($ga4)) {
+            $results['ga4'] = $ga4;
+        }
 
         $gsc = $this->aggregateSearchConsole($clientId, $orgId, $date);
-        if (!empty($gsc)) $results['search_console'] = $gsc;
+        if (! empty($gsc)) {
+            $results['search_console'] = $gsc;
+        }
 
         $shopify = $this->aggregateShopify($clientId, $orgId, $date);
-        if (!empty($shopify)) $results['shopify'] = $shopify;
+        if (! empty($shopify)) {
+            $results['shopify'] = $shopify;
+        }
 
         $woo = $this->aggregateWooCommerce($clientId, $orgId, $date);
-        if (!empty($woo)) $results['woocommerce'] = $woo;
+        if (! empty($woo)) {
+            $results['woocommerce'] = $woo;
+        }
 
         $fb = $this->aggregateFacebookOrganic($clientId, $orgId, $date);
-        if (!empty($fb)) $results['facebook_organic'] = $fb;
+        if (! empty($fb)) {
+            $results['facebook_organic'] = $fb;
+        }
 
         $ig = $this->aggregateInstagram($clientId, $orgId, $date);
-        if (!empty($ig)) $results['instagram'] = $ig;
+        if (! empty($ig)) {
+            $results['instagram'] = $ig;
+        }
 
         $tw = $this->aggregateTwitter($clientId, $orgId, $date);
-        if (!empty($tw)) $results['twitter'] = $tw;
+        if (! empty($tw)) {
+            $results['twitter'] = $tw;
+        }
 
         $li = $this->aggregateLinkedInOrganic($clientId, $orgId, $date);
-        if (!empty($li)) $results['linkedin_organic'] = $li;
+        if (! empty($li)) {
+            $results['linkedin_organic'] = $li;
+        }
+
+        $gbp = $this->aggregateGoogleBusinessProfile($clientId, $orgId, $date);
+        if (! empty($gbp)) {
+            $results['google_business_profile'] = $gbp;
+        }
 
         $gmc = $this->aggregateMerchantCenter($clientId, $orgId, $date);
-        if (!empty($gmc)) $results['google_merchant_center'] = $gmc;
+        if (! empty($gmc)) {
+            $results['google_merchant_center'] = $gmc;
+        }
+
+        $amazon = $this->aggregateAmazon($clientId, $orgId, $date);
+        if (! empty($amazon)) {
+            $results['amazon'] = $amazon;
+        }
 
         return $results;
     }

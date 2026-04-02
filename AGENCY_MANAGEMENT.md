@@ -10,7 +10,7 @@ Complete enterprise-grade agency management system with employee management, wor
 ### 1. **Employee Management** 👥
 
 #### Models Created
-- [Employee.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/Employee.php)
+- [Employee.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/Employee.php)
 
 #### Features
 - **Complete employee profiles** with departments, positions, skills
@@ -51,10 +51,10 @@ $employee->projectAssignments;       // Assigned projects
 ### 2. **Workload Analysis System** 📊
 
 #### Service Created
-- [WorkloadAnalysisService.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Services/WorkloadAnalysisService.php)
+- [WorkloadAnalysisService.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Services/WorkloadAnalysisService.php)
 
 #### Models
-- [WorkloadEntry.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/WorkloadEntry.php)
+- [WorkloadEntry.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/WorkloadEntry.php)
 
 #### API Endpoint
 ```bash
@@ -154,7 +154,7 @@ GET /api/v1/workload/analysis?period=current_week
 ### 3. **Time Tracking Module** ⏱️
 
 #### Model Created
-- [TimeEntry.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/TimeEntry.php)
+- [TimeEntry.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/TimeEntry.php)
 
 #### Features
 - **Detailed time entries** per employee, project, and task
@@ -200,8 +200,8 @@ $weekHours = TimeEntry::forPeriod($startDate, $endDate)->sum('hours');
 ### 4. **Project Management** 📁
 
 #### Model Created
-- [Project.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/Project.php)
-- [ProjectAssignment.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/ProjectAssignment.php)
+- [Project.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/Project.php)
+- [ProjectAssignment.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/ProjectAssignment.php)
 
 #### Project Fields
 ```php
@@ -246,7 +246,7 @@ $project->isProfitable();              // Is making money?
 ### 5. **Invoice & Billing System** 💰
 
 #### Model Created
-- [Invoice.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/Invoice.php)
+- [Invoice.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/Invoice.php)
 
 #### Invoice Fields
 ```php
@@ -303,8 +303,8 @@ Invoice::create([
 ### 6. **Agency Dashboard** 🎯
 
 #### Service Created
-- [AgencyManagementService.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Services/AgencyManagementService.php)
-- [AgencyController.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Http/Controllers/Api/V1/AgencyController.php)
+- [AgencyManagementService.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Services/AgencyManagementService.php)
+- [AgencyController.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Http/Controllers/Api/V1/AgencyController.php)
 
 #### API Endpoint
 ```bash

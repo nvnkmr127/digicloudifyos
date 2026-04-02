@@ -27,8 +27,7 @@
                         </span>
                         <div class="relative inline-block w-10 align-middle select-none">
                             <input type="checkbox" wire:click="toggleRule('{{ $rule->id }}')" {{ $rule->is_active ? 'checked' : '' }}
-                                class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer {{ $rule->is_active ? 'border-green-500' : 'border-gray-300' }}"
-                                style="{{ $rule->is_active ? 'right: 0;' : 'left: 0;' }}" />
+                                class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer {{ $rule->is_active ? 'border-green-500 right-0' : 'border-gray-300 left-0' }}" />
                             <label class="toggle-label block overflow-hidden h-5 rounded-full {{ $rule->is_active ? 'bg-green-500' : 'bg-gray-300' }} cursor-pointer"></label>
                         </div>
                     </div>

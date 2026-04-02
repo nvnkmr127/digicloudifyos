@@ -18,6 +18,7 @@ class SyncMetaPageDailyMetrics implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [60, 300, 900];
 
     public function __construct(
@@ -185,12 +186,15 @@ class SyncMetaPageDailyMetrics implements ShouldQueue
 
     protected function extractMetricValue(?array $metricRow): int
     {
-        if (! $metricRow) return 0;
+        if (! $metricRow) {
+            return 0;
+        }
         $values = $metricRow['values'] ?? [];
         $value = $values[0]['value'] ?? null;
         if (is_array($value)) {
             return (int) array_sum(array_map(fn ($v) => (int) $v, $value));
         }
+
         return (int) $value;
     }
 }

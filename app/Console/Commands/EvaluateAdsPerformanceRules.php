@@ -2,6 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\ProcessWorkflowAutomation;
+use App\Models\Ad;
+use App\Models\AdAccount;
+use App\Models\Alert;
+use App\Models\BudgetAlert;
+use App\Models\Campaign;
 use Illuminate\Console\Command;
 
 class EvaluateAdsPerformanceRules extends Command
@@ -12,13 +18,14 @@ class EvaluateAdsPerformanceRules extends Command
      * @var string
      */
     protected $signature = 'ads:evaluate-rules';
+
     protected $description = 'Evaluate performance rules and trigger automations';
 
     public function handle()
     {
         $this->info('Evaluating performance rules...');
 
-        $accounts = \App\Models\AdAccount::where('status', 'ACTIVE')->get();
+        $accounts = AdAccount::where('status', 'ACTIVE')->get();
 
         foreach ($accounts as $account) {
             $this->evaluateCampaigns($account);
@@ -38,7 +45,7 @@ class EvaluateAdsPerformanceRules extends Command
         }
     }
 
-    protected function checkBudgetThresholds(\App\Models\Campaign $campaign)
+    protected function checkBudgetThresholds(Campaign $campaign)
     {
         // Check Daily Budget usage (last 24h)
         if ($campaign->daily_budget > 0) {
@@ -48,10 +55,10 @@ class EvaluateAdsPerformanceRules extends Command
 
             $usage = ($dailySpend / $campaign->daily_budget) * 100;
             if ($usage >= 90) {
-                $this->createBudgetAlert($campaign, 'daily_usage', "Daily budget usage is at " . round($usage, 2) . "%", [
+                $this->createBudgetAlert($campaign, 'daily_usage', 'Daily budget usage is at '.round($usage, 2).'%', [
                     'spend' => $dailySpend,
                     'budget' => $campaign->daily_budget,
-                    'usage_percentage' => $usage
+                    'usage_percentage' => $usage,
                 ]);
             }
         }
@@ -62,10 +69,10 @@ class EvaluateAdsPerformanceRules extends Command
             $usage = ($totalSpend / $campaign->lifetime_budget) * 100;
 
             if ($usage >= 90) {
-                $this->createBudgetAlert($campaign, 'lifetime_usage', "Lifetime budget usage is at " . round($usage, 2) . "%", [
+                $this->createBudgetAlert($campaign, 'lifetime_usage', 'Lifetime budget usage is at '.round($usage, 2).'%', [
                     'spend' => $totalSpend,
                     'budget' => $campaign->lifetime_budget,
-                    'usage_percentage' => $usage
+                    'usage_percentage' => $usage,
                 ]);
             }
         }
@@ -76,57 +83,59 @@ class EvaluateAdsPerformanceRules extends Command
             $usage = ($totalSpend / $campaign->spend_cap) * 100;
 
             if ($usage >= 90) {
-                $this->createBudgetAlert($campaign, 'cap_usage', "Spend cap usage is at " . round($usage, 2) . "%", [
+                $this->createBudgetAlert($campaign, 'cap_usage', 'Spend cap usage is at '.round($usage, 2).'%', [
                     'spend' => $totalSpend,
                     'budget' => $campaign->spend_cap,
-                    'usage_percentage' => $usage
+                    'usage_percentage' => $usage,
                 ]);
             }
         }
     }
 
-    protected function createBudgetAlert(\App\Models\Campaign $campaign, $type, $message, $details)
+    protected function createBudgetAlert(Campaign $campaign, $type, $message, $details)
     {
-        $existing = \App\Models\BudgetAlert::where('campaign_id', $campaign->id)
+        $existing = BudgetAlert::where('campaign_id', $campaign->id)
             ->where('alert_type', $type)
             ->whereDate('created_at', now()->toDateString())
             ->first();
 
-        if ($existing)
+        if ($existing) {
             return;
+        }
 
-        \App\Models\BudgetAlert::create([
+        BudgetAlert::create([
             'organization_id' => $campaign->organization_id,
             'campaign_id' => $campaign->id,
             'alert_type' => $type,
             'message' => $message,
-            'details' => $details
+            'details' => $details,
         ]);
 
         $this->warn("Budget Alert [{$type}] on {$campaign->name}: {$message}");
 
         // Also trigger general automation
-        \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_budget_warning', [
+        ProcessWorkflowAutomation::dispatch('ads_budget_warning', [
             'organization_id' => $campaign->organization_id,
             'entity_type' => 'campaign',
             'entity_id' => $campaign->id,
             'campaign_name' => $campaign->name,
             'alert_type' => $type,
-            'message' => $message
+            'message' => $message,
         ]);
     }
 
-    protected function createPerformanceAlert(\App\Models\Campaign $campaign, $type, $message, $details, $severity = 'warning')
+    protected function createPerformanceAlert(Campaign $campaign, $type, $message, $details, $severity = 'warning')
     {
-        $existing = \App\Models\Alert::where('campaign_id', $campaign->id)
+        $existing = Alert::where('campaign_id', $campaign->id)
             ->where('alert_type', $type)
             ->whereDate('created_at', now()->toDateString())
             ->first();
 
-        if ($existing)
+        if ($existing) {
             return;
+        }
 
-        \App\Models\Alert::create([
+        Alert::create([
             'organization_id' => $campaign->organization_id,
             'client_id' => $campaign->client_id,
             'campaign_id' => $campaign->id,
@@ -136,7 +145,7 @@ class EvaluateAdsPerformanceRules extends Command
             'message' => $message,
             'payload' => $details,
             'triggered_at' => now(),
-            'status' => 'OPEN'
+            'status' => 'OPEN',
         ]);
     }
 
@@ -147,7 +156,7 @@ class EvaluateAdsPerformanceRules extends Command
         $targetCtr = $account->target_ctr ?? 1.00;
         $targetCpc = $account->target_cpc ?? 0.50;
 
-        /** @var \App\Models\Campaign $campaign */
+        /** @var Campaign $campaign */
         foreach ($campaigns as $campaign) {
             // Get last 24h insights
             $insight = $campaign->adInsights()
@@ -156,8 +165,9 @@ class EvaluateAdsPerformanceRules extends Command
                 ->selectRaw('SUM(spend) as spend, SUM(impressions) as impressions, SUM(clicks) as clicks, SUM(conversions) as conversions')
                 ->first();
 
-            if (!$insight || $insight->impressions == 0)
+            if (! $insight || $insight->impressions == 0) {
                 continue;
+            }
 
             $ctr = ($insight->clicks / $insight->impressions) * 100;
             $cpl = $insight->conversions > 0 ? $insight->spend / $insight->conversions : 0;
@@ -165,7 +175,7 @@ class EvaluateAdsPerformanceRules extends Command
 
             // Low CTR Alert
             if ($ctr < $targetCtr) {
-                $msg = "Low CTR on campaign {$campaign->name}: " . round($ctr, 2) . "%";
+                $msg = "Low CTR on campaign {$campaign->name}: ".round($ctr, 2).'%';
                 $this->warn($msg);
 
                 $details = [
@@ -173,16 +183,16 @@ class EvaluateAdsPerformanceRules extends Command
                     'entity_id' => $campaign->id,
                     'campaign_name' => $campaign->name,
                     'ctr' => round($ctr, 2),
-                    'threshold' => $targetCtr
+                    'threshold' => $targetCtr,
                 ];
                 $this->createPerformanceAlert($campaign, 'ads_low_ctr', $msg, $details);
 
-                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_low_ctr', array_merge($details, ['organization_id' => $account->organization_id]));
+                ProcessWorkflowAutomation::dispatch('ads_low_ctr', array_merge($details, ['organization_id' => $account->organization_id]));
             }
 
             // High CPL Alert
             if ($cpl > $targetCpl && $insight->conversions > 0) {
-                $msg = "High CPL on campaign {$campaign->name}: $" . round($cpl, 2);
+                $msg = "High CPL on campaign {$campaign->name}: $".round($cpl, 2);
                 $this->warn($msg);
 
                 $details = [
@@ -190,16 +200,16 @@ class EvaluateAdsPerformanceRules extends Command
                     'entity_id' => $campaign->id,
                     'campaign_name' => $campaign->name,
                     'cpl' => round($cpl, 2),
-                    'threshold' => $targetCpl
+                    'threshold' => $targetCpl,
                 ];
                 $this->createPerformanceAlert($campaign, 'ads_high_cpl', $msg, $details);
 
-                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_high_cpl', array_merge($details, ['organization_id' => $account->organization_id]));
+                ProcessWorkflowAutomation::dispatch('ads_high_cpl', array_merge($details, ['organization_id' => $account->organization_id]));
             }
 
             // High CPC Alert
             if ($cpc > $targetCpc && $insight->clicks > 0) {
-                $msg = "High CPC on campaign {$campaign->name}: $" . round($cpc, 2);
+                $msg = "High CPC on campaign {$campaign->name}: $".round($cpc, 2);
                 $this->warn($msg);
 
                 $details = [
@@ -207,11 +217,11 @@ class EvaluateAdsPerformanceRules extends Command
                     'entity_id' => $campaign->id,
                     'campaign_name' => $campaign->name,
                     'cpc' => round($cpc, 2),
-                    'threshold' => $targetCpc
+                    'threshold' => $targetCpc,
                 ];
                 $this->createPerformanceAlert($campaign, 'ads_high_cpc', $msg, $details);
 
-                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_high_cpc', array_merge($details, ['organization_id' => $account->organization_id]));
+                ProcessWorkflowAutomation::dispatch('ads_high_cpc', array_merge($details, ['organization_id' => $account->organization_id]));
             }
         }
     }
@@ -221,11 +231,11 @@ class EvaluateAdsPerformanceRules extends Command
         $targetFrequency = $account->target_frequency ?? 3.0;
 
         // Fetch ads across all running campaigns for this account
-        $ads = \App\Models\Ad::whereHas('adSet.campaign', function ($q) use ($account) {
+        $ads = Ad::whereHas('adSet.campaign', function ($q) use ($account) {
             $q->where('ad_account_id', $account->id)->where('status', 'running');
         })->get();
 
-        /** @var \App\Models\Ad $ad */
+        /** @var Ad $ad */
         foreach ($ads as $ad) {
             $insight = $ad->adInsights()
                 ->where('date', '>=', now()->subDays(7)->toDateString()) // Check frequency over 7 days
@@ -233,13 +243,14 @@ class EvaluateAdsPerformanceRules extends Command
                 ->selectRaw('SUM(impressions) as impressions, SUM(reach) as reach')
                 ->first();
 
-            if (!$insight || $insight->reach == 0)
+            if (! $insight || $insight->reach == 0) {
                 continue;
+            }
 
             $frequency = $insight->impressions / $insight->reach;
 
             if ($frequency > $targetFrequency) {
-                $msg = "Creative Fatigue on ad {$ad->name}: " . round($frequency, 2);
+                $msg = "Creative Fatigue on ad {$ad->name}: ".round($frequency, 2);
                 $this->warn($msg);
 
                 $details = [
@@ -247,12 +258,12 @@ class EvaluateAdsPerformanceRules extends Command
                     'entity_id' => $ad->id,
                     'ad_name' => $ad->name,
                     'frequency' => round($frequency, 2),
-                    'threshold' => $targetFrequency
+                    'threshold' => $targetFrequency,
                 ];
 
                 $this->createPerformanceAlert($ad->adSet->campaign, 'ads_creative_fatigue', $msg, $details);
 
-                \App\Jobs\ProcessWorkflowAutomation::dispatch('ads_creative_fatigue', array_merge($details, ['organization_id' => $account->organization_id]));
+                ProcessWorkflowAutomation::dispatch('ads_creative_fatigue', array_merge($details, ['organization_id' => $account->organization_id]));
             }
         }
     }

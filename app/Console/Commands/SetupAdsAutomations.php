@@ -3,19 +3,21 @@
 namespace App\Console\Commands;
 
 use App\Models\Organization;
-use App\Models\WorkflowRule;
 use App\Models\WorkflowAction;
+use App\Models\WorkflowRule;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
 
 class SetupAdsAutomations extends Command
 {
     protected $signature = 'ads:setup-automations {organization_id?}';
+
     protected $description = 'Setup default automation rules for ads and leads';
 
     public function handle()
     {
         $orgId = $this->argument('organization_id');
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Organization> $orgs */
+        /** @var Collection<int, Organization> $orgs */
         $orgs = $orgId ? Organization::where('id', $orgId)->get() : Organization::all();
 
         foreach ($orgs as $org) {
@@ -41,8 +43,8 @@ class SetupAdsAutomations extends Command
             [
                 'config' => [
                     'url' => 'https://api.whatsapp-provider.com/send',
-                    'message' => 'Hello {{full_name}}, thanks for your interest in {{form_name}}! We will contact you soon.'
-                ]
+                    'message' => 'Hello {{full_name}}, thanks for your interest in {{form_name}}! We will contact you soon.',
+                ],
             ]
         );
 
@@ -50,7 +52,7 @@ class SetupAdsAutomations extends Command
         WorkflowAction::updateOrCreate(
             ['workflow_rule_id' => $leadRule->id, 'action_type' => 'assign_sales'],
             [
-                'config' => ['user_id' => 'round_robin']
+                'config' => ['user_id' => 'round_robin'],
             ]
         );
 
@@ -64,8 +66,8 @@ class SetupAdsAutomations extends Command
                 'action_config' => [
                     'title' => 'Optimize Campaign: {{campaign_name}}',
                     'description' => 'Campaign CTR is critically low ({{ctr}}%). Review creatives.',
-                    'priority' => 'High'
-                ]
+                    'priority' => 'High',
+                ],
             ]
         );
 
@@ -77,8 +79,8 @@ class SetupAdsAutomations extends Command
                 'is_active' => true,
                 'action_type' => 'send_notification',
                 'action_config' => [
-                    'message' => 'Ad fatigue detected for {{ad_name}}! Frequency is {{frequency}}.'
-                ]
+                    'message' => 'Ad fatigue detected for {{ad_name}}! Frequency is {{frequency}}.',
+                ],
             ]
         );
 
@@ -90,8 +92,8 @@ class SetupAdsAutomations extends Command
                 'is_active' => true,
                 'action_type' => 'send_notification',
                 'action_config' => [
-                    'message' => 'High CPL alert on {{campaign_name}}! Current CPL is ${{cpl}} (Target: ${{threshold}}).'
-                ]
+                    'message' => 'High CPL alert on {{campaign_name}}! Current CPL is ${{cpl}} (Target: ${{threshold}}).',
+                ],
             ]
         );
         // 6. High CPC Alert
@@ -102,8 +104,8 @@ class SetupAdsAutomations extends Command
                 'is_active' => true,
                 'action_type' => 'send_notification',
                 'action_config' => [
-                    'message' => 'High CPC alert on {{campaign_name}}! Current CPC is ${{cpc}} (Target: ${{threshold}}).'
-                ]
+                    'message' => 'High CPC alert on {{campaign_name}}! Current CPC is ${{cpc}} (Target: ${{threshold}}).',
+                ],
             ]
         );
     }

@@ -20,10 +20,15 @@ class OutboundIndex extends Component
     ];
 
     public $webhookId = null;
+
     public $name = '';
+
     public $url = '';
+
     public $events = 'lead_created, task_completed';
+
     public $secret = '';
+
     public $active = true;
 
     public function mount(): void
@@ -37,6 +42,7 @@ class OutboundIndex extends Component
     {
         if (! Schema::hasTable('webhooks')) {
             session()->flash('error', 'Webhooks table is not available. Run migrations first.');
+
             return;
         }
 
@@ -50,6 +56,7 @@ class OutboundIndex extends Component
 
         if (app()->environment('production') && str_starts_with(strtolower($validated['url']), 'http://')) {
             $this->addError('url', 'Only HTTPS webhook URLs are allowed in production.');
+
             return;
         }
 
@@ -63,6 +70,7 @@ class OutboundIndex extends Component
 
         if (empty($eventList)) {
             $this->addError('events', 'Provide at least one event.');
+
             return;
         }
 
@@ -71,7 +79,8 @@ class OutboundIndex extends Component
             ->values();
 
         if ($unknownEvents->isNotEmpty()) {
-            $this->addError('events', 'Unsupported events: ' . $unknownEvents->implode(', '));
+            $this->addError('events', 'Unsupported events: '.$unknownEvents->implode(', '));
+
             return;
         }
 

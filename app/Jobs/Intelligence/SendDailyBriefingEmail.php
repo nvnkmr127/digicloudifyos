@@ -2,17 +2,17 @@
 
 namespace App\Jobs\Intelligence;
 
+use App\Mail\DailyBriefingMail;
 use App\Models\DailyBriefing;
 use App\Models\Organization;
 use App\Models\User;
-use App\Mail\DailyBriefingMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SendDailyBriefingEmail implements ShouldQueue
 {
@@ -31,20 +31,25 @@ class SendDailyBriefingEmail implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info("SendDailyBriefingEmail job started.");
+        Log::info('SendDailyBriefingEmail job started.');
 
-        if (!config('intelligence.briefing_email_enabled')) {
-            Log::info("Briefing emails are disabled in config.");
+        if (! config('intelligence.briefing_email_enabled')) {
+            Log::info('Briefing emails are disabled in config.');
+
             return;
         }
 
+        $date = now()->subDay()->toDateString();
+
         $briefings = DailyBriefing::where('status', 'ready')
-            ->whereDate('briefing_date', today())
+            ->whereDate('briefing_date', $date)
             ->get();
 
         foreach ($briefings as $briefing) {
             $org = Organization::find($briefing->organization_id);
-            if (!$org) continue;
+            if (! $org) {
+                continue;
+            }
 
             $recipients = User::where('organization_id', $org->id)
                 ->get()
@@ -52,6 +57,7 @@ class SendDailyBriefingEmail implements ShouldQueue
 
             if ($recipients->isEmpty()) {
                 Log::warning("No recipients found for briefing for organization {$org->id}");
+
                 continue;
             }
 
@@ -61,12 +67,12 @@ class SendDailyBriefingEmail implements ShouldQueue
                 }
 
                 $briefing->markSent();
-                Log::info("Sent briefing for organization {$org->id} to " . $recipients->count() . " recipients.");
+                Log::info("Sent briefing for organization {$org->id} to ".$recipients->count().' recipients.');
             } catch (\Exception $e) {
-                Log::error("Failed to send briefing email for organization {$org->id}: " . $e->getMessage());
+                Log::error("Failed to send briefing email for organization {$org->id}: ".$e->getMessage());
             }
         }
 
-        Log::info("SendDailyBriefingEmail job completed.");
+        Log::info('SendDailyBriefingEmail job completed.');
     }
 }

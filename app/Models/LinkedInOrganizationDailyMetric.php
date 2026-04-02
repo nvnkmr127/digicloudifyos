@@ -47,4 +47,3 @@ class LinkedInOrganizationDailyMetric extends Model
         return $this->belongsTo(ClientChannelConnection::class, 'client_channel_connection_id');
     }
 }
-

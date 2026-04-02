@@ -2,26 +2,33 @@
 
 namespace App\Livewire\Campaigns;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
+use App\Models\AdAccount;
 use App\Models\Campaign;
 use App\Models\Client;
-use App\Models\AdAccount;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class CreateForm extends Component
 {
     use AuthorizesRequests;
 
     public $client_id = '';
+
     public $ad_account_id = '';
+
     public $name = '';
+
     public $objective = '';
+
     public $status = 'planned';
+
     public $start_date = '';
+
     public $end_date = '';
+
     public $daily_budget = 0;
+
     public $lifetime_budget = 0;
 
     protected $rules = [
@@ -38,10 +45,10 @@ class CreateForm extends Component
 
     public function save()
     {
-        $this->authorize('create', \App\Models\Campaign::class);
+        $this->authorize('create', Campaign::class);
         $this->validate();
 
-        \App\Models\Campaign::create([
+        Campaign::create([
             'organization_id' => Auth::user()->organization_id,
             'client_id' => $this->client_id,
             'ad_account_id' => $this->ad_account_id ?: null,
@@ -62,7 +69,7 @@ class CreateForm extends Component
     public function render()
     {
         $clients = Client::where('organization_id', Auth::user()->organization_id)->get();
-        // In reality, ad_accounts would be filtered by client too if they were linked differently, 
+        // In reality, ad_accounts would be filtered by client too if they were linked differently,
         // but for now let's just show all for the organization.
         $adAccounts = AdAccount::where('organization_id', Auth::user()->organization_id)->get();
 

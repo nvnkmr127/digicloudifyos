@@ -1,4 +1,37 @@
-<div class="p-8" x-data="{ showModal: false, selectedLead: null }">
+<div
+    class="p-8"
+    x-data="{
+        showModal: false,
+        selectedLead: null,
+        focusables(el) {
+            let selector = 'a, button, input:not([type=\\'hidden\\']), textarea, select, details, [tabindex]:not([tabindex=\\'-1\\'])'
+            return [...el.querySelectorAll(selector)].filter(el => ! el.hasAttribute('disabled'))
+        },
+        firstFocusable(el) { return this.focusables(el)[0] },
+        lastFocusable(el) { return this.focusables(el).slice(-1)[0] },
+        nextFocusable(el) { return this.focusables(el)[this.nextFocusableIndex(el)] || this.firstFocusable(el) },
+        prevFocusable(el) { return this.focusables(el)[this.prevFocusableIndex(el)] || this.lastFocusable(el) },
+        nextFocusableIndex(el) { return (this.focusables(el).indexOf(document.activeElement) + 1) % (this.focusables(el).length + 1) },
+        prevFocusableIndex(el) { return Math.max(0, this.focusables(el).indexOf(document.activeElement)) - 1 },
+        syncBodyLock() {
+            if (this.showModal || this.$wire.showLogsModal) {
+                document.body.classList.add('overflow-y-hidden')
+            } else {
+                document.body.classList.remove('overflow-y-hidden')
+            }
+        },
+    }"
+    x-init="
+        $watch('showModal', value => {
+            syncBodyLock()
+            if (value) $nextTick(() => firstFocusable($refs.leadProfileModal)?.focus())
+        })
+        $watch('$wire.showLogsModal', value => {
+            syncBodyLock()
+            if (value) $nextTick(() => firstFocusable($refs.leadLogsModal)?.focus())
+        })
+    "
+>
     @if (session()->has('message'))
         <div class="mb-4 bg-green-50 text-green-700 p-4 rounded-xl text-sm font-bold">
             {{ session('message') }}
@@ -37,6 +70,7 @@
             </button>
             <div class="bg-white border border-gray-100 p-1 rounded-2xl flex items-center shadow-sm">
                 <input type="text" wire:model.live="search" placeholder="Search by name or email..."
+                    aria-label="Search leads"
                     class="border-none bg-transparent text-xs font-bold px-4 py-2 w-48 focus:ring-0 placeholder-gray-300">
             </div>
             <select wire:model.live="formFilter"
@@ -157,7 +191,18 @@
     </div>
 
     <!-- Lead Profile Modal -->
-    <div x-show="showModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
+    <div
+        x-ref="leadProfileModal"
+        x-show="showModal"
+        x-cloak
+        x-on:keydown.escape.window="showModal = false"
+        x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable($refs.leadProfileModal).focus()"
+        x-on:keydown.shift.tab.prevent="prevFocusable($refs.leadProfileModal).focus()"
+        class="fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="lead-profile-modal-title"
+        role="dialog"
+        aria-modal="true"
+    >
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div x-show="showModal" @click="showModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -165,7 +210,7 @@
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-2xl leading-6 font-black text-gray-900 mb-4" id="modal-title">Lead Profile</h3>
+                            <h3 class="text-2xl leading-6 font-black text-gray-900 mb-4" id="lead-profile-modal-title">Lead Profile</h3>
                             
                             <template x-if="selectedLead">
                                 <div class="space-y-6">
@@ -221,7 +266,18 @@
     </div>
 
     <!-- Sync Logs Modal -->
-    <div x-show="$wire.showLogsModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
+    <div
+        x-ref="leadLogsModal"
+        x-show="$wire.showLogsModal"
+        x-cloak
+        x-on:keydown.escape.window="$wire.set('showLogsModal', false)"
+        x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable($refs.leadLogsModal).focus()"
+        x-on:keydown.shift.tab.prevent="prevFocusable($refs.leadLogsModal).focus()"
+        class="fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="lead-sync-logs-modal-title"
+        role="dialog"
+        aria-modal="true"
+    >
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div x-show="$wire.showLogsModal" @click="$wire.set('showLogsModal', false)" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -229,7 +285,7 @@
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                            <h3 class="text-2xl leading-6 font-black text-gray-900 mb-4" id="modal-title">Lead Sync Logs</h3>
+                            <h3 class="text-2xl leading-6 font-black text-gray-900 mb-4" id="lead-sync-logs-modal-title">Lead Sync Logs</h3>
                             
                             <div class="overflow-x-auto bg-white rounded-xl border border-gray-100">
                                 <table class="min-w-full divide-y divide-gray-50">

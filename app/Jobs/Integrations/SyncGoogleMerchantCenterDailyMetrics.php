@@ -19,6 +19,7 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public array $backoff = [60, 300, 900];
 
     public function __construct(
@@ -111,7 +112,9 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
                 $pagesFetched++;
 
                 foreach ($resources as $status) {
-                    if (! is_array($status)) continue;
+                    if (! is_array($status)) {
+                        continue;
+                    }
                     $itemsChecked++;
                     $recordsFetched++;
                     $productId = isset($status['productId']) ? (string) $status['productId'] : null;
@@ -119,7 +122,9 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
                     $destinationStatuses = $status['destinationStatuses'] ?? [];
                     $overall = null;
                     foreach ($destinationStatuses as $ds) {
-                        if (! is_array($ds)) continue;
+                        if (! is_array($ds)) {
+                            continue;
+                        }
                         $overall = $overall ?? ($ds['status'] ?? null);
                         if (($ds['destination'] ?? null) === 'Shopping') {
                             $overall = $ds['status'] ?? $overall;
@@ -127,14 +132,20 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
                         }
                     }
 
-                    if ($overall === 'disapproved') $itemsDisapproved++;
-                    elseif ($overall === 'pending') $itemsPending++;
-                    elseif ($overall === 'approved') $itemsApproved++;
+                    if ($overall === 'disapproved') {
+                        $itemsDisapproved++;
+                    } elseif ($overall === 'pending') {
+                        $itemsPending++;
+                    } elseif ($overall === 'approved') {
+                        $itemsApproved++;
+                    }
 
                     $issues = $status['itemLevelIssues'] ?? [];
                     if (is_array($issues)) {
                         foreach ($issues as $issue) {
-                            if (! is_array($issue)) continue;
+                            if (! is_array($issue)) {
+                                continue;
+                            }
                             $issueCount++;
                             $code = $issue['code'] ?? 'unknown';
                             $code = is_string($code) && $code !== '' ? $code : 'unknown';
@@ -192,7 +203,7 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
                 'last_synced_at' => now(),
                 'last_sync_status' => 'success',
                 'account_id' => $merchantId,
-                'account_name' => 'Merchant ' . $merchantId,
+                'account_name' => 'Merchant '.$merchantId,
             ]);
 
             $run->update([
@@ -250,7 +261,9 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
         $feedIssueCount = 0;
 
         foreach (array_slice($feeds, 0, 25) as $feed) {
-            if (! is_array($feed) || ! isset($feed['id'])) continue;
+            if (! is_array($feed) || ! isset($feed['id'])) {
+                continue;
+            }
             $feedId = (string) $feed['id'];
             $feedName = isset($feed['name']) ? (string) $feed['name'] : null;
 
@@ -262,6 +275,7 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
                     'name' => $feedName,
                     'status' => 'error',
                 ];
+
                 continue;
             }
 
@@ -312,7 +326,7 @@ class SyncGoogleMerchantCenterDailyMetrics implements ShouldQueue
 
         $connection->update([
             'account_id' => $merchantId,
-            'account_name' => 'Merchant ' . $merchantId,
+            'account_name' => 'Merchant '.$merchantId,
             'metadata' => $metadata,
         ]);
 

@@ -2,16 +2,16 @@
 
 namespace App\Services;
 
-use App\Models\Report;
+use App\Exports\AdsPerformanceExport;
 use App\Models\AdInsight;
 use App\Models\Campaign;
-use App\Models\FacebookLead;
 use App\Models\Creative;
+use App\Models\FacebookLead;
+use App\Models\Report;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AdsPerformanceExport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportGeneratorService
 {
@@ -21,15 +21,15 @@ class ReportGeneratorService
 
         try {
             $data = $this->prepareData($report);
-            $fileName = 'reports/' . Str::slug($report->name) . '-' . time();
+            $fileName = 'reports/'.Str::slug($report->name).'-'.time();
             $path = '';
 
             if ($report->format === 'pdf') {
-                $path = $fileName . '.pdf';
+                $path = $fileName.'.pdf';
                 $pdf = Pdf::loadView('reports.performance', $data);
                 Storage::disk('public')->put($path, $pdf->output());
             } else {
-                $path = $fileName . '.xlsx';
+                $path = $fileName.'.xlsx';
                 $exportData = $this->mapForExcel($data);
                 Excel::store(new AdsPerformanceExport($exportData, $report->name), $path, 'public');
             }
@@ -74,7 +74,7 @@ class ReportGeneratorService
 
         // 2. Campaigns
         $campaigns = Campaign::where('organization_id', $orgId)
-            ->with(['adInsights' => function($q) use ($startDate) {
+            ->with(['adInsights' => function ($q) use ($startDate) {
                 $q->where('date', '>=', $startDate)->where('level', 'campaign');
             }])
             ->get()
@@ -95,13 +95,15 @@ class ReportGeneratorService
 
         // 3. Creatives
         $creatives = Creative::where('organization_id', $orgId)
-            ->with(['ad.adInsights' => function($q) use ($startDate) {
+            ->with(['ad.adInsights' => function ($q) use ($startDate) {
                 $q->where('date', '>=', $startDate)->where('level', 'ad');
             }])
             ->get()
             ->map(function ($creative) {
                 $ad = $creative->ad;
-                if (!$ad) return null;
+                if (! $ad) {
+                    return null;
+                }
                 $insights = $ad->adInsights;
                 $spend = $insights->sum('spend');
                 $leads = FacebookLead::where('ad_id', $ad->id)->count();
@@ -138,9 +140,10 @@ class ReportGeneratorService
                 $camp['leads'],
                 round($camp['ctr'], 2),
                 round($camp['cpl'], 2),
-                0 // roas dummy
+                0, // roas dummy
             ];
         }
+
         return $rows;
     }
 }

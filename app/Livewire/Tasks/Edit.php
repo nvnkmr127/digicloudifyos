@@ -2,26 +2,34 @@
 
 namespace App\Livewire\Tasks;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
+use App\Models\Client;
 use App\Models\Task;
 use App\Models\User;
-use App\Models\Client;
+use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Edit extends Component
 {
     use AuthorizesRequests;
 
     public Task $task;
+
     public $title;
+
     public $description;
+
     public $task_type;
+
     public $priority;
+
     public $status;
+
     public $assigned_to;
+
     public $client_id;
+
     public $deadline;
 
     protected $rules = [
@@ -46,7 +54,7 @@ class Edit extends Component
         $this->status = $task->status;
         $this->assigned_to = $task->assigned_to;
         $this->client_id = $task->client_id;
-        $this->deadline = $task->deadline ? (\Carbon\Carbon::parse($task->deadline))->format('Y-m-d') : '';
+        $this->deadline = $task->deadline ? (Carbon::parse($task->deadline))->format('Y-m-d') : '';
     }
 
     public function update()

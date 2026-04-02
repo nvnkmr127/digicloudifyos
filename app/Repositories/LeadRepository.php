@@ -18,9 +18,9 @@ class LeadRepository
 
         if (isset($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('email', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('phone', 'like', '%' . $filters['search'] . '%');
+                $q->where('name', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('email', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('phone', 'like', '%'.$filters['search'].'%');
             });
         }
 
@@ -40,6 +40,7 @@ class LeadRepository
     public function update(Lead $lead, array $data): Lead
     {
         $lead->update($data);
+
         return $lead->fresh();
     }
 

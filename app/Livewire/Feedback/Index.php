@@ -12,12 +12,16 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+
     public $showCreateModal = false;
 
     // Create Form
     public $comment = '';
+
     public $rating = 5;
+
     public $entity_type = 'general';
+
     public $entity_id = null;
 
     protected $rules = [
@@ -53,12 +57,12 @@ class Index extends Component
     {
         $feedbackItems = Feedback::where('organization_id', Auth::user()->organization_id)
             ->where('status', '!=', 'ARCHIVED')
-            ->when($this->search, fn($q) => $q->where('comment', 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($q) => $q->where('comment', 'like', '%'.$this->search.'%'))
             ->latest()
             ->paginate(10);
 
         return view('livewire.feedback.index', [
-            'feedbackItems' => $feedbackItems
+            'feedbackItems' => $feedbackItems,
         ])->layout('layouts.app');
     }
 }

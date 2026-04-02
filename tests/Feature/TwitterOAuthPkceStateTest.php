@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Client;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,7 +18,7 @@ class TwitterOAuthPkceStateTest extends TestCase
             'role' => 'ADMIN',
         ]);
 
-        if (! $admin instanceof \Illuminate\Contracts\Auth\Authenticatable) {
+        if (! $admin instanceof Authenticatable) {
             $this->fail('Admin user is not authenticatable.');
         }
 
@@ -28,7 +29,7 @@ class TwitterOAuthPkceStateTest extends TestCase
             'status' => 'ACTIVE',
         ]);
 
-        $response = $this->actingAs($admin)->get('/integrations/oauth/twitter?client_id=' . $client->id);
+        $response = $this->actingAs($admin)->get('/integrations/oauth/twitter?client_id='.$client->id);
         $response->assertRedirect();
 
         $state = session('integrations.oauth.state.twitter');
@@ -40,4 +41,3 @@ class TwitterOAuthPkceStateTest extends TestCase
         $this->assertNotSame('', $verifier);
     }
 }
-

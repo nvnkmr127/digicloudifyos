@@ -35,8 +35,9 @@ class TestAiConnection extends Command
 
         $this->info("Testing AI Connectivity: {$provider}");
 
-        if (!$apiKey) {
-            $this->error("API Key not found in config/intelligence.php or .env");
+        if (! $apiKey) {
+            $this->error('API Key not found in config/intelligence.php or .env');
+
             return;
         }
 
@@ -44,23 +45,24 @@ class TestAiConnection extends Command
 
         if ($provider !== 'gemini') {
             $this->error("Provider [{$provider}] is not supported by this command yet.");
+
             return;
         }
 
-        $this->comment("Calling Gemini API...");
+        $this->comment('Calling Gemini API...');
         $start = microtime(true);
 
         $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
             'contents' => [
-                ['parts' => [['text' => $prompt]]]
-            ]
+                ['parts' => [['text' => $prompt]]],
+            ],
         ]);
 
         $duration = round(microtime(true) - $start, 2);
 
         if ($response->successful()) {
             $this->info("Success! Response time: {$duration}s");
-            $this->comment("Response: " . $response->json()['candidates'][0]['content']['parts'][0]['text']);
+            $this->comment('Response: '.$response->json()['candidates'][0]['content']['parts'][0]['text']);
         } else {
             $this->error("Connection Failed (HTTP {$response->status()})");
             $this->error($response->body());

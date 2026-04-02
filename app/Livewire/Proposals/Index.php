@@ -26,7 +26,7 @@ class Index extends Component
             ->paginate(10);
 
         return view('livewire.proposals.index', [
-            'proposals' => $proposals
+            'proposals' => $proposals,
         ])->layout('layouts.app');
     }
 }

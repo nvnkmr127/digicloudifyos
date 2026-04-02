@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Form extends Model
 {
-    use OrganizationScoped, HasUuids, SoftDeletes;
+    use HasUuids, OrganizationScoped, SoftDeletes;
 
     protected $fillable = [
         'organization_id',

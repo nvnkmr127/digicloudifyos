@@ -2,23 +2,29 @@
 
 namespace App\Livewire\SocialPlanner;
 
-use Livewire\Component;
 use App\Models\SocialChannel;
 use App\Models\SocialPost;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Index extends Component
 {
     public $currentDate;
+
     public $viewMode = 'calendar'; // 'calendar' or 'list'
+
     public $showCreateModal = false;
+
     public $showConnectModal = false;
 
     // Post Creation state
     public $content = '';
+
     public $selectedChannels = [];
+
     public $scheduledDate = '';
+
     public $scheduledTime = '';
 
     protected $rules = [
@@ -54,7 +60,7 @@ class Index extends Component
     {
         $this->validate();
 
-        $scheduledAt = Carbon::parse($this->scheduledDate . ' ' . $this->scheduledTime);
+        $scheduledAt = Carbon::parse($this->scheduledDate.' '.$this->scheduledTime);
 
         foreach ($this->selectedChannels as $channelId) {
             SocialPost::create([
@@ -85,30 +91,30 @@ class Index extends Component
         SocialChannel::create([
             'organization_id' => Auth::user()->organization_id,
             'platform' => $platform,
-            'account_id' => 'dummy_' . uniqid(),
-            'account_name' => $randomHandles[$platform] ?? ucfirst($platform) . ' Account',
+            'account_id' => 'dummy_'.uniqid(),
+            'account_name' => $randomHandles[$platform] ?? ucfirst($platform).' Account',
             'status' => 'active',
         ]);
 
         $this->dispatch('close-modal', 'connect-channel-modal');
-        session()->flash('message', ucfirst($platform) . ' channel connected.');
+        session()->flash('message', ucfirst($platform).' channel connected.');
     }
 
     public function previousMonth()
     {
-        $this->currentDate = Carbon::parse($this->currentDate . '-01')->subMonth()->format('Y-m');
+        $this->currentDate = Carbon::parse($this->currentDate.'-01')->subMonth()->format('Y-m');
     }
 
     public function nextMonth()
     {
-        $this->currentDate = Carbon::parse($this->currentDate . '-01')->addMonth()->format('Y-m');
+        $this->currentDate = Carbon::parse($this->currentDate.'-01')->addMonth()->format('Y-m');
     }
 
     public function render()
     {
         $channels = SocialChannel::where('organization_id', Auth::user()->organization_id)->get();
 
-        $currentMonth = Carbon::parse($this->currentDate . '-01');
+        $currentMonth = Carbon::parse($this->currentDate.'-01');
         $startOfMonth = $currentMonth->copy()->startOfMonth();
         $endOfMonth = $currentMonth->copy()->endOfMonth();
 
@@ -131,7 +137,7 @@ class Index extends Component
                 'isCurrentMonth' => $date->month === $currentMonth->month,
                 'posts' => $posts->filter(function ($post) use ($dateString) {
                     return $post->scheduled_at->format('Y-m-d') === $dateString;
-                })
+                }),
             ];
         }
 

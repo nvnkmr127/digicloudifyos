@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\Proposal;
 use App\Jobs\ProcessWorkflowAutomation;
+use App\Models\Proposal;
 
 class ProposalObserver
 {

@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use App\Models\Traits\OrganizationScoped;
+use Illuminate\Database\Eloquent\Casts\AsEncryptedArrayObject;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Casts\AsEncryptedArrayObject;
 
 class IntegrationCredential extends Model
 {
@@ -47,4 +47,3 @@ class IntegrationCredential extends Model
         return $this->hasMany(ClientChannelConnection::class, 'integration_credential_id');
     }
 }
-

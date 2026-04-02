@@ -3,17 +3,16 @@
 namespace App\Models;
 
 use App\Models\Traits\OrganizationScoped;
-use Illuminate\Support\Str;
-
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Employee extends Model
 {
-    use HasUuids, SoftDeletes, OrganizationScoped;
+    use HasUuids, OrganizationScoped, SoftDeletes;
 
     protected $fillable = [
         'organization_id',
@@ -51,7 +50,7 @@ class Employee extends Model
             }
 
             do {
-                $candidate = 'EMP-' . Str::upper(Str::random(8));
+                $candidate = 'EMP-'.Str::upper(Str::random(8));
             } while (static::where('employee_code', $candidate)->exists());
 
             $employee->employee_code = $candidate;

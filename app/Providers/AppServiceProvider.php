@@ -2,9 +2,24 @@
 
 namespace App\Providers;
 
+use App\Models\Invoice;
+use App\Models\Lead;
+use App\Models\Proposal;
+use App\Observers\InvoiceObserver;
+use App\Observers\LeadObserver;
+use App\Observers\ProposalObserver;
+use App\Repositories\CampaignRepository;
+use App\Repositories\LeadRepository;
+use App\Services\AnalyticsService;
+use App\Services\CampaignService;
+use App\Services\ExportService;
+use App\Services\LeadService;
+use App\Services\WebhookService;
+use App\View\Composers\NavigationComposer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,38 +31,42 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register service bindings
         $this->app->singleton(
-            \App\Repositories\CampaignRepository::class,
-            \App\Repositories\CampaignRepository::class
+            CampaignRepository::class,
+            CampaignRepository::class
         );
 
         $this->app->singleton(
-            \App\Services\CampaignService::class,
-            \App\Services\CampaignService::class
+            CampaignService::class,
+            CampaignService::class
         );
 
         $this->app->singleton(
-            \App\Services\AnalyticsService::class,
-            \App\Services\AnalyticsService::class
+            AnalyticsService::class,
+            AnalyticsService::class
         );
 
         $this->app->singleton(
-            \App\Services\WebhookService::class,
-            \App\Services\WebhookService::class
+            WebhookService::class,
+            WebhookService::class
         );
 
         $this->app->singleton(
-            \App\Services\ExportService::class,
-            \App\Services\ExportService::class
+            ExportService::class,
+            ExportService::class
         );
 
         $this->app->singleton(
-            \App\Repositories\LeadRepository::class,
-            \App\Repositories\LeadRepository::class
+            LeadRepository::class,
+            LeadRepository::class
         );
 
         $this->app->singleton(
-            \App\Services\LeadService::class,
-            \App\Services\LeadService::class
+            LeadService::class,
+            LeadService::class
+        );
+        $this->app->singleton(
+            \App\Contracts\OrganizationContextInterface::class,
+            \App\Services\AuthOrganizationContext::class
         );
     }
 
@@ -86,14 +105,14 @@ class AppServiceProvider extends ServiceProvider
         Validator::replacer('organization_exists', function ($message, $attribute, $rule, $parameters) {
             return str_replace(':attribute', $attribute, 'The selected :attribute is invalid or does not belong to your organization.');
         });
-        \App\Models\Lead::observe(\App\Observers\LeadObserver::class);
-        \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
-        \App\Models\Proposal::observe(\App\Observers\ProposalObserver::class);
+        Lead::observe(LeadObserver::class);
+        Invoice::observe(InvoiceObserver::class);
+        Proposal::observe(ProposalObserver::class);
 
         // Sidebar Intelligence Badges
-        \Illuminate\Support\Facades\View::composer(
+        View::composer(
             'components.layouts.sidebar-navigation',
-            \App\View\Composers\NavigationComposer::class
+            NavigationComposer::class
         );
     }
 }

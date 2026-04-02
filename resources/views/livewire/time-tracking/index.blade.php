@@ -59,6 +59,36 @@
         </div>
     </x-card>
 
+    @if(!$activeTimer && $suggestions->count() > 0)
+        <x-card class="mb-6">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <div class="text-sm font-black text-gray-900">Suggested Timers</div>
+                    <div class="text-xs text-gray-500">Start tracking from your assigned tasks.</div>
+                </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                @foreach($suggestions as $t)
+                    <div class="p-4 border border-gray-100 rounded-2xl bg-white flex items-center justify-between gap-4">
+                        <div class="min-w-0">
+                            <div class="text-sm font-bold text-gray-900 truncate">{{ $t->title }}</div>
+                            <div class="text-xs text-gray-500 truncate">
+                                Status: {{ $t->status }}
+                                @if($t->deadline)
+                                    • Deadline: {{ $t->deadline->toDateString() }}
+                                @endif
+                            </div>
+                        </div>
+                        <x-button type="button" color="primary" wire:click="startFromTask('{{ $t->id }}')">
+                            Start
+                        </x-button>
+                    </div>
+                @endforeach
+            </div>
+        </x-card>
+    @endif
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <x-card class="bg-white border-l-4 border-l-primary p-4">
             <h4 class="text-sm font-semibold text-text-muted">Total Hours Logged</h4>

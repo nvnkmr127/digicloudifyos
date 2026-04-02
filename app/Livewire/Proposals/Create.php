@@ -10,10 +10,15 @@ use Livewire\Component;
 class Create extends Component
 {
     public $clientId;
+
     public $title = '';
+
     public $description = '';
+
     public $totalAmount = 0;
+
     public $validUntil = '';
+
     public $content = [];
 
     protected $rules = [
@@ -32,7 +37,7 @@ class Create extends Component
     {
         $this->validate();
 
-        $proposalNumber = 'PROP-' . strtoupper(str()->random(8));
+        $proposalNumber = 'PROP-'.strtoupper(str()->random(8));
 
         Proposal::create([
             'organization_id' => Auth::user()->organization_id,
@@ -47,6 +52,7 @@ class Create extends Component
         ]);
 
         session()->flash('message', 'Proposal created successfully.');
+
         return redirect()->route('proposals.index');
     }
 
@@ -55,7 +61,7 @@ class Create extends Component
         $clients = Client::where('organization_id', Auth::user()->organization_id)->get();
 
         return view('livewire.proposals.create', [
-            'clients' => $clients
+            'clients' => $clients,
         ])->layout('layouts.app');
     }
 }

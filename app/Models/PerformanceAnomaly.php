@@ -75,7 +75,7 @@ class PerformanceAnomaly extends Model
 
     public function isResolved(): bool
     {
-        return !is_null($this->resolved_at);
+        return ! is_null($this->resolved_at);
     }
 
     public function resolve(): void
@@ -87,6 +87,7 @@ class PerformanceAnomaly extends Model
     {
         $direction = $this->deviation_percentage > 0 ? 'increase' : 'decrease';
         $absPercent = abs((float) $this->deviation_percentage);
+
         return "{$absPercent}% {$direction} in {$this->metric_name} compared to baseline.";
     }
 }

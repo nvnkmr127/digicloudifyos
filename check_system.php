@@ -8,9 +8,9 @@ if (PHP_VERSION_ID >= 80500) {
     error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 }
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
-$app = require_once __DIR__ . '/bootstrap/app.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
@@ -31,7 +31,7 @@ try {
 
     $logFile = storage_path('logs/laravel.log');
 
-    if (!file_exists($logFile)) {
+    if (! file_exists($logFile)) {
         echo "No application log file found yet.\n";
         exit(0);
     }
@@ -62,7 +62,7 @@ try {
     }
 
     echo "Latest error (last 30m):\n";
-    echo end($errorLines) . "\n";
+    echo end($errorLines)."\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, "System check failed: {$exception->getMessage()}\n");
     exit(1);

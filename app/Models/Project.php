@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Traits\OrganizationScoped;
-
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
 {
-    use HasUuids, SoftDeletes, OrganizationScoped;
+    use HasUuids, OrganizationScoped, SoftDeletes;
 
     protected $fillable = [
         'organization_id',

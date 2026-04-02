@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\Invoice;
 use App\Jobs\ProcessWorkflowAutomation;
+use App\Models\Invoice;
 
 class InvoiceObserver
 {

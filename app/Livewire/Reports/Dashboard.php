@@ -2,22 +2,27 @@
 
 namespace App\Livewire\Reports;
 
-use App\Models\Report;
 use App\Models\Client;
+use App\Models\Report;
 use App\Services\ReportGeneratorService;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Auth;
 
 class Dashboard extends Component
 {
     use WithPagination;
 
     public $showCreateModal = false;
+
     public $reportName;
+
     public $reportType = 'campaign';
+
     public $reportFormat = 'pdf';
+
     public $clientId;
+
     public $dateRange = 30;
 
     public function generateReport(ReportGeneratorService $service)
@@ -47,7 +52,7 @@ class Dashboard extends Component
             $this->reset(['reportName', 'reportType', 'reportFormat', 'clientId']);
             session()->flash('success', 'Report generated successfully.');
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to generate report: ' . $e->getMessage());
+            session()->flash('error', 'Failed to generate report: '.$e->getMessage());
         }
     }
 
@@ -56,6 +61,7 @@ class Dashboard extends Component
         $report = Report::findOrFail($reportId);
         if ($report->file_path && \Storage::disk('public')->exists($report->file_path)) {
             $path = \Storage::disk('public')->path($report->file_path);
+
             return response()->download($path);
         }
         session()->flash('error', 'File not found.');

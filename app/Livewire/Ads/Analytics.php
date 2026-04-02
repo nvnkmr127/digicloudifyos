@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Ads;
 
-use App\Models\AdAccount;
 use App\Models\AdInsight;
 use App\Models\AudienceInsight;
 use App\Models\Campaign;
+use App\Models\Creative;
 use App\Models\FacebookLead;
 use Livewire\Component;
 
@@ -34,7 +34,7 @@ class Analytics extends Component
             ->with([
                 'adInsights' => function ($query) use ($startDate) {
                     $query->where('date', '>=', $startDate)->where('level', 'campaign');
-                }
+                },
             ])
             ->get()
             ->map(function ($campaign) {
@@ -57,21 +57,22 @@ class Analytics extends Component
             })->sortByDesc('spend');
 
         // 3. Creative Performance Engine (Phase 16)
-        $creatives = \App\Models\Creative::where('organization_id', $organizationId)
+        $creatives = Creative::where('organization_id', $organizationId)
             ->with([
                 'ad' => function ($query) use ($startDate) {
                     $query->with([
                         'adInsights' => function ($i) use ($startDate) {
                             $i->where('date', '>=', $startDate)->where('level', 'ad');
-                        }
+                        },
                     ]);
-                }
+                },
             ])
             ->get()
             ->map(function ($creative) {
                 $ad = $creative->ad;
-                if (!$ad)
+                if (! $ad) {
                     return null;
+                }
 
                 $insights = $ad->adInsights;
                 $spend = $insights->sum('spend');
@@ -95,7 +96,7 @@ class Analytics extends Component
                 ];
             })
             ->filter()
-            ->filter(fn($c) => $c['spend'] > 0 || $c['impressions'] > 0)
+            ->filter(fn ($c) => $c['spend'] > 0 || $c['impressions'] > 0)
             ->sortByDesc('ctr');
 
         // 4. Audience Intelligence (Breakdowns)
@@ -105,11 +106,12 @@ class Analytics extends Component
 
         $processBreakdown = function ($type, $groupCol) use ($audienceInsights) {
             return $audienceInsights->where('breakdown_type', $type)
-                ->filter(fn($i) => !empty($i->{$groupCol}))
+                ->filter(fn ($i) => ! empty($i->{$groupCol}))
                 ->groupBy($groupCol)
                 ->map(function ($group) {
                     $spend = $group->sum('spend');
                     $leads = $group->sum('leads'); // Phase 17: Accurate leads from Meta Actions
+
                     return [
                         'spend' => $spend,
                         'leads' => $leads,

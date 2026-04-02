@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands\Intelligence;
 
-use App\Models\Client;
-use App\Models\PerformanceSnapshot;
-use App\Models\PerformanceAnomaly;
-use App\Models\ClientHealthScore;
 use App\Models\AiInsight;
-use App\Models\DailyBriefing;
 use App\Models\BriefingActionItem;
+use App\Models\Client;
+use App\Models\ClientHealthScore;
+use App\Models\DailyBriefing;
+use App\Models\PerformanceAnomaly;
+use App\Models\PerformanceSnapshot;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -36,23 +36,25 @@ class SeedTestData extends Command
         $orgId = $this->option('org') ?: Client::first()?->organization_id;
         $days = (int) $this->option('days');
 
-        if (!$orgId) {
-            $this->error("No organization found to seed.");
+        if (! $orgId) {
+            $this->error('No organization found to seed.');
+
             return;
         }
 
         $clients = Client::where('organization_id', $orgId)->get();
         if ($clients->isEmpty()) {
             $this->error("No clients found in organization {$orgId}.");
+
             return;
         }
 
-        $this->info("Seeding data for " . $clients->count() . " clients over {$days} days...");
+        $this->info('Seeding data for '.$clients->count()." clients over {$days} days...");
 
         foreach ($clients as $client) {
             for ($i = $days; $i >= 0; $i--) {
                 $date = Carbon::today()->subDays($i);
-                
+
                 // 1. Snapshot
                 $channels = ['meta_ads', 'google_ads', 'organic_social'];
                 foreach ($channels as $channel) {
@@ -143,11 +145,11 @@ class SeedTestData extends Command
                 'priority_level' => 'urgent',
                 'category' => 'budget',
                 'title' => 'Scale Top-Performing Google Campaign',
-                'description' => $c->name . ' is seeing ROAS above 12x on Google Search.',
+                'description' => $c->name.' is seeing ROAS above 12x on Google Search.',
                 'action' => 'Increase daily budget by 20% immediately.',
             ]);
         }
 
-        $this->info("Seeding complete. Intelligence Lab ready for testing.");
+        $this->info('Seeding complete. Intelligence Lab ready for testing.');
     }
 }

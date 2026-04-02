@@ -48,6 +48,19 @@ class RunDailyIntegrationSync implements ShouldQueue
                     SyncGoogleMerchantCenterDailyMetrics::dispatch($org->id, $client->id, $date);
                 }
 
+                if (isset($has[$client->id]['google_business_profile'])) {
+                    SyncGoogleBusinessProfileDailyMetrics::dispatch($org->id, $client->id, $date);
+
+                    if (now()->day === 1) {
+                        $monthStart = now()->subMonth()->startOfMonth()->toDateString();
+                        SyncGoogleBusinessProfileMonthlyKeywords::dispatch($org->id, $client->id, $monthStart);
+                    }
+                }
+
+                if (isset($has[$client->id]['amazon'])) {
+                    SyncAmazonSpDailyMetrics::dispatch($org->id, $client->id, $date);
+                }
+
                 if (isset($has[$client->id]['shopify'])) {
                     SyncShopifyDailyMetrics::dispatch($org->id, $client->id, $date);
                 }

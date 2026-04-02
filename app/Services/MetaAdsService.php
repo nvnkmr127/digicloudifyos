@@ -2,42 +2,48 @@
 
 namespace App\Services;
 
-use App\Models\AdAccount;
-use App\Models\Campaign;
-use App\Models\AdSet;
+use App\Models\AccessToken;
 use App\Models\Ad;
+use App\Models\AdAccount;
 use App\Models\AdCreative;
 use App\Models\AdInsight;
-use App\Models\DailyMetric;
-use App\Models\FacebookLead;
-use App\Models\Creative;
+use App\Models\AdSet;
+use App\Models\AudienceInsight;
+use App\Models\Campaign;
 use App\Models\ConversionEvent;
+use App\Models\Creative;
+use App\Models\DailyMetric;
+use App\Models\FacebookConnection;
+use App\Models\FacebookLead;
+use App\Models\FacebookUser;
 use App\Models\FunnelMetric;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use FacebookAds\Api;
-use FacebookAds\Object\AdAccount as MetaAdAccount;
-use FacebookAds\Object\Campaign as MetaCampaign;
-use FacebookAds\Object\AdSet as MetaAdSet;
 use FacebookAds\Object\Ad as MetaAd;
-use FacebookAds\Object\AdCreative as MetaAdCreative;
+use FacebookAds\Object\AdAccount as MetaAdAccount;
+use FacebookAds\Object\AdSet as MetaAdSet;
+use FacebookAds\Object\Campaign as MetaCampaign;
+use FacebookAds\Object\Fields\AdCreativeFields;
+use FacebookAds\Object\Fields\AdFields;
+use FacebookAds\Object\Fields\AdSetFields;
+use FacebookAds\Object\Fields\AdsInsightsFields;
+use FacebookAds\Object\Fields\CampaignFields;
+use Illuminate\Support\Facades\Auth;
+use FacebookAds\Object\Fields\LeadFields;
+use FacebookAds\Object\Fields\LeadgenFormFields;
 use FacebookAds\Object\Lead;
 use FacebookAds\Object\LeadgenForm;
 use FacebookAds\Object\Page;
-use FacebookAds\Object\Fields\CampaignFields;
-use FacebookAds\Object\Fields\AdSetFields;
-use FacebookAds\Object\Fields\AdFields;
-use FacebookAds\Object\Fields\AdCreativeFields;
-use FacebookAds\Object\Fields\AdsInsightsFields;
-use FacebookAds\Object\Fields\LeadFields;
-use FacebookAds\Object\Fields\LeadgenFormFields;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class MetaAdsService extends BaseAdsService
 {
     protected string $appId;
+
     protected string $appSecret;
+
     protected string $apiVersion = 'v25.0';
 
     public function __construct()
@@ -51,20 +57,21 @@ class MetaAdsService extends BaseAdsService
         try {
             Api::init($this->appId, $this->appSecret, $accessToken);
         } catch (\Exception $e) {
-            Log::error('Meta SDK Init failed: ' . $e->getMessage());
+            Log::error('Meta SDK Init failed: '.$e->getMessage());
         }
     }
 
     public function getAuthUrl(): string
     {
         $redirectUri = route('auth.facebook.callback');
+
         return "https://www.facebook.com/{$this->apiVersion}/dialog/oauth?client_id={$this->appId}&redirect_uri={$redirectUri}&scope=ads_management,ads_read,business_management,pages_manage_ads,pages_show_list";
     }
 
     public function handleCallback(array $data, string $organizationId, string $clientId): AdAccount
     {
         $code = $data['code'] ?? null;
-        if (!$code) {
+        if (! $code) {
             throw new \Exception('No code provided for Meta Ads callback');
         }
 
@@ -77,7 +84,7 @@ class MetaAdsService extends BaseAdsService
         ]);
 
         if ($response->failed()) {
-            throw new \Exception('Failed to get access token from Meta: ' . $response->body());
+            throw new \Exception('Failed to get access token from Meta: '.$response->body());
         }
 
         $tokenData = $response->json();
@@ -102,13 +109,13 @@ class MetaAdsService extends BaseAdsService
         ]);
 
         if ($userResponse->failed()) {
-            throw new \Exception('Failed to fetch user info from Meta: ' . $userResponse->body());
+            throw new \Exception('Failed to fetch user info from Meta: '.$userResponse->body());
         }
 
         $userData = $userResponse->json();
 
         // 1. Create/Update Access Token
-        $accessToken = \App\Models\AccessToken::updateOrCreate(
+        $accessToken = AccessToken::updateOrCreate(
             [
                 'organization_id' => $organizationId,
                 'platform' => 'meta',
@@ -120,9 +127,9 @@ class MetaAdsService extends BaseAdsService
         );
 
         // 2. Create/Update Facebook Connection (Requested Phase 2)
-        \App\Models\FacebookConnection::updateOrCreate(
+        FacebookConnection::updateOrCreate(
             [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'facebook_user_id' => $userData['id'],
             ],
             [
@@ -133,7 +140,7 @@ class MetaAdsService extends BaseAdsService
         );
 
         // 3. Create/Update Facebook User
-        \App\Models\FacebookUser::updateOrCreate(
+        FacebookUser::updateOrCreate(
             [
                 'organization_id' => $organizationId,
                 'facebook_user_id' => $userData['id'],
@@ -152,7 +159,7 @@ class MetaAdsService extends BaseAdsService
         ]);
 
         if ($accountsResponse->failed()) {
-            throw new \Exception('Failed to fetch ad accounts from Meta: ' . $accountsResponse->body());
+            throw new \Exception('Failed to fetch ad accounts from Meta: '.$accountsResponse->body());
         }
 
         $accountsData = $accountsResponse->json()['data'] ?? [];
@@ -190,7 +197,7 @@ class MetaAdsService extends BaseAdsService
                         'amount_spent' => $accountData['amount_spent'] ?? null,
                         'business' => $accountData['business'] ?? null,
                         'owner' => $accountData['owner'] ?? null,
-                    ]
+                    ],
                 ]
             );
             $storedAccounts->push($adAccount);
@@ -199,16 +206,17 @@ class MetaAdsService extends BaseAdsService
         return $storedAccounts->first();
     }
 
-    public function syncCampaigns(\App\Models\AdAccount $adAccount): Collection
+    public function syncCampaigns(AdAccount $adAccount): Collection
     {
         $token = $adAccount->access_token ?? $adAccount->accessToken?->access_token;
-        if (!$token) {
-            Log::error('No access token found for ad account: ' . $adAccount->id);
+        if (! $token) {
+            Log::error('No access token found for ad account: '.$adAccount->id);
+
             return collect();
         }
 
         $this->initSdk($token);
-        $account = new MetaAdAccount('act_' . $adAccount->external_account_id);
+        $account = new MetaAdAccount('act_'.$adAccount->external_account_id);
 
         $fields = [
             CampaignFields::ID,
@@ -250,17 +258,19 @@ class MetaAdsService extends BaseAdsService
 
             return $syncedCampaigns;
         } catch (\Exception $e) {
-            Log::error('Meta sync campaigns failed: ' . $e->getMessage());
+            Log::error('Meta sync campaigns failed: '.$e->getMessage());
+
             return collect();
         }
     }
 
-    public function syncAdSets(\App\Models\Campaign $campaign): Collection
+    public function syncAdSets(Campaign $campaign): Collection
     {
         $adAccount = $campaign->adAccount;
         $token = $adAccount->access_token ?? $adAccount->accessToken?->access_token;
-        if (!$token) {
-            Log::error('No access token found for ad account: ' . $adAccount->id);
+        if (! $token) {
+            Log::error('No access token found for ad account: '.$adAccount->id);
+
             return collect();
         }
 
@@ -301,17 +311,19 @@ class MetaAdsService extends BaseAdsService
 
             return $syncedAdSets;
         } catch (\Exception $e) {
-            Log::error('Meta sync ad sets failed: ' . $e->getMessage());
+            Log::error('Meta sync ad sets failed: '.$e->getMessage());
+
             return collect();
         }
     }
 
-    public function syncAds(\App\Models\AdSet $adSet): Collection
+    public function syncAds(AdSet $adSet): Collection
     {
         $adAccount = $adSet->campaign->adAccount;
         $token = $adAccount->access_token ?? $adAccount->accessToken?->access_token;
-        if (!$token) {
-            Log::error('No access token found for ad account: ' . $adAccount->id);
+        if (! $token) {
+            Log::error('No access token found for ad account: '.$adAccount->id);
+
             return collect();
         }
 
@@ -377,15 +389,16 @@ class MetaAdsService extends BaseAdsService
 
             return $syncedAds;
         } catch (\Exception $e) {
-            Log::error('Meta sync ads failed: ' . $e->getMessage());
+            Log::error('Meta sync ads failed: '.$e->getMessage());
+
             return collect();
         }
     }
 
-    public function syncCreatives(\App\Models\AdAccount $adAccount): Collection
+    public function syncCreatives(AdAccount $adAccount): Collection
     {
         $this->initSdk($adAccount->access_token);
-        $account = new MetaAdAccount('act_' . $adAccount->external_account_id);
+        $account = new MetaAdAccount('act_'.$adAccount->external_account_id);
 
         $fields = [
             AdCreativeFields::ID,
@@ -427,12 +440,13 @@ class MetaAdsService extends BaseAdsService
 
             return $syncedCreatives;
         } catch (\Exception $e) {
-            Log::error('Meta sync creatives failed: ' . $e->getMessage());
+            Log::error('Meta sync creatives failed: '.$e->getMessage());
+
             return collect();
         }
     }
 
-    public function syncFullHierarchy(\App\Models\AdAccount $adAccount): void
+    public function syncFullHierarchy(AdAccount $adAccount): void
     {
         Log::info('Starting full hierarchy sync for Meta account', ['ad_account_id' => $adAccount->id]);
 
@@ -456,13 +470,14 @@ class MetaAdsService extends BaseAdsService
     public function syncBreakdowns(AdAccount $adAccount, string $startDate, string $endDate, string $level = 'campaign', array $breakdowns = []): Collection
     {
         $token = $adAccount->access_token ?? $adAccount->accessToken?->access_token;
-        if (!$token) {
-            Log::error('No access token found for ad account: ' . $adAccount->id);
+        if (! $token) {
+            Log::error('No access token found for ad account: '.$adAccount->id);
+
             return collect();
         }
 
         $this->initSdk($token);
-        $account = new MetaAdAccount('act_' . $adAccount->external_account_id);
+        $account = new MetaAdAccount('act_'.$adAccount->external_account_id);
 
         $params = [
             'time_range' => ['since' => $startDate, 'until' => $endDate],
@@ -487,8 +502,9 @@ class MetaAdsService extends BaseAdsService
             AdsInsightsFields::DATE_START,
         ];
 
-        if ($level === 'campaign')
+        if ($level === 'campaign') {
             $fields[] = AdsInsightsFields::CAMPAIGN_ID;
+        }
         if ($level === 'adset') {
             $fields[] = AdsInsightsFields::CAMPAIGN_ID;
             $fields[] = AdsInsightsFields::ADSET_ID;
@@ -519,7 +535,7 @@ class MetaAdsService extends BaseAdsService
 
                 // If platform_position is present, append to placement
                 if (isset($data['platform_position'])) {
-                    $mappedBreakdown['placement'] .= ' - ' . $data['platform_position'];
+                    $mappedBreakdown['placement'] .= ' - '.$data['platform_position'];
                 }
 
                 // Determine Breakdown Type for index/querying
@@ -553,7 +569,7 @@ class MetaAdsService extends BaseAdsService
                     }
                 }
 
-                $record = \App\Models\AudienceInsight::updateOrCreate(
+                $record = AudienceInsight::updateOrCreate(
                     [
                         'ad_account_id' => $adAccount->id,
                         'campaign_id' => $campaignId,
@@ -582,17 +598,19 @@ class MetaAdsService extends BaseAdsService
                 );
                 $syncedBreakdowns->push($record);
             }
+
             return $syncedBreakdowns;
         } catch (\Exception $e) {
-            Log::error("Meta sync breakdowns (level: $level) failed: " . $e->getMessage());
+            Log::error("Meta sync breakdowns (level: $level) failed: ".$e->getMessage());
+
             return collect();
         }
     }
 
-    public function syncInsights(\App\Models\AdAccount $adAccount, string $startDate, string $endDate, string $level = 'account'): Collection
+    public function syncInsights(AdAccount $adAccount, string $startDate, string $endDate, string $level = 'account'): Collection
     {
         $this->initSdk($adAccount->access_token);
-        $account = new MetaAdAccount('act_' . $adAccount->external_account_id);
+        $account = new MetaAdAccount('act_'.$adAccount->external_account_id);
 
         $params = [
             'time_range' => ['since' => $startDate, 'until' => $endDate],
@@ -617,8 +635,9 @@ class MetaAdsService extends BaseAdsService
         ];
 
         // Specific fields based on level to link accurately
-        if ($level === 'campaign')
+        if ($level === 'campaign') {
             $fields[] = AdsInsightsFields::CAMPAIGN_ID;
+        }
         if ($level === 'adset') {
             $fields[] = AdsInsightsFields::CAMPAIGN_ID;
             $fields[] = AdsInsightsFields::ADSET_ID;
@@ -705,7 +724,8 @@ class MetaAdsService extends BaseAdsService
 
             return $syncedInsights;
         } catch (\Exception $e) {
-            Log::error("Meta sync insights (level: $level) failed: " . $e->getMessage());
+            Log::error("Meta sync insights (level: $level) failed: ".$e->getMessage());
+
             return collect();
         }
     }
@@ -723,12 +743,15 @@ class MetaAdsService extends BaseAdsService
 
         foreach ($actions as $action) {
             $type = $action['action_type'];
-            if ($type === 'landing_page_view')
+            if ($type === 'landing_page_view') {
                 $landingViews += (int) $action['value'];
-            if (str_contains($type, 'lead'))
+            }
+            if (str_contains($type, 'lead')) {
                 $leads += (int) $action['value'];
-            if (str_contains($type, 'purchase'))
+            }
+            if (str_contains($type, 'purchase')) {
                 $sales += (int) $action['value'];
+            }
         }
 
         // Calculate rates
@@ -786,8 +809,9 @@ class MetaAdsService extends BaseAdsService
                 }
             }
 
-            if ($count === 0)
+            if ($count === 0) {
                 continue;
+            }
 
             // Find revenue
             foreach ($actionValues as $val) {
@@ -821,7 +845,7 @@ class MetaAdsService extends BaseAdsService
         }
     }
 
-    public function syncMetrics(\App\Models\Campaign $campaign, string $startDate, string $endDate): Collection
+    public function syncMetrics(Campaign $campaign, string $startDate, string $endDate): Collection
     {
         $adAccount = $campaign->adAccount;
         $this->initSdk($adAccount->access_token);
@@ -859,7 +883,7 @@ class MetaAdsService extends BaseAdsService
                         'conversions' => isset($insight->{AdsInsightsFields::CONVERSIONS}) ? array_sum(array_column($insight->{AdsInsightsFields::CONVERSIONS}, 'value')) : 0,
                         'additional_data' => [
                             'roas' => isset($insight->{AdsInsightsFields::PURCHASE_ROAS}) ? $insight->{AdsInsightsFields::PURCHASE_ROAS}[0]['value'] : null,
-                        ]
+                        ],
                     ]
                 );
                 $syncedMetrics->push($metric);
@@ -867,7 +891,8 @@ class MetaAdsService extends BaseAdsService
 
             return $syncedMetrics;
         } catch (\Exception $e) {
-            Log::error('Meta sync metrics failed: ' . $e->getMessage());
+            Log::error('Meta sync metrics failed: '.$e->getMessage());
+
             return collect();
         }
     }
@@ -880,9 +905,11 @@ class MetaAdsService extends BaseAdsService
             $metaCampaign->setData([CampaignFields::STATUS => 'PAUSED']);
             $metaCampaign->update();
             $campaign->update(['status' => 'INACTIVE']);
+
             return true;
         } catch (\Exception $e) {
-            Log::error('Meta pause campaign failed: ' . $e->getMessage());
+            Log::error('Meta pause campaign failed: '.$e->getMessage());
+
             return false;
         }
     }
@@ -895,9 +922,11 @@ class MetaAdsService extends BaseAdsService
             $metaCampaign->setData([CampaignFields::STATUS => 'ARCHIVED']);
             $metaCampaign->update();
             $campaign->update(['status' => 'ARCHIVED']);
+
             return true;
         } catch (\Exception $e) {
-            Log::error('Meta archive campaign failed: ' . $e->getMessage());
+            Log::error('Meta archive campaign failed: '.$e->getMessage());
+
             return false;
         }
     }
@@ -909,9 +938,11 @@ class MetaAdsService extends BaseAdsService
             $metaCampaign = new MetaCampaign($campaign->external_campaign_id);
             $metaCampaign->deleteSelf();
             $campaign->delete();
+
             return true;
         } catch (\Exception $e) {
-            Log::error('Meta delete campaign failed: ' . $e->getMessage());
+            Log::error('Meta delete campaign failed: '.$e->getMessage());
+
             return false;
         }
     }
@@ -920,7 +951,7 @@ class MetaAdsService extends BaseAdsService
     {
         $this->initSdk($adAccount->access_token);
 
-        $metaCampaign = new MetaCampaign(null, 'act_' . $adAccount->external_account_id);
+        $metaCampaign = new MetaCampaign(null, 'act_'.$adAccount->external_account_id);
         $metaCampaign->setData([
             CampaignFields::NAME => $data['name'],
             CampaignFields::OBJECTIVE => $data['objective'],
@@ -945,7 +976,7 @@ class MetaAdsService extends BaseAdsService
     {
         $this->initSdk($campaign->adAccount->access_token);
 
-        $metaAdSet = new MetaAdSet(null, 'act_' . $campaign->adAccount->external_account_id);
+        $metaAdSet = new MetaAdSet(null, 'act_'.$campaign->adAccount->external_account_id);
         $metaAdSet->setData([
             AdSetFields::NAME => $data['name'],
             AdSetFields::CAMPAIGN_ID => $campaign->external_campaign_id,
@@ -974,7 +1005,7 @@ class MetaAdsService extends BaseAdsService
         $this->initSdk($adSet->campaign->adAccount->access_token);
 
         // This is a simplified version; real ads need Creative objects
-        $metaAd = new MetaAd(null, 'act_' . $adSet->campaign->adAccount->external_account_id);
+        $metaAd = new MetaAd(null, 'act_'.$adSet->campaign->adAccount->external_account_id);
         $metaAd->setData([
             AdFields::NAME => $data['name'],
             AdFields::ADSET_ID => $adSet->external_adset_id,
@@ -1053,7 +1084,7 @@ class MetaAdsService extends BaseAdsService
             );
 
             // Also sync to main CRM leads table
-            if (!empty($mapped['email'])) {
+            if (! empty($mapped['email'])) {
                 $crmLead = \App\Models\Lead::firstOrCreate(
                     [
                         'organization_id' => $adAccount->organization_id,
@@ -1064,22 +1095,24 @@ class MetaAdsService extends BaseAdsService
                         'phone' => $mapped['phone_number'],
                         'source' => 'Facebook Ads',
                         'status' => 'New',
-                        'notes' => "Webhook lead captured" . ($formName ? " from $formName" : ""),
+                        'notes' => 'Webhook lead captured'.($formName ? " from $formName" : ''),
                     ]
                 );
             }
 
             return $lead;
         } catch (\Exception $e) {
-            Log::error("Meta sync individual lead $leadId failed: " . $e->getMessage());
+            Log::error("Meta sync individual lead $leadId failed: ".$e->getMessage());
+
             return null;
         }
     }
 
     public function syncAllLeads(AdAccount $adAccount): Collection
     {
-        if (!$adAccount->facebook_page_id || !$adAccount->facebook_page_token) {
+        if (! $adAccount->facebook_page_id || ! $adAccount->facebook_page_token) {
             Log::warning('Lead sync skipped: Ad account has no page ID or token', ['ad_account_id' => $adAccount->id]);
+
             return collect();
         }
 
@@ -1097,7 +1130,8 @@ class MetaAdsService extends BaseAdsService
 
             return $allSyncedLeads;
         } catch (\Exception $e) {
-            Log::error('Meta sync all leads failed: ' . $e->getMessage());
+            Log::error('Meta sync all leads failed: '.$e->getMessage());
+
             return collect();
         }
     }
@@ -1165,7 +1199,7 @@ class MetaAdsService extends BaseAdsService
                 );
 
                 // Also sync to main CRM leads table
-                if (!empty($mapped['email'])) {
+                if (! empty($mapped['email'])) {
                     \App\Models\Lead::firstOrCreate(
                         [
                             'organization_id' => $adAccount->organization_id,
@@ -1186,7 +1220,8 @@ class MetaAdsService extends BaseAdsService
 
             return $synced;
         } catch (\Exception $e) {
-            Log::error("Meta sync leads for form $formId failed: " . $e->getMessage());
+            Log::error("Meta sync leads for form $formId failed: ".$e->getMessage());
+
             return collect();
         }
     }
@@ -1208,7 +1243,7 @@ class MetaAdsService extends BaseAdsService
                 if ($name === 'name' || $name === 'full_name') {
                     $result['full_name'] = $value;
                 } else {
-                    $result['full_name'] = ($result['full_name'] ? $result['full_name'] . ' ' : '') . $value;
+                    $result['full_name'] = ($result['full_name'] ? $result['full_name'].' ' : '').$value;
                 }
             } elseif (in_array($name, ['email'])) {
                 $result['email'] = $value;
@@ -1227,18 +1262,19 @@ class MetaAdsService extends BaseAdsService
         $this->initSdk($accessToken);
         try {
             // Fetch account's managed pages
-            $response = Http::get("https://graph.facebook.com/{$this->apiVersion}/me/accounts", [
+            $response = Http::timeout(15)->retry(2, 200)->get("https://graph.facebook.com/{$this->apiVersion}/me/accounts", [
                 'access_token' => $accessToken,
             ]);
 
-            if (!$response->successful()) {
-                throw new \Exception('Failed to fetch Facebook pages: ' . $response->body());
+            if (! $response->successful()) {
+                throw new \Exception('Failed to fetch Facebook pages: '.$response->body());
             }
 
             return collect($response->json()['data']);
-        } catch (\Exception $e) {
-            Log::error('Meta get pages failed: ' . $e->getMessage());
-            return collect();
+        } catch (\Throwable $e) {
+            Log::error('Meta get pages failed: '.$e->getMessage());
+
+            throw $e;
         }
     }
 

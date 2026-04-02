@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Jobs\DeliverWebhook;
 use App\Models\Webhook;
 use App\Models\WebhookDelivery;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WebhookService
@@ -39,7 +40,7 @@ class WebhookService
                 'Content-Type' => 'application/json',
             ]);
 
-            $response = \Illuminate\Support\Facades\Http::withHeaders($headers)
+            $response = Http::withHeaders($headers)
                 ->timeout(30)
                 ->post($webhook->url, $payload);
 

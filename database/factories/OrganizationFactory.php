@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Organization>
+ * @extends Factory<Organization>
  */
 class OrganizationFactory extends Factory
 {
@@ -20,7 +22,7 @@ class OrganizationFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => \Illuminate\Support\Str::slug($name.'-'.uniqid()),
+            'slug' => Str::slug($name.'-'.uniqid()),
             'timezone' => 'UTC',
         ];
     }

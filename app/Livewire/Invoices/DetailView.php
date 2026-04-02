@@ -2,9 +2,8 @@
 
 namespace App\Livewire\Invoices;
 
-use Livewire\Component;
-
 use App\Models\Invoice;
+use Livewire\Component;
 
 class DetailView extends Component
 {

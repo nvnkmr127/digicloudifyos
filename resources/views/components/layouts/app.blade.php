@@ -15,32 +15,9 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-
-        /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #F3F4F6;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #D1D5DB;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #9CA3AF;
-        }
-    </style>
 </head>
 
-<body class="font-sans antialiased bg-[#F9FAFB] text-[#111827]" x-data="{ sidebarOpen: false }">
+<body class="font-sans antialiased bg-brand-light text-text-primary" x-data="{ sidebarOpen: false }">
     <div class="h-screen flex overflow-hidden">
         <!-- Mobile Sidebar Overlay -->
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
@@ -168,7 +145,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 p-6 overflow-y-auto bg-[#F9FAFB]">
+            <main class="flex-1 p-6 overflow-y-auto bg-brand-light">
                 {{ $slot ?? '' }}
                 @yield('content')
             </main>

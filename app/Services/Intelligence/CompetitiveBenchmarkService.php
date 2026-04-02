@@ -15,7 +15,9 @@ class CompetitiveBenchmarkService
             ->where('snapshot_date', $date)
             ->get();
 
-        if ($snapshots->isEmpty()) return;
+        if ($snapshots->isEmpty()) {
+            return;
+        }
 
         $byIndustry = $clients->keyBy('id')->map(fn ($c) => $c->industry ?: 'unknown');
 
@@ -51,7 +53,9 @@ class CompetitiveBenchmarkService
 
             foreach ($metrics as $metric) {
                 $values = $group->pluck($metric)->filter(fn ($v) => $v !== null)->map(fn ($v) => (float) $v)->values();
-                if ($values->isEmpty()) continue;
+                if ($values->isEmpty()) {
+                    continue;
+                }
                 $bench[$metric] = $values->median();
             }
 
@@ -77,7 +81,9 @@ class CompetitiveBenchmarkService
 
         foreach ($bench as $metric => $median) {
             $current = $snapshot->{$metric};
-            if ($current === null) continue;
+            if ($current === null) {
+                continue;
+            }
             $median = (float) $median;
             $current = (float) $current;
 
@@ -92,4 +98,3 @@ class CompetitiveBenchmarkService
         return $deltas;
     }
 }
-

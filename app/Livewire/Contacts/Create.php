@@ -9,11 +9,17 @@ use Livewire\Component;
 class Create extends Component
 {
     public $first_name;
+
     public $last_name;
+
     public $email;
+
     public $phone;
+
     public $company_name;
+
     public $type = 'lead';
+
     public $tags = [];
 
     protected $rules = [

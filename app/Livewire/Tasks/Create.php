@@ -2,25 +2,31 @@
 
 namespace App\Livewire\Tasks;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Livewire\Component;
-
+use App\Models\Client;
 use App\Models\Task;
 use App\Models\User;
-use App\Models\Client;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Create extends Component
 {
     use AuthorizesRequests;
 
     public $title = '';
+
     public $description = '';
+
     public $task_type = 'general';
+
     public $priority = 'medium';
+
     public $status = 'pending';
+
     public $assigned_to = '';
+
     public $client_id = '';
+
     public $deadline = '';
 
     protected $rules = [

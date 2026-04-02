@@ -9,9 +9,9 @@
                     <div class="relative">
                         <div class="h-24 w-24 bg-gray-100 rounded-[2rem] overflow-hidden flex items-center justify-center border-4 border-white shadow-xl">
                             @if($logo)
-                                <img src="{{ $logo->temporaryUrl() }}" class="object-cover w-full h-full">
+                                <img src="{{ $logo->temporaryUrl() }}" alt="Organization logo" class="object-cover w-full h-full">
                             @elseif($currentLogo)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($currentLogo) }}" class="object-cover w-full h-full">
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($currentLogo) }}" alt="Organization logo" class="object-cover w-full h-full">
                             @else
                                 <span class="text-2xl font-black text-indigo-300">DC</span>
                             @endif

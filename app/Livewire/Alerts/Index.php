@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Alerts;
 
+use App\Models\Alert;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Index extends Component
@@ -15,7 +17,7 @@ class Index extends Component
 
     public function refreshAlerts()
     {
-        $this->alerts = \App\Models\Alert::where('organization_id', \Illuminate\Support\Facades\Auth::user()->organization_id)
+        $this->alerts = Alert::where('organization_id', Auth::user()->organization_id)
             ->where('status', '!=', 'RESOLVED')
             ->orderBy('severity', 'desc')
             ->orderBy('triggered_at', 'desc')
@@ -24,8 +26,8 @@ class Index extends Component
 
     public function acknowledge($id)
     {
-        $alert = \App\Models\Alert::find($id);
-        if ($alert && $alert->organization_id === \Illuminate\Support\Facades\Auth::user()->organization_id) {
+        $alert = Alert::find($id);
+        if ($alert && $alert->organization_id === Auth::user()->organization_id) {
             $alert->acknowledge();
             $this->refreshAlerts();
         }
@@ -33,8 +35,8 @@ class Index extends Component
 
     public function resolve($id)
     {
-        $alert = \App\Models\Alert::find($id);
-        if ($alert && $alert->organization_id === \Illuminate\Support\Facades\Auth::user()->organization_id) {
+        $alert = Alert::find($id);
+        if ($alert && $alert->organization_id === Auth::user()->organization_id) {
             $alert->resolve();
             $this->refreshAlerts();
         }

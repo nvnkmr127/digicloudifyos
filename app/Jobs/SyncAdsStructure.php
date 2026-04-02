@@ -3,6 +3,9 @@
 namespace App\Jobs;
 
 use App\Models\AdAccount;
+use App\Services\GoogleAdsService;
+use App\Services\LinkedInAdsService;
+use App\Services\MetaAdsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,6 +18,7 @@ class SyncAdsStructure implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 300; // Structure sync can take time
 
     /**
@@ -37,14 +41,15 @@ class SyncAdsStructure implements ShouldQueue
             ]);
 
             $service = match ($this->adAccount->platform) {
-                'META_ADS' => new \App\Services\MetaAdsService(),
-                'GOOGLE_ADS' => new \App\Services\GoogleAdsService(),
-                'LINKEDIN_ADS' => new \App\Services\LinkedInAdsService(),
+                'META_ADS' => new MetaAdsService,
+                'GOOGLE_ADS' => new GoogleAdsService,
+                'LINKEDIN_ADS' => new LinkedInAdsService,
                 default => null,
             };
 
-            if (!$service) {
+            if (! $service) {
                 Log::warning('No service found for platform', ['platform' => $this->adAccount->platform]);
+
                 return;
             }
 

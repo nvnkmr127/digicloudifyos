@@ -4,11 +4,13 @@ namespace App\Console\Commands;
 
 use App\Jobs\SyncFacebookLeads;
 use App\Models\AdAccount;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SyncAllFacebookLeads extends Command
 {
     protected $signature = 'ads:sync-leads {--account= : Specific ad account local id}';
+
     protected $description = 'Sync Facebook Lead Ads for all active ad accounts with connected pages';
 
     public function handle()
@@ -28,6 +30,7 @@ class SyncAllFacebookLeads extends Command
 
         if ($accounts->isEmpty()) {
             $this->warn('No active Meta ad accounts with connected pages found.');
+
             return self::SUCCESS;
         }
 
@@ -37,18 +40,18 @@ class SyncAllFacebookLeads extends Command
         foreach ($accounts as $account) {
             $frequency = $account->credentials['sync_frequency'] ?? '15_min';
             $lastSync = $account->credentials['last_lead_sync'] ?? null;
-            
+
             $shouldSync = false;
-            
+
             if ($frequency === 'never') {
                 continue;
             }
 
-            if (!$lastSync) {
+            if (! $lastSync) {
                 $shouldSync = true;
             } else {
-                $lastSyncTime = \Carbon\Carbon::parse($lastSync);
-                $shouldSync = match($frequency) {
+                $lastSyncTime = Carbon::parse($lastSync);
+                $shouldSync = match ($frequency) {
                     '15_min' => $now->diffInMinutes($lastSyncTime) >= 15,
                     'hourly' => $now->diffInHours($lastSyncTime) >= 1,
                     'daily' => $now->diffInDays($lastSyncTime) >= 1,
@@ -60,7 +63,7 @@ class SyncAllFacebookLeads extends Command
                 $this->info("Dispatching lead sync for: {$account->account_name}");
                 SyncFacebookLeads::dispatch($account);
                 $dispatchedCount++;
-                
+
                 // Update last sync time
                 $creds = $account->credentials ?? [];
                 $creds['last_lead_sync'] = $now->toIso8601String();

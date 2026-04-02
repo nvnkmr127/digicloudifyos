@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Invoices;
 
-use Livewire\Component;
-
 use App\Models\Invoice;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Index extends Component
 {
@@ -24,16 +23,16 @@ class Index extends Component
         $invoices = Invoice::where('organization_id', Auth::user()->organization_id)
             ->with(['client', 'project'])
             ->when($this->search, function ($query) {
-                $query->where('invoice_number', 'like', '%' . $this->search . '%')
+                $query->where('invoice_number', 'like', '%'.$this->search.'%')
                     ->orWhereHas('client', function ($q) {
-                        $q->where('name', 'like', '%' . $this->search . '%');
+                        $q->where('name', 'like', '%'.$this->search.'%');
                     });
             })
             ->latest()
             ->paginate(10);
 
         return view('livewire.invoices.index', [
-            'invoices' => $invoices
+            'invoices' => $invoices,
         ]);
     }
 }

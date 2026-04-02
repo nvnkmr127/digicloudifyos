@@ -2,10 +2,9 @@
 
 namespace App\Livewire\Products;
 
-use Livewire\Component;
-
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Index extends Component
 {
@@ -24,7 +23,7 @@ class Index extends Component
             ->get();
 
         return view('livewire.products.index', [
-            'products' => $products
+            'products' => $products,
         ]);
     }
 }

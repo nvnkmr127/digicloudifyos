@@ -9,10 +9,10 @@ class AnomalyInsightPrompt
         $clientName = $data['client_name'];
         $industry = $data['industry'];
         $anomalies = $data['anomalies'];
-        
-        $anomalyText = "";
+
+        $anomalyText = '';
         foreach ($anomalies as $index => $anomaly) {
-            $anomalyText .= ($index + 1) . ". Channel: {$anomaly['channel_type']}, Metric: {$anomaly['metric_name']}, Baseline: {$anomaly['baseline']}, Current: {$anomaly['current']}, Deviation: {$anomaly['deviation']}%\n";
+            $anomalyText .= ($index + 1).". Channel: {$anomaly['channel_type']}, Metric: {$anomaly['metric_name']}, Baseline: {$anomaly['baseline']}, Current: {$anomaly['current']}, Deviation: {$anomaly['deviation']}%\n";
         }
 
         return <<<PROMPT

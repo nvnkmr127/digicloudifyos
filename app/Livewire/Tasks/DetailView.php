@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tasks;
 
+use App\Models\Task;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
@@ -13,7 +14,7 @@ class DetailView extends Component
 
     public function mount($id)
     {
-        $this->task = \App\Models\Task::with(['campaign', 'assignee', 'creator'])
+        $this->task = Task::with(['campaign', 'assignee', 'creator'])
             ->findOrFail($id);
 
         $this->authorize('view', $this->task);

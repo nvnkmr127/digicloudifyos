@@ -3,9 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\AdAccount;
-use App\Models\FacebookLead;
-use App\Models\User;
 use App\Models\LeadSyncLog;
+use App\Models\User;
 use App\Notifications\NewFacebookLeadNotification;
 use App\Services\MetaAdsService;
 use Illuminate\Bus\Queueable;
@@ -21,6 +20,7 @@ class ProcessFacebookLeadWebhook implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 120;
 
     public function __construct(
@@ -40,8 +40,9 @@ class ProcessFacebookLeadWebhook implements ShouldQueue
             ->whereNotNull('facebook_page_token')
             ->first();
 
-        if (!$adAccount) {
+        if (! $adAccount) {
             Log::warning('No connected Ad Account found for Facebook Page ID', ['page_id' => $this->pageId]);
+
             return;
         }
 
@@ -64,7 +65,7 @@ class ProcessFacebookLeadWebhook implements ShouldQueue
 
                 Log::info('Successfully processed webhook lead', [
                     'facebook_lead_id' => $lead->facebook_lead_id,
-                    'email' => $lead->email
+                    'email' => $lead->email,
                 ]);
 
                 // Notify sales / admins for this organization

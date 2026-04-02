@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Clients;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\User;
+use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PrivacyController extends Controller
 {
-    public function export(Request $request, Client $client)
+    public function export(Request $request, Client $client, AuditService $audit)
     {
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User || ! $user->isAdmin()) {
+        if (! $user instanceof User || ! $user->isAdmin()) {
             abort(403);
         }
 
@@ -38,16 +40,20 @@ class PrivacyController extends Controller
             ],
         ];
 
-        $filename = 'client-export-' . $client->id . '-' . now()->format('Ymd_His') . '.json';
+        $filename = 'client-export-'.$client->id.'-'.now()->format('Ymd_His').'.json';
+
+        $audit->log($user->organization_id, $user->id, 'client.export', $client, [
+            'filename' => $filename,
+        ], $request->ip(), $request->userAgent());
 
         return response()->json($payload)
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
-    public function erase(Request $request, Client $client)
+    public function erase(Request $request, Client $client, AuditService $audit)
     {
         $user = Auth::user();
-        if (! $user instanceof \App\Models\User || ! $user->isAdmin()) {
+        if (! $user instanceof User || ! $user->isAdmin()) {
             abort(403);
         }
 
@@ -84,9 +90,10 @@ class PrivacyController extends Controller
             'status' => 'ARCHIVED',
         ]);
 
+        $audit->log($user->organization_id, $user->id, 'client.erase', $client, [], $request->ip(), $request->userAgent());
+
         $client->delete();
 
         return redirect()->route('clients.index')->with('success', 'Client data erased and archived.');
     }
 }
-

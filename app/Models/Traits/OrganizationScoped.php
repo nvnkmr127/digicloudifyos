@@ -2,8 +2,8 @@
 
 namespace App\Models\Traits;
 
+use App\Contracts\OrganizationContextInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 trait OrganizationScoped
 {
@@ -45,14 +45,20 @@ trait OrganizationScoped
     protected static function bootOrganizationScoped(): void
     {
         static::creating(function ($model) {
-            if (empty($model->organization_id) && app()->bound('auth') && Auth::hasUser() && ($user = Auth::user())) {
-                $model->organization_id = $user->organization_id;
+            if (empty($model->organization_id) && app()->bound(OrganizationContextInterface::class)) {
+                $context = app(OrganizationContextInterface::class);
+                if ($context->hasCurrentOrganization()) {
+                    $model->organization_id = $context->getCurrentOrganizationId();
+                }
             }
         });
 
         static::addGlobalScope('organization', function (Builder $builder) {
-            if (app()->bound('auth') && Auth::hasUser() && ($user = Auth::user())) {
-                $builder->where($builder->getModel()->getTable().'.organization_id', $user->organization_id);
+            if (app()->bound(OrganizationContextInterface::class)) {
+                $context = app(OrganizationContextInterface::class);
+                if ($context->hasCurrentOrganization()) {
+                    $builder->where($builder->getModel()->getTable().'.organization_id', $context->getCurrentOrganizationId());
+                }
             }
         });
     }

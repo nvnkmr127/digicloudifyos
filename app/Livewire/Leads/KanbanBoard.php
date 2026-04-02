@@ -3,6 +3,7 @@
 namespace App\Livewire\Leads;
 
 use App\Models\Lead;
+use App\Services\LeadService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -31,9 +32,9 @@ class KanbanBoard extends Component
         'leadCreated' => 'refreshLeads',
     ];
 
-    protected function getService(): \App\Services\LeadService
+    protected function getService(): LeadService
     {
-        return app(\App\Services\LeadService::class);
+        return app(LeadService::class);
     }
 
     public function mount()
@@ -80,7 +81,7 @@ class KanbanBoard extends Component
             $this->authorize('update', $lead);
 
             $oldStatus = $lead->status;
-            
+
             $this->getService()->updateStatus($lead, $newStatus);
 
             $this->refreshLeads();

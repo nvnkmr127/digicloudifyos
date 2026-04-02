@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Intelligence;
 
+use App\Models\AiInsight;
 use App\Models\Client;
 use App\Models\PerformanceAnomaly;
-use App\Models\AiInsight;
 use Livewire\Component;
 
 class Overview extends Component

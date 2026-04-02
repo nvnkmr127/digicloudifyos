@@ -17,6 +17,7 @@ class SyncFacebookLeads implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 300;
 
     public function __construct(
@@ -42,7 +43,7 @@ class SyncFacebookLeads implements ShouldQueue
         try {
             Log::info('Syncing Facebook Leads', ['ad_account_id' => $this->adAccount->id]);
 
-            $service = new MetaAdsService();
+            $service = new MetaAdsService;
             $leads = $service->syncAllLeads($this->adAccount);
 
             $syncLog->update([

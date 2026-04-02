@@ -13,7 +13,7 @@ Based on your request for further improvements, I've added **5 major new feature
 Enables lightning-fast search across campaigns with intelligent indexing.
 
 #### Files Created/Modified
-- [Campaign.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/Campaign.php) - Added `Searchable` trait
+- [Campaign.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/Campaign.php) - Added `Searchable` trait
 
 #### Key Features
 - **Instant Search**: Search by campaign name, objective, status, client name
@@ -55,9 +55,9 @@ php artisan scout:import "App\Models\Campaign"
 Export campaigns to multiple formats: Excel (XLSX/XLS), CSV, and PDF.
 
 #### Files Created
-- [CampaignsExport.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Exports/CampaignsExport.php) - Excel export class
-- [ExportService.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Services/ExportService.php) - Export orchestration
-- [ExportController.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Http/Controllers/Api/V1/ExportController.php) - API endpoint
+- [CampaignsExport.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Exports/CampaignsExport.php) - Excel export class
+- [ExportService.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Services/ExportService.php) - Export orchestration
+- [ExportController.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Http/Controllers/Api/V1/ExportController.php) - API endpoint
 
 #### Key Features
 - **Multiple Formats**: XLSX, XLS, CSV, PDF
@@ -103,8 +103,8 @@ POST /api/v1/exports/campaigns
 Provides comprehensive business intelligence and performance metrics.
 
 #### Files Created
-- [AnalyticsService.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Services/AnalyticsService.php) - Analytics engine
-- [AnalyticsController.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Http/Controllers/Api/V1/AnalyticsController.php) - API endpoint
+- [AnalyticsService.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Services/AnalyticsService.php) - Analytics engine
+- [AnalyticsController.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Http/Controllers/Api/V1/AnalyticsController.php) - API endpoint
 
 #### Metrics Included
 
@@ -193,8 +193,8 @@ GET /api/v1/analytics/dashboard?period=30days
 Protects API from abuse and tracks performance metrics.
 
 #### Files Created
-- [CustomThrottle.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Http/Middleware/CustomThrottle.php) - Rate limiting middleware
-- [TrackApiUsage.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Http/Middleware/TrackApiUsage.php) - API usage tracking
+- [CustomThrottle.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Http/Middleware/CustomThrottle.php) - Rate limiting middleware
+- [TrackApiUsage.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Http/Middleware/TrackApiUsage.php) - API usage tracking
 
 #### Custom Throttle Features
 - **User-based limits**: Authenticated users tracked separately
@@ -235,10 +235,10 @@ Retry-After: 42 (when rate limited)
 Enables real-time integration with external systems via webhooks.
 
 #### Files Created
-- [Webhook.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/Webhook.php) - Webhook model
-- [WebhookDelivery.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Models/WebhookDelivery.php) - Delivery tracking
-- [WebhookService.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Services/WebhookService.php) - Webhook logic
-- [DeliverWebhook.php](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/app/Jobs/DeliverWebhook.php) - Background delivery job
+- [Webhook.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/Webhook.php) - Webhook model
+- [WebhookDelivery.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Models/WebhookDelivery.php) - Delivery tracking
+- [WebhookService.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Services/WebhookService.php) - Webhook logic
+- [DeliverWebhook.php](file:///Users/naveenadicharla/Documents/DC%20OS/app/Jobs/DeliverWebhook.php) - Background delivery job
 
 #### Key Features
 - **Event-based triggers**: Subscribe to specific events
@@ -324,7 +324,7 @@ app.post('/webhook', (req, res) => {
 
 ## 📦 Additional Packages Required
 
-Update your [composer.json](file:///Users/naveenadicharla/Documents/DC%20OS/laravel-app/composer.json):
+Update your [composer.json](file:///Users/naveenadicharla/Documents/DC%20OS/composer.json):
 
 ```json
 {

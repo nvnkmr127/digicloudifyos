@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Feedback extends Model
 {
-    use OrganizationScoped, HasUuids, SoftDeletes;
+    use HasUuids, OrganizationScoped, SoftDeletes;
 
     protected $fillable = [
         'organization_id',
@@ -30,7 +30,7 @@ class Feedback extends Model
     public function entity(): BelongsTo
     {
         // This is a manual polymorphic relation since entity_id is a UUID and type is string
-        $modelClass = match($this->entity_type) {
+        $modelClass = match ($this->entity_type) {
             'project' => Project::class,
             'creative_request' => CreativeRequest::class,
             'lead' => Lead::class,

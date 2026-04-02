@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Models\Traits\OrganizationScoped;
-
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
@@ -93,6 +94,13 @@ class Client extends Model
         return $this->hasMany(ClientChannelConnection::class);
     }
 
+    public function servicePackages(): BelongsToMany
+    {
+        return $this->belongsToMany(ServicePackage::class, 'client_service_packages')
+            ->withPivot(['id', 'is_active', 'started_at'])
+            ->wherePivot('is_active', true);
+    }
+
     public function performanceSnapshots(): HasMany
     {
         return $this->hasMany(PerformanceSnapshot::class);
@@ -108,7 +116,7 @@ class Client extends Model
         return $this->hasMany(ClientHealthScore::class);
     }
 
-    public function latestHealthScore(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function latestHealthScore(): HasOne
     {
         return $this->hasOne(ClientHealthScore::class)->latestOfMany('score_date');
     }

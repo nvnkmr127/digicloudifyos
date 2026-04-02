@@ -2,7 +2,13 @@
 
 namespace App\Livewire\Campaigns;
 
+use App\Jobs\SyncCampaignMetrics;
+use App\Models\Campaign;
+use App\Services\GoogleAdsService;
+use App\Services\LinkedInAdsService;
+use App\Services\MetaAdsService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class DetailView extends Component
@@ -10,6 +16,7 @@ class DetailView extends Component
     use AuthorizesRequests;
 
     public $campaign;
+
     public $activeTab = 'creative'; // Default tab: creative, adsets, performance, audience
 
     public function mount($id)
@@ -19,7 +26,7 @@ class DetailView extends Component
 
     protected function loadCampaign($id)
     {
-        $this->campaign = \App\Models\Campaign::with(['client', 'adAccount', 'creativeRequests', 'tasks', 'adSets.ads', 'dailyMetrics', 'facebookLeads', 'audienceInsights'])
+        $this->campaign = Campaign::with(['client', 'adAccount', 'creativeRequests', 'tasks', 'adSets.ads', 'dailyMetrics', 'facebookLeads', 'audienceInsights'])
             ->findOrFail($id);
 
         $this->authorize('view', $this->campaign);
@@ -33,7 +40,7 @@ class DetailView extends Component
     public function syncMetrics()
     {
         $this->authorize('update', $this->campaign);
-        \App\Jobs\SyncCampaignMetrics::dispatch($this->campaign);
+        SyncCampaignMetrics::dispatch($this->campaign);
         session()->flash('message', 'Syncing campaign metrics and hierarchy in the background...');
     }
 
@@ -75,15 +82,16 @@ class DetailView extends Component
     protected function getService()
     {
         $platform = $this->campaign->adAccount->platform ?? null;
+
         return match ($platform) {
-            'META_ADS' => new \App\Services\MetaAdsService(),
-            'GOOGLE_ADS' => new \App\Services\GoogleAdsService(),
-            'LINKEDIN_ADS' => new \App\Services\LinkedInAdsService(),
+            'META_ADS' => new MetaAdsService,
+            'GOOGLE_ADS' => new GoogleAdsService,
+            'LINKEDIN_ADS' => new LinkedInAdsService,
             default => null,
         };
     }
 
-    #[\Livewire\Attributes\Layout('layouts.app')]
+    #[Layout('layouts.app')]
     public function render()
     {
         return view('livewire.campaigns.detail-view');

@@ -2,14 +2,16 @@
 
 namespace App\Livewire\Forms;
 
+use App\Models\Form;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Index extends Component
 {
     public function render()
     {
-        $orgId = \Illuminate\Support\Facades\Auth::user()->organization_id;
-        $forms = \App\Models\Form::where('organization_id', $orgId)
+        $orgId = Auth::user()->organization_id;
+        $forms = Form::where('organization_id', $orgId)
             ->withCount('submissions')
             ->latest()
             ->get();

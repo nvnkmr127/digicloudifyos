@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Settings;
 
-use App\Models\Organization;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,10 +11,15 @@ class Index extends Component
     use WithFileUploads;
 
     public $name;
+
     public $email;
+
     public $phone;
+
     public $address;
+
     public $logo;
+
     public $currentLogo;
 
     public function mount()
@@ -37,7 +41,7 @@ class Index extends Component
         ]);
 
         $org = Auth::user()->organization;
-        
+
         $data = [
             'name' => $this->name,
             'email' => $this->email,

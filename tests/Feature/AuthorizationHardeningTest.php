@@ -52,7 +52,7 @@ class AuthorizationHardeningTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get('/clients/' . $foreignClient->id . '/edit')
+            ->get('/clients/'.$foreignClient->id.'/edit')
             ->assertForbidden();
     }
 }

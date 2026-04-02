@@ -2,20 +2,24 @@
 
 namespace App\Livewire\Users;
 
-use Livewire\Component;
-
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Livewire\Component;
 
 class Edit extends Component
 {
     public User $user;
+
     public $full_name;
+
     public $email;
+
     public $role;
+
     public $status;
+
     public $password;
 
     public function mount(User $user)

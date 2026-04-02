@@ -21,11 +21,10 @@ class ComputeCompetitiveBenchmarks implements ShouldQueue
 
     public function handle(CompetitiveBenchmarkService $benchmarks): void
     {
-        $date = $this->date ?? today()->toDateString();
+        $date = $this->date ?? now()->subDay()->toDateString();
 
         foreach (Organization::all() as $org) {
             $benchmarks->runForOrganization($org->id, $date);
         }
     }
 }
-

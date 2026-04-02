@@ -2,24 +2,33 @@
 
 namespace App\Livewire\Campaigns;
 
-use Livewire\Component;
-
+use App\Models\AdAccount;
 use App\Models\Campaign;
 use App\Models\Client;
-use App\Models\AdAccount;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class Edit extends Component
 {
     public Campaign $campaign;
+
     public $client_id;
+
     public $ad_account_id;
+
     public $name;
+
     public $objective;
+
     public $status;
+
     public $start_date;
+
     public $end_date;
+
     public $daily_budget;
+
     public $lifetime_budget;
 
     protected $rules = [
@@ -42,8 +51,8 @@ class Edit extends Component
         $this->name = $campaign->name;
         $this->objective = $campaign->objective;
         $this->status = $campaign->status;
-        $this->start_date = $campaign->start_date ? \Carbon\Carbon::parse($campaign->start_date)->format('Y-m-d') : '';
-        $this->end_date = $campaign->end_date ? \Carbon\Carbon::parse($campaign->end_date)->format('Y-m-d') : '';
+        $this->start_date = $campaign->start_date ? Carbon::parse($campaign->start_date)->format('Y-m-d') : '';
+        $this->end_date = $campaign->end_date ? Carbon::parse($campaign->end_date)->format('Y-m-d') : '';
         $this->daily_budget = $campaign->daily_budget;
         $this->lifetime_budget = $campaign->lifetime_budget;
     }
