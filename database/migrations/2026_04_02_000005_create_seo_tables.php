@@ -15,7 +15,7 @@ return new class extends Migration
             $table->date('metric_date');
             $table->string('site_url', 2048)->nullable();
             $table->enum('dimension', ['query', 'page']);
-            $table->string('key', 2048);
+            $table->string('key', 512);
 
             $table->unsignedBigInteger('clicks')->default(0);
             $table->unsignedBigInteger('impressions')->default(0);
