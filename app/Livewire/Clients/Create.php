@@ -102,41 +102,71 @@ class Create extends Component
 
     public function save()
     {
-        $this->authorize('create', Client::class);
-
-        $this->validate();
-
-        $client = Client::create([
+        \Log::debug('Attempting to create client', [
+            'user_id' => Auth::id(),
             'organization_id' => Auth::user()->organization_id ?? null,
-            'name' => $this->name,
-            'email' => $this->email,
-            'website_url' => $this->website_url ?: null,
-            'phone' => $this->phone ?: null,
-            'industry' => $this->industry,
-            'timezone' => $this->timezone ?: null,
-            'currency_code' => $this->currency_code ? strtoupper($this->currency_code) : null,
-            'address_line1' => $this->address_line1 ?: null,
-            'address_line2' => $this->address_line2 ?: null,
-            'city' => $this->city ?: null,
-            'state' => $this->state ?: null,
-            'postal_code' => $this->postal_code ?: null,
-            'country_code' => $this->country_code ? strtoupper($this->country_code) : null,
-            'business_description' => $this->business_description ?: null,
-            'goals' => $this->textToList($this->goalsText),
-            'target_audience' => $this->textToList($this->targetAudienceText),
-            'competitors' => $this->textToList($this->competitorsText),
-            'primary_kpis' => $this->textToList($this->primaryKpisText),
-            'gdpr_consent_at' => $this->gdpr_consent ? now() : null,
-            'ccpa_opt_out_at' => $this->ccpa_opt_out ? now() : null,
-            'data_retention_days' => $this->data_retention_days,
-            'privacy_contact_email' => $this->privacy_contact_email ?: null,
-            'external_ref' => $this->external_ref,
-            'status' => $this->status,
+            'input' => $this->all(),
         ]);
 
-        session()->flash('success', 'Client created successfully.');
+        $this->authorize('create', Client::class);
 
-        return redirect()->route('clients.edit', $client->id);
+        try {
+            $this->validate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::debug('Validation failed during client creation', [
+                'errors' => $e->errors(),
+            ]);
+            throw $e;
+        }
+
+        try {
+            $client = Client::create([
+                'organization_id' => Auth::user()->organization_id ?? null,
+                'name' => $this->name,
+                'email' => $this->email,
+                'website_url' => $this->website_url ?: null,
+                'phone' => $this->phone ?: null,
+                'industry' => $this->industry,
+                'timezone' => $this->timezone ?: null,
+                'currency_code' => $this->currency_code ? strtoupper($this->currency_code) : null,
+                'address_line1' => $this->address_line1 ?: null,
+                'address_line2' => $this->address_line2 ?: null,
+                'city' => $this->city ?: null,
+                'state' => $this->state ?: null,
+                'postal_code' => $this->postal_code ?: null,
+                'country_code' => $this->country_code ? strtoupper($this->country_code) : null,
+                'business_description' => $this->business_description ?: null,
+                'goals' => $this->textToList($this->goalsText),
+                'target_audience' => $this->textToList($this->targetAudienceText),
+                'competitors' => $this->textToList($this->competitorsText),
+                'primary_kpis' => $this->textToList($this->primaryKpisText),
+                'gdpr_consent_at' => $this->gdpr_consent ? now() : null,
+                'ccpa_opt_out_at' => $this->ccpa_opt_out ? now() : null,
+                'data_retention_days' => $this->data_retention_days,
+                'privacy_contact_email' => $this->privacy_contact_email ?: null,
+                'external_ref' => $this->external_ref ?: null,
+                'status' => $this->status,
+            ]);
+
+            \Log::debug('Client created successfully', [
+                'client_id' => $client->id,
+                'organization_id' => $client->organization_id,
+            ]);
+
+            session()->flash('success', 'Client created successfully.');
+
+            return redirect()->route('clients.edit', $client->id);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create client', [
+                'error_type' => get_class($e),
+                'message' => $e->getMessage(),
+                'input_data' => $this->all(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            session()->flash('error', 'Failed to create client: ' . $e->getMessage());
+            return null;
+        }
     }
 
     public function render()

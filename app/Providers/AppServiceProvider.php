@@ -108,6 +108,7 @@ class AppServiceProvider extends ServiceProvider
         Lead::observe(LeadObserver::class);
         Invoice::observe(InvoiceObserver::class);
         Proposal::observe(ProposalObserver::class);
+        \App\Models\Client::observe(\App\Observers\ClientObserver::class);
 
         // Sidebar Intelligence Badges
         View::composer(
