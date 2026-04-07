@@ -5,7 +5,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h1 class="text-3xl font-black text-gray-900 tracking-tight">Onboarding <span class="text-primary italic">{{ $client->name }}</span></h1>
-                    <p class="text-gray-500 font-medium">Step {{ $currentStep }} of {{ $totalSteps }}: {{ [1 => 'Company Profile', 2 => 'Global Configuration', 3 => 'Strategic Goals', 4 => 'Compliance & Status'][$currentStep] }}</p>
+                    <p class="text-gray-500 font-medium">Step {{ $currentStep }} of {{ $totalSteps }}: {{ $stepTitles[$currentStep] }}</p>
                 </div>
                 <div class="text-right">
                     <span class="text-4xl font-black text-primary">{{ round(($currentStep / $totalSteps) * 100) }}%</span>
@@ -22,15 +22,7 @@
 
         <div class="bg-white rounded-[3rem] shadow-2xl shadow-indigo-50/50 border border-indigo-50 overflow-hidden">
             <div class="p-12">
-                @php
-                    $stepTitles = [
-                        1 => 'Company Profile',
-                        2 => 'Global Configuration',
-                        3 => 'Strategic Goals',
-                        4 => 'Compliance & Status',
-                        5 => 'Next Steps & Checklist'
-                    ];
-                @endphp
+
                 
                 @if($currentStep === 1)
                 <!-- Step 1 content -->

@@ -11,6 +11,13 @@ class OnboardingWizard extends Component
     public Client $client;
     public int $currentStep = 1;
     public int $totalSteps = 5;
+    public array $stepTitles = [
+        1 => 'Company Profile',
+        2 => 'Global Configuration',
+        3 => 'Strategic Goals',
+        4 => 'Compliance & Status',
+        5 => 'Next Steps & Checklist'
+    ];
 
     // Step 1: Business Profile
     public $industry = '';
