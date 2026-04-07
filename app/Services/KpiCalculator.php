@@ -7,7 +7,7 @@ class KpiCalculator
     public function percent(float $numerator, float $denominator): ?float
     {
         if ($denominator == 0.0) {
-            return null;
+            return 0.0;
         }
 
         return ($numerator / $denominator) * 100.0;

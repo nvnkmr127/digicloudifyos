@@ -32,7 +32,9 @@ class CampaignPolicy
 
     public function delete(User $user, Campaign $campaign): bool
     {
-        if (in_array($campaign->status, CampaignStatus::activeValues(), true)) {
+        $status = $campaign->status instanceof CampaignStatus ? $campaign->status->value : $campaign->status;
+
+        if (in_array($status, CampaignStatus::activeValues(), true)) {
             return false;
         }
 

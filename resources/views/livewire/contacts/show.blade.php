@@ -2,7 +2,7 @@
     <x-page-header title="Contact Details">
         <div class="flex items-center gap-4">
             <a href="{{ route('contacts.index') }}" class="text-sm font-medium text-text-muted hover:text-text-primary">Back to List</a>
-            <x-button color="primary">Edit Contact</x-button>
+            <x-button color="primary" href="{{ route('contacts.edit', $contact->id) }}">Edit Contact</x-button>
         </div>
     </x-page-header>
 
@@ -100,7 +100,7 @@
                             <p class="text-2xl font-black text-primary">${{ number_format($op->value, 2) }}</p>
                             <div class="mt-6 flex items-center justify-between text-xs font-bold text-gray-400">
                                 <span>Closing: {{ $op->close_date ? $op->close_date->format('M Y') : 'TBD' }}</span>
-                                <a href="#" class="text-primary hover:underline">View Opportunity &rarr;</a>
+                                <a href="{{ route('opportunities.show', $op->id) }}" class="text-primary hover:underline">View Opportunity &rarr;</a>
                             </div>
                         </x-card>
                     @empty

@@ -112,7 +112,7 @@ class Campaign extends Model
 
     public function isRunning(): bool
     {
-        return in_array($this->status, CampaignStatus::activeValues(), true);
+        return in_array($this->status?->value ?? $this->status, CampaignStatus::activeValues(), true);
     }
 
     public function isCompleted(): bool

@@ -117,6 +117,7 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/projects/{project}/edit', App\Livewire\Projects\Edit::class)->name('projects.edit');
     Route::get('/pipelines', App\Livewire\Pipelines\Index::class)->name('pipelines.index');
     Route::get('/opportunities/create', App\Livewire\Opportunities\Create::class)->name('opportunities.create');
+    Route::get('/opportunities/{id}', App\Livewire\Opportunities\Show::class)->name('opportunities.show');
     Route::get('/team', App\Livewire\Team\Index::class)->name('team.index');
     Route::get('/users', App\Livewire\Users\Index::class)
         ->middleware('can:manage-organization')
@@ -167,6 +168,7 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/contacts', App\Livewire\Contacts\Index::class)->name('contacts.index');
     Route::get('/contacts/create', App\Livewire\Contacts\Create::class)->name('contacts.create');
     Route::get('/contacts/{id}', App\Livewire\Contacts\Show::class)->name('contacts.show');
+    Route::get('/contacts/{id}/edit', App\Livewire\Contacts\Edit::class)->name('contacts.edit');
 
     // Utilities
     Route::get('/automations', App\Livewire\Automations\Index::class)->name('automations.index');
@@ -237,6 +239,9 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/intelligence/insights', InsightsFeed::class)->name('intelligence.insights');
     Route::get('/intelligence/alerts', AlertCenter::class)->name('intelligence.alerts');
     Route::get('/intelligence/client/{client}', ClientPerformanceCenter::class)->name('intelligence.client');
+
+    // Notifications
+    Route::get('/notifications', App\Livewire\Notifications\Index::class)->name('notifications.index');
 });
 
 Route::get('/portal/clients/{client}', [ClientPortalController::class, 'show'])

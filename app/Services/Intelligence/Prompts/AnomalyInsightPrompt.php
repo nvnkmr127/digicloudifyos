@@ -12,13 +12,20 @@ class AnomalyInsightPrompt
 
         $anomalyText = '';
         foreach ($anomalies as $index => $anomaly) {
-            $anomalyText .= ($index + 1).". Channel: {$anomaly['channel_type']}, Metric: {$anomaly['metric_name']}, Baseline: {$anomaly['baseline']}, Current: {$anomaly['current']}, Deviation: {$anomaly['deviation']}%\n";
+            $anomalyText .= ($index + 1).". Channel: " . json_encode($anomaly['channel_type']) . 
+                            ", Metric: " . json_encode($anomaly['metric_name']) . 
+                            ", Baseline: " . json_encode($anomaly['baseline']) . 
+                            ", Current: " . json_encode($anomaly['current']) . 
+                            ", Deviation: " . json_encode($anomaly['deviation']) . "%\n";
         }
+
+        $safeClientName = json_encode($clientName);
+        $safeIndustry = json_encode($industry);
 
         return <<<PROMPT
 [SYSTEM INSTRUCTION]
 You are a senior marketing performance analyst. Your task is to analyze performance anomalies and provide actionable insights.
-DATA SOURCE: { "client": "{$clientName}", "industry": "{$industry}" }
+DATA SOURCE: { "client": {$safeClientName}, "industry": {$safeIndustry} }
 
 ANOMALIES TO ANALYZE:
 {$anomalyText}

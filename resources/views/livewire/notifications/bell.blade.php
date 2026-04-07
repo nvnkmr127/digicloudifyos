@@ -50,7 +50,7 @@
             @endforelse
         </div>
         <div class="p-3 bg-gray-50 text-center border-t border-gray-100">
-            <a href="#" class="text-[10px] font-bold text-primary hover:text-indigo-700 uppercase tracking-widest">View All Notifications</a>
+            <a href="{{ route('notifications.index') }}" class="text-[10px] font-bold text-primary hover:text-indigo-700 uppercase tracking-widest">View All Notifications</a>
         </div>
     </div>
 </div>

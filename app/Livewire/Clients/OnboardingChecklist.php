@@ -15,6 +15,10 @@ class OnboardingChecklist extends Component
 
     public function mount(Client $client)
     {
+        if ($client->organization_id !== Auth::user()->organization_id) {
+            abort(403, 'Unauthorized access to client data.');
+        }
+
         $this->client = $client;
         $this->checklist = ClientOnboardingChecklist::firstOrCreate(
             ['client_id' => $client->id, 'organization_id' => $client->organization_id],
