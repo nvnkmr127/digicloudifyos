@@ -31,10 +31,12 @@ class RequestContext
         ]);
 
         $response = $next($request);
+        
+        if (is_object($response) && isset($response->headers)) {
+            $response->headers->set('X-Request-Id', $requestId);
+        }
 
-        return $response->withHeaders([
-            'X-Request-Id' => $requestId,
-        ]);
+        return $response;
     }
 }
 

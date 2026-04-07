@@ -36,10 +36,12 @@ class CustomThrottle
 
         $response = $next($request);
 
-        return $response->withHeaders([
-            'X-RateLimit-Limit' => $limit,
-            'X-RateLimit-Remaining' => RateLimiter::remaining($key, $limit),
-        ]);
+        if (is_object($response) && isset($response->headers)) {
+            $response->headers->set('X-RateLimit-Limit', (string) $limit);
+            $response->headers->set('X-RateLimit-Remaining', (string) RateLimiter::remaining($key, $limit));
+        }
+
+        return $response;
     }
 
     protected function resolveRequestSignature(Request $request): string
