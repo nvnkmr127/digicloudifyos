@@ -64,6 +64,11 @@ class Create extends Component
         \Log::debug('Mounting Client Create component');
     }
 
+    public function updatedName($value)
+    {
+        \Log::debug('Name updated', ['value' => $value]);
+    }
+
     protected $rules = [
         'name' => 'required|min:3',
         'email' => 'nullable|email',

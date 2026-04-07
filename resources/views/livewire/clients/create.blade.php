@@ -10,7 +10,7 @@
     <x-card>
         <form wire:submit="save" class="space-y-6 max-w-2xl">
             <x-form-field label="Client Name" name="name" required>
-                <x-input id="name" type="text" placeholder="e.g. Acme Corp" wire:model="name" />
+                <x-input id="name" type="text" placeholder="e.g. Acme Corp" wire:model.live="name" />
             </x-form-field>
 
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
