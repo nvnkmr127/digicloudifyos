@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignUuid('client_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('client_channel_connection_id')
                 ->nullable()
-                ->constrained('client_channel_connections')
+                ->constrained('client_channel_connections', 'id', 'gmc_metrics_conn_id_fk')
                 ->nullOnDelete();
 
             $table->date('metric_date');
