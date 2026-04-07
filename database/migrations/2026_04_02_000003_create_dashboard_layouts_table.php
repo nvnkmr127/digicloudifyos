@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->string('name');
             $table->boolean('is_default')->default(false);
-            $table->json('widgets')->default('[]');
+            $table->json('widgets')->nullable();
             $table->timestamps();
 
             $table->index(['organization_id', 'user_id']);

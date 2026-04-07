@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('category', 50)->default('onboarding'); // onboarding|seo|branding|ecom
             $table->boolean('is_active')->default(true);
-            $table->json('steps')->default('[]');
+            $table->json('steps')->nullable();
             $table->timestamps();
 
             $table->index(['organization_id', 'category', 'is_active']);

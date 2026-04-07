@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('status', ['OPEN', 'ACKNOWLEDGED', 'RESOLVED', 'DISMISSED'])->default('OPEN');
             $table->string('title');
             $table->text('message');
-            $table->json('payload')->default('{}');
+            $table->json('payload')->nullable();
             $table->timestamp('triggered_at')->useCurrent();
             $table->timestamp('acknowledged_at')->nullable();
             $table->timestamp('resolved_at')->nullable();

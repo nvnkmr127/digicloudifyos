@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignUuid('event_id')->constrained('workflow_events')->cascadeOnDelete();
             $table->enum('action_type', ['create_task', 'update_campaign_status', 'send_notification']);
             $table->string('status');
-            $table->json('result')->default('{}');
+            $table->json('result')->nullable();
             $table->timestamps();
 
             $table->index(['workflow_rule_id', 'created_at'], 'automation_logs_workflow_created_idx');

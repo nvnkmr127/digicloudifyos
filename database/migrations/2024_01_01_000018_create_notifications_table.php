@@ -14,7 +14,7 @@ return new class extends Migration
             $table->enum('trigger', ['new_alert', 'new_task', 'campaign_issue']);
             $table->string('title', 180);
             $table->text('message');
-            $table->json('metadata')->default('{}');
+            $table->json('metadata')->nullable();
             $table->string('channels');
             $table->boolean('is_read')->default(false);
             $table->timestamps();

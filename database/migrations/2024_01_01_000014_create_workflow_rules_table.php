@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
             $table->enum('event_type', ['campaign_created', 'creative_requested', 'creative_approved', 'task_completed']);
             $table->enum('action_type', ['create_task', 'update_campaign_status', 'send_notification']);
-            $table->json('action_config')->default('{}');
+            $table->json('action_config')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('priority_score', 5, 2)->default(50.00);
             $table->text('summary');
             $table->text('rationale')->nullable();
-            $table->json('action_payload')->default('{}');
+            $table->json('action_payload')->nullable();
             $table->enum('status', ['PENDING', 'APPLIED', 'DISMISSED'])->default('PENDING');
             $table->timestamp('generated_at')->useCurrent();
             $table->timestamp('applied_at')->nullable();

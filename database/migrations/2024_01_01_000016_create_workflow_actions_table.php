@@ -12,7 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('workflow_rule_id')->constrained()->cascadeOnDelete();
             $table->enum('action_type', ['create_task', 'update_campaign_status', 'send_notification']);
-            $table->json('config')->default('{}');
+            $table->json('config')->nullable();
             $table->timestamps();
 
             $table->index('workflow_rule_id');

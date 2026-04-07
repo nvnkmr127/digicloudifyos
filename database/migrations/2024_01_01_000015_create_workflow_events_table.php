@@ -14,7 +14,7 @@ return new class extends Migration
             $table->enum('event_type', ['campaign_created', 'creative_requested', 'creative_approved', 'task_completed']);
             $table->enum('entity_type', ['campaign', 'creative', 'task', 'lead']);
             $table->uuid('entity_id');
-            $table->json('payload')->default('{}');
+            $table->json('payload')->nullable();
             $table->timestamps();
 
             $table->index(['organization_id', 'event_type', 'created_at'], 'workflow_events_org_event_created_idx');

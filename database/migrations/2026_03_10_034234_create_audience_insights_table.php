@@ -17,14 +17,14 @@ return new class extends Migration
             $table->uuid('ad_id')->nullable();
             $table->date('date');
 
-            $table->string('breakdown_type');
-            $table->string('age')->nullable();
-            $table->string('gender')->nullable();
-            $table->string('country')->nullable();
-            $table->string('city')->nullable();
-            $table->string('device')->nullable();
-            $table->string('placement')->nullable();
-            $table->string('hour')->nullable();
+            $table->string('breakdown_type', 50);
+            $table->string('age', 20)->nullable();
+            $table->string('gender', 20)->nullable();
+            $table->string('country', 100)->nullable();
+            $table->string('city', 100)->nullable();
+            $table->string('device', 50)->nullable();
+            $table->string('placement', 100)->nullable();
+            $table->string('hour', 10)->nullable();
 
             $table->decimal('spend', 18, 4)->default(0);
             $table->integer('impressions')->default(0);
