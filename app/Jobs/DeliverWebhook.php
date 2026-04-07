@@ -9,8 +9,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 
-class DeliverWebhook implements ShouldQueue
+class DeliverWebhook implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -26,6 +27,11 @@ class DeliverWebhook implements ShouldQueue
         public array $payload
     ) {
         $this->onQueue('webhooks');
+    }
+
+    public function uniqueId(): string
+    {
+        return $this->webhook->id . ':' . $this->event . ':' . md5(json_encode($this->payload));
     }
 
     public function handle(WebhookService $webhookService): void

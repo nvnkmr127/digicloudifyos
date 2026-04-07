@@ -23,7 +23,7 @@ class ComputeDailyProductivity implements ShouldQueue
     {
         $date = $this->date ?? now()->subDay()->toDateString();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $service->computeForOrganization($org->id, $date);
         }
     }

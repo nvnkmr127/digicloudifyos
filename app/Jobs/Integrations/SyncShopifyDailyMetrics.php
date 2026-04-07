@@ -50,6 +50,11 @@ class SyncShopifyDailyMetrics implements ShouldQueue
             return;
         }
 
+        $shop = mb_strtolower(trim($shop));
+        if (str_contains($shop, '/') || str_contains($shop, '@') || str_contains($shop, ':') || ! preg_match('/\A[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.myshopify\.com\z/', $shop)) {
+            return;
+        }
+
         $run = IntegrationSyncRun::updateOrCreate(
             [
                 'organization_id' => $this->organizationId,
@@ -79,7 +84,11 @@ class SyncShopifyDailyMetrics implements ShouldQueue
                 'Accept' => 'application/json',
             ];
 
-            $countResponse = Http::withHeaders($headers)->get("https://{$shop}/admin/api/2024-01/orders/count.json", [
+            $countResponse = Http::withHeaders($headers)
+                ->timeout(30)
+                ->retry(2, 200)
+                ->withOptions(['allow_redirects' => false])
+                ->get("https://{$shop}/admin/api/2024-01/orders/count.json", [
                 'status' => 'any',
                 'created_at_min' => $start,
                 'created_at_max' => $end,
@@ -91,7 +100,11 @@ class SyncShopifyDailyMetrics implements ShouldQueue
 
             $ordersCount = (int) ($countResponse->json()['count'] ?? 0);
 
-            $ordersResponse = Http::withHeaders($headers)->get("https://{$shop}/admin/api/2024-01/orders.json", [
+            $ordersResponse = Http::withHeaders($headers)
+                ->timeout(30)
+                ->retry(2, 200)
+                ->withOptions(['allow_redirects' => false])
+                ->get("https://{$shop}/admin/api/2024-01/orders.json", [
                 'status' => 'any',
                 'created_at_min' => $start,
                 'created_at_max' => $end,

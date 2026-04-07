@@ -245,7 +245,7 @@
                         </div>
                         <div class="h-3 bg-gray-50 rounded-full overflow-hidden flex">
                             <div class="h-full bg-indigo-500 rounded-full transition-all duration-1000"
-                                :style="{ width: '{{ ($stats[\"leads\"] / $maxAgeLeads) * 100 }}%' }"></div>
+                                :style="{ width: '{{ ($stats['leads'] / $maxAgeLeads) * 100 }}%' }"></div>
                         </div>
                     </div>
                 @endforeach
@@ -269,7 +269,7 @@
                         </div>
                         <div class="h-1.5 bg-gray-50 rounded-full overflow-hidden">
                             <div class="h-full bg-indigo-400 rounded-full transition-all duration-1000"
-                                :style="{ width: '{{ ($stats[\"leads\"] / $maxCityLeads) * 100 }}%' }"></div>
+                                :style="{ width: '{{ ($stats['leads'] / $maxCityLeads) * 100 }}%' }"></div>
                         </div>
                     </div>
                 @empty

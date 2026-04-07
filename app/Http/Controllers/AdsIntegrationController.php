@@ -75,9 +75,19 @@ class AdsIntegrationController extends Controller
             return redirect()->route('settings', ['tab' => 'ads'])
                 ->with('success', ucfirst($platform).' Ads connected and sync started!');
         } catch (\Exception $e) {
-            Log::error('Ads Callback Error: '.$e->getMessage());
+            Log::error('Ads Callback Error', [
+                'platform' => $platform,
+                'organization_id' => $organizationId,
+                'client_id' => $clientId,
+                'error' => $e->getMessage(),
+            ]);
 
-            return redirect()->route('settings', ['tab' => 'ads'])->with('error', "Failed to connect {$platform} account: ".$e->getMessage());
+            $requestId = $request->attributes->get('request_id');
+            $supportHint = is_string($requestId) && $requestId !== '' ? " (Request ID: {$requestId})" : '';
+
+            return redirect()
+                ->route('settings', ['tab' => 'ads'])
+                ->with('error', "Failed to connect {$platform} account. Please try again{$supportHint}.");
         }
     }
 

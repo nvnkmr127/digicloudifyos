@@ -58,7 +58,7 @@ class ReportGeneratorService
         $insights = AdInsight::where('organization_id', $orgId)
             ->where('date', '>=', $startDate)
             ->where('level', 'account')
-            ->selectRaw('SUM(spend) as total_spend, SUM(conversions) as total_conversions, AVG(roas) as avg_roas')
+            ->selectRaw('SUM(spend) as total_spend, SUM(revenue) as total_revenue, SUM(conversions) as total_conversions, (CASE WHEN SUM(spend) > 0 THEN SUM(revenue) / SUM(spend) ELSE 0 END) as blended_roas')
             ->first();
 
         $totalLeads = FacebookLead::where('organization_id', $orgId)
@@ -69,7 +69,7 @@ class ReportGeneratorService
             'total_spend' => $insights->total_spend ?? 0,
             'total_leads' => $totalLeads,
             'avg_cpl' => $totalLeads > 0 ? ($insights->total_spend / $totalLeads) : 0,
-            'avg_roas' => $insights->avg_roas ?? 0,
+            'avg_roas' => $insights->blended_roas ?? 0,
         ];
 
         // 2. Campaigns
@@ -83,13 +83,17 @@ class ReportGeneratorService
                 $leads = FacebookLead::where('campaign_id', $campaign->id)->count();
                 $impressions = $campaign->adInsights->sum('impressions');
                 $clicks = $campaign->adInsights->sum('clicks');
+                $revenue = $campaign->adInsights->sum('revenue');
 
                 return [
                     'name' => $campaign->name,
                     'spend' => $spend,
+                    'impressions' => $impressions,
+                    'clicks' => $clicks,
                     'leads' => $leads,
                     'cpl' => $leads > 0 ? $spend / $leads : 0,
                     'ctr' => $impressions > 0 ? ($clicks / $impressions) * 100 : 0,
+                    'roas' => $spend > 0 ? $revenue / $spend : 0,
                 ];
             })->sortByDesc('spend')->values()->toArray();
 
@@ -105,7 +109,6 @@ class ReportGeneratorService
                     return null;
                 }
                 $insights = $ad->adInsights;
-                $spend = $insights->sum('spend');
                 $leads = FacebookLead::where('ad_id', $ad->id)->count();
                 $impressions = $insights->sum('impressions');
                 $clicks = $insights->sum('clicks');
@@ -135,12 +138,12 @@ class ReportGeneratorService
             $rows[] = [
                 $camp['name'],
                 $camp['spend'],
-                0, // impressions dummy if not in map
-                0, // clicks dummy
+                (int) ($camp['impressions'] ?? 0),
+                (int) ($camp['clicks'] ?? 0),
                 $camp['leads'],
                 round($camp['ctr'], 2),
                 round($camp['cpl'], 2),
-                0, // roas dummy
+                round((float) ($camp['roas'] ?? 0), 2),
             ];
         }
 

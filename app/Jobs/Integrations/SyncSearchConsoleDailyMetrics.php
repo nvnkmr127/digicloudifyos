@@ -73,7 +73,10 @@ class SyncSearchConsoleDailyMetrics implements ShouldQueue
                 throw new \RuntimeException('No Search Console site available.');
             }
 
-            $query = Http::withToken($accessToken)->post('https://www.googleapis.com/webmasters/v3/sites/'.rawurlencode($siteUrl).'/searchAnalytics/query', [
+            $query = Http::withToken($accessToken)
+                ->timeout(30)
+                ->retry(2, 200)
+                ->post('https://www.googleapis.com/webmasters/v3/sites/'.rawurlencode($siteUrl).'/searchAnalytics/query', [
                 'startDate' => $date,
                 'endDate' => $date,
             ]);
@@ -166,7 +169,10 @@ class SyncSearchConsoleDailyMetrics implements ShouldQueue
             return $connection->account_id;
         }
 
-        $response = Http::withToken($accessToken)->get('https://www.googleapis.com/webmasters/v3/sites');
+        $response = Http::withToken($accessToken)
+            ->timeout(30)
+            ->retry(2, 200)
+            ->get('https://www.googleapis.com/webmasters/v3/sites');
         if ($response->failed()) {
             return null;
         }

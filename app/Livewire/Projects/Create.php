@@ -2,11 +2,15 @@
 
 namespace App\Livewire\Projects;
 
+use App\Enums\ProjectBillingType;
+use App\Enums\ProjectPriority;
+use App\Enums\ProjectStatus;
 use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Project;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Create extends Component
@@ -21,7 +25,7 @@ class Create extends Component
 
     public $project_code = '';
 
-    public $status = 'active';
+    public $status = 'planning';
 
     public $priority = 'medium';
 
@@ -37,20 +41,23 @@ class Create extends Component
 
     public $project_manager_id = '';
 
-    protected $rules = [
-        'client_id' => 'required|uuid|exists:clients,id',
-        'name' => 'required|min:3',
-        'description' => 'nullable|string',
-        'project_code' => 'nullable|string',
-        'status' => 'required|in:active,completed,on_hold,cancelled',
-        'priority' => 'required|in:low,medium,high,urgent',
-        'start_date' => 'nullable|date',
-        'end_date' => 'nullable|date',
-        'budget' => 'nullable|numeric|min:0',
-        'billing_type' => 'required|in:fixed,hourly',
-        'hourly_rate' => 'nullable|numeric|min:0',
-        'project_manager_id' => 'nullable|uuid|exists:employees,id',
-    ];
+    protected function rules(): array
+    {
+        return [
+            'client_id' => 'required|uuid|exists:clients,id',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string',
+            'project_code' => 'nullable|string',
+            'status' => ['required', 'string', Rule::in(ProjectStatus::values())],
+            'priority' => ['required', 'string', Rule::in(ProjectPriority::values())],
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'budget' => 'nullable|numeric|min:0',
+            'billing_type' => ['required', 'string', Rule::in(ProjectBillingType::values())],
+            'hourly_rate' => 'nullable|numeric|min:0',
+            'project_manager_id' => 'nullable|uuid|exists:employees,id',
+        ];
+    }
 
     public function save()
     {

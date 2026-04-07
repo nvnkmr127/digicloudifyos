@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Tasks;
 
+use App\Enums\TaskPriority;
+use App\Enums\TaskStatus;
 use App\Models\Client;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Create extends Component
@@ -29,16 +32,19 @@ class Create extends Component
 
     public $deadline = '';
 
-    protected $rules = [
-        'title' => 'required|min:3',
-        'description' => 'nullable|string',
-        'task_type' => 'required|string',
-        'priority' => 'required|in:low,medium,high,urgent',
-        'status' => 'required|in:pending,in_progress,review,completed,blocked',
-        'assigned_to' => 'nullable|uuid|exists:users,id',
-        'client_id' => 'nullable|uuid|exists:clients,id',
-        'deadline' => 'nullable|date',
-    ];
+    protected function rules(): array
+    {
+        return [
+            'title' => 'required|min:3',
+            'description' => 'nullable|string',
+            'task_type' => 'required|string',
+            'priority' => ['required', 'string', Rule::in(TaskPriority::values())],
+            'status' => ['required', 'string', Rule::in(TaskStatus::values())],
+            'assigned_to' => 'nullable|uuid|exists:users,id',
+            'client_id' => 'nullable|uuid|exists:clients,id',
+            'deadline' => 'nullable|date',
+        ];
+    }
 
     public function save()
     {

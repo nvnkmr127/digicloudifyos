@@ -24,7 +24,7 @@ class RunDailyCompetitiveSync implements ShouldQueue
     {
         $date = $this->date ?? now()->subDay()->toDateString();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $metaCompetitors = ClientCompetitor::where('organization_id', $org->id)
                 ->where('platform', 'meta_page')
                 ->where('is_active', true)

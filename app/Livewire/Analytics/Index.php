@@ -11,19 +11,21 @@ class Index extends Component
 {
     public function render()
     {
-        $revenue = Invoice::where('status', 'paid')->sum('paid_amount');
-        $pending = Invoice::where('status', '!=', 'paid')->sum('total_amount');
+        $orgId = auth()->user()->organization_id;
 
-        $clientsCount = Client::count();
-        $projectsCount = Project::count();
+        $revenue = Invoice::where('organization_id', $orgId)->where('status', 'paid')->sum('paid_amount');
+        $pending = Invoice::where('organization_id', $orgId)->where('status', '!=', 'paid')->sum('total_amount');
+
+        $clientsCount = Client::where('organization_id', $orgId)->count();
+        $projectsCount = Project::where('organization_id', $orgId)->count();
 
         // Calculate a dummy conversion rate / cac based on clients
-        $conversionRate = $clientsCount > 0 ? 65 : 0; // Using dummy logic for funnel depth for now
+        $conversionRate = $clientsCount > 0 ? 65 : 0; 
         $cac = 450;
 
         return view('livewire.analytics.index', [
-            'revenue' => collect([$revenue])->first() ?? 0,
-            'pending' => collect([$pending])->first() ?? 0,
+            'revenue' => $revenue,
+            'pending' => $pending,
             'clientsCount' => $clientsCount,
             'projectsCount' => $projectsCount,
             'conversionRate' => $conversionRate,

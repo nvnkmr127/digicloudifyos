@@ -17,6 +17,7 @@
                     <th scope="col" class="px-6 py-3 text-left">Client Identity</th>
                     <th scope="col" class="px-6 py-3 text-left">Email</th>
                     <th scope="col" class="px-6 py-3 text-left">Industry</th>
+                    <th scope="col" class="px-6 py-3 text-left">Onboarding</th>
                     <th scope="col" class="px-6 py-3 text-left">Status</th>
                     <th scope="col" class="px-6 py-3 text-center">Campaigns</th>
                     <th scope="col" class="px-6 py-3 text-right">Actions</th>
@@ -31,7 +32,23 @@
                                 class="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-primary font-bold mr-3">
                                 {{ substr($client->name, 0, 1) }}
                             </div>
-                            <div class="text-sm font-medium text-text-primary">{{ $client->name }}</div>
+                            <div>
+                                <div class="text-sm font-medium text-text-primary">{{ $client->name }}</div>
+                                <div class="text-xs text-text-muted">
+                                    @if($client->website_url)
+                                        <span>{{ $client->website_url }}</span>
+                                    @endif
+                                    @if($client->website_url && $client->phone)
+                                        <span class="mx-1">•</span>
+                                    @endif
+                                    @if($client->phone)
+                                        <span>{{ $client->phone }}</span>
+                                    @endif
+                                    @if(! $client->website_url && ! $client->phone)
+                                        <span>N/A</span>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-text-muted">
@@ -39,6 +56,20 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-text-muted">
                         {{ $client->industry ?: 'N/A' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex flex-col gap-1 w-24">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-black text-gray-400 capitalize">{{ $client->onboarding_progress }}%</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                @php
+                                    $progress = $client->onboarding_progress;
+                                    $color = $progress < 30 ? 'bg-red-500' : ($progress < 70 ? 'bg-amber-500' : 'bg-green-500');
+                                @endphp
+                                <div class="h-full {{ $color }} transition-all duration-500" style="width: {{ $progress }}%"></div>
+                            </div>
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <x-status-badge :status="$client->status" type="client" />

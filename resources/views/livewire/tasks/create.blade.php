@@ -13,7 +13,7 @@
     <div class="max-w-3xl">
         <x-card class="p-8 rounded-[2rem] shadow-xl shadow-indigo-50/50">
             <form wire:submit="save" class="space-y-8">
-                <x-form-field label="Task Objective" name="title">
+                <x-form-field label="Task Objective" name="title" required>
                     <x-input id="title" type="text" placeholder="e.g. Optimize conversion funnel for Q3" wire:model="title" class="rounded-xl" />
                 </x-form-field>
 
@@ -22,7 +22,7 @@
                 </x-form-field>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <x-form-field label="Specialization" name="task_type">
+                    <x-form-field label="Specialization" name="task_type" required>
                         <x-select id="task_type" wire:model="task_type" class="rounded-xl">
                             <option value="general">General Execution</option>
                             <option value="creative">Creative Production</option>
@@ -31,7 +31,7 @@
                         </x-select>
                     </x-form-field>
 
-                    <x-form-field label="Priority Level" name="priority">
+                    <x-form-field label="Priority Level" name="priority" required>
                         <x-select id="priority" wire:model="priority" class="rounded-xl">
                             <option value="low">Standard</option>
                             <option value="medium">Elevated</option>
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <x-form-field label="Workflow State" name="status">
+                    <x-form-field label="Workflow State" name="status" required>
                         <x-select id="status" wire:model="status" class="rounded-xl">
                             <option value="todo">Pending Allocation</option>
                             <option value="in_progress">Active Execution</option>

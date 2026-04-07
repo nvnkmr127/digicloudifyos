@@ -30,7 +30,10 @@ class BriefingDashboard extends Component
 
     public function completeItem($itemId)
     {
-        $item = BriefingActionItem::findOrFail($itemId);
+        $item = BriefingActionItem::whereHas('briefing', function ($q) {
+            $q->where('organization_id', auth()->user()->organization_id);
+        })->findOrFail($itemId);
+
         $item->complete(auth()->id());
 
         session()->flash('message', 'Action item marked as completed.');

@@ -31,7 +31,7 @@
                         <x-select id="ad_account_id" wire:model="ad_account_id" class="rounded-xl">
                             <option value="">Select an account...</option>
                             @foreach($adAccounts as $account)
-                                <option value="{{ $account->id }}">{{ $account->name }} ({{ strtoupper($account->platform) }})</option>
+                                <option value="{{ $account->id }}">{{ $account->account_name }} ({{ strtoupper($account->platform) }})</option>
                             @endforeach
                         </x-select>
                     </x-form-field>
@@ -41,22 +41,17 @@
                     <x-form-field label="Conversion Objective" name="objective">
                         <x-select id="objective" wire:model="objective" class="rounded-xl">
                             <option value="">Select objective...</option>
-                            <option value="awareness">Awareness</option>
-                            <option value="traffic">Traffic</option>
-                            <option value="engagement">Engagement</option>
-                            <option value="leads">Leads</option>
-                            <option value="app_promotion">App Promotion</option>
-                            <option value="sales">Sales</option>
+                            @foreach(\App\Enums\CampaignObjective::cases() as $objective)
+                                <option value="{{ $objective->value }}">{{ $objective->label() }}</option>
+                            @endforeach
                         </x-select>
                     </x-form-field>
 
                     <x-form-field label="Initial Status" name="status">
                         <x-select id="status" wire:model="status" class="rounded-xl">
-                            <option value="planned">Planned</option>
-                            <option value="active">Active</option>
-                            <option value="paused">Paused</option>
-                            <option value="completed">Completed</option>
-                            <option value="archived">Archived</option>
+                            @foreach(\App\Enums\CampaignStatus::cases() as $status)
+                                <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                            @endforeach
                         </x-select>
                     </x-form-field>
                 </div>

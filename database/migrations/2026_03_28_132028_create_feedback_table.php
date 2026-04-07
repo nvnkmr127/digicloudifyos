@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('feedback', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('entity_type')->nullable(); // project, creative_request, lead
             $table->uuid('entity_id')->nullable();
             $table->integer('rating')->default(5);

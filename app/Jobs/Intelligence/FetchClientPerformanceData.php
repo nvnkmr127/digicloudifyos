@@ -15,6 +15,8 @@ class FetchClientPerformanceData implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $timeout = 3600;
+
     /**
      * Create a new job instance.
      */
@@ -31,9 +33,7 @@ class FetchClientPerformanceData implements ShouldQueue
         Log::info('FetchClientPerformanceData job started.');
         $date = now()->subDay()->toDateString();
 
-        $organizations = Organization::all();
-
-        foreach ($organizations as $org) {
+        foreach (Organization::lazy() as $org) {
             $monitor->runForOrganization($org->id, $date);
         }
 

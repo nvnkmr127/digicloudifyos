@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FacebookLead extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',
         'facebook_lead_id',
         'form_id',
         'form_name',
+        'ad_account_id',
         'campaign_id',
         'ad_set_id',
         'ad_id',
@@ -34,7 +35,7 @@ class FacebookLead extends Model
 
     public function adAccount(): BelongsTo
     {
-        return $this->belongsTo(AdAccount::class);
+        return $this->belongsTo(AdAccount::class, 'ad_account_id');
     }
 
     public function campaign(): BelongsTo

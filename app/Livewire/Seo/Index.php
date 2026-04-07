@@ -30,7 +30,7 @@ class Index extends Component
         $items = SeoOpportunity::where('organization_id', $user->organization_id)
             ->whereDate('opportunity_date', $this->date)
             ->with('client')
-            ->orderByRaw("FIELD(severity, 'critical','high','medium','low')")
+            ->orderByRaw("CASE severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 ELSE 5 END")
             ->orderByDesc('created_at')
             ->limit(200)
             ->get();
@@ -39,7 +39,7 @@ class Index extends Component
             ->whereIn('severity', ['critical', 'high', 'medium'])
             ->whereDate('created_at', $this->date)
             ->with('audit', 'audit.client')
-            ->orderByRaw("FIELD(severity, 'critical','high','medium','low')")
+            ->orderByRaw("CASE severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 ELSE 5 END")
             ->limit(200)
             ->get();
 

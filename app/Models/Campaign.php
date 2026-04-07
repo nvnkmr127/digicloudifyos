@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CampaignStatus;
 use App\Models\Traits\OrganizationScoped;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +31,7 @@ class Campaign extends Model
     ];
 
     protected $casts = [
+        'status' => CampaignStatus::class,
         'start_date' => 'date',
         'end_date' => 'date',
         'daily_budget' => 'decimal:4',
@@ -84,9 +86,14 @@ class Campaign extends Model
 
     // OrganizationScoped trait provides scopeForOrganization() and scopeActive()
 
+    public function scopeActive($query)
+    {
+        return $query->whereIn('status', CampaignStatus::activeValues());
+    }
+
     public function scopeRunning($query)
     {
-        return $query->where('status', 'running');
+        return $query->where('status', CampaignStatus::Running);
     }
 
     public function getFormattedBudgetAttribute(): string
@@ -105,12 +112,12 @@ class Campaign extends Model
 
     public function isRunning(): bool
     {
-        return $this->status === 'ACTIVE';
+        return in_array($this->status, CampaignStatus::activeValues(), true);
     }
 
     public function isCompleted(): bool
     {
-        return $this->status === 'ARCHIVED';
+        return $this->status === CampaignStatus::Completed;
     }
 
     public function toSearchableArray(): array
@@ -127,6 +134,6 @@ class Campaign extends Model
 
     public function shouldBeSearchable(): bool
     {
-        return $this->status !== 'ARCHIVED';
+        return $this->status !== CampaignStatus::Completed->value;
     }
 }

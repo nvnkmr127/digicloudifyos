@@ -35,21 +35,46 @@ class ProcessWorkflowAutomation implements ShouldQueue
 
     public function __construct(
         public string $eventType,
-        public array $eventData
+        public array $eventData,
+        public ?string $idempotencyKey = null
     ) {
         $this->onQueue('automation');
+        $this->idempotencyKey = $idempotencyKey ?? Str::uuid()->toString();
     }
 
     public function handle(): void
     {
         try {
-            $event = WorkflowEvent::create([
-                'organization_id' => $this->eventData['organization_id'] ?? auth()->user()?->organization_id,
-                'event_type' => $this->eventType,
-                'entity_type' => $this->eventData['entity_type'] ?? 'unknown',
-                'entity_id' => $this->eventData['entity_id'] ?? Str::uuid()->toString(),
-                'payload' => $this->eventData,
-            ]);
+            $event = WorkflowEvent::where('id', $this->idempotencyKey)->first();
+
+            if (! $event) {
+                $organizationId = $this->eventData['organization_id'] ?? null;
+                if (! $organizationId) {
+                    throw new \InvalidArgumentException('organization_id is required in eventData');
+                }
+
+                $event = new WorkflowEvent([
+                    'organization_id' => $organizationId,
+                    'event_type' => $this->eventType,
+                    'entity_type' => $this->eventData['entity_type'] ?? 'unknown',
+                    'entity_id' => $this->eventData['entity_id'] ?? Str::uuid()->toString(),
+                    'payload' => $this->eventData,
+                ]);
+                $event->id = $this->idempotencyKey;
+                $event->save();
+            } else {
+                Log::info('Workflow automation idempotency key hit, skipping event creation.', [
+                    'idempotency_key' => $this->idempotencyKey,
+                ]);
+
+                $hasLogs = AutomationLog::where('event_id', $event->id)->exists();
+                if ($hasLogs) {
+                    Log::info('Workflow automation already processed, skipping.', [
+                        'idempotency_key' => $this->idempotencyKey,
+                    ]);
+                    return;
+                }
+            }
 
             /** @var Collection<int, WorkflowRule> $rules */
             $rules = WorkflowRule::where('organization_id', $event->organization_id)
@@ -258,10 +283,13 @@ class ProcessWorkflowAutomation implements ShouldQueue
             return;
         }
 
+        $redactor = app(\App\Services\PayloadRedactor::class);
+        $url = app(\App\Services\UrlEgressPolicy::class)->assertAllowed((string) $url);
+
         $message = isset($config['message']) ? $this->replacePlaceholders($config['message'], $event->payload) : null;
         $headers = $config['headers'] ?? [];
 
-        $request = Http::timeout(10);
+        $request = Http::timeout(10)->retry(2, 200);
 
         if (! empty($headers)) {
             $request->withHeaders($headers);
@@ -274,17 +302,19 @@ class ProcessWorkflowAutomation implements ShouldQueue
             'timestamp' => now()->toIso8601String(),
         ];
 
+        $redactedPayload = $redactor->redactArray($payload);
+
         try {
-            $response = $request->post($url, $payload);
+            $response = $request->withOptions(['allow_redirects' => false])->post($url, $payload);
 
             // If we have a webhook ID in the config, log the delivery
             if (isset($config['webhook_id'])) {
                 WebhookDelivery::create([
                     'webhook_id' => $config['webhook_id'],
                     'event' => $event->event_type,
-                    'payload' => $payload,
+                    'payload' => $redactedPayload,
                     'response_status' => $response->status(),
-                    'response_body' => substr($response->body(), 0, 1000), // Limit length
+                    'response_body' => $redactor->truncateString($response->body(), 1000),
                     'delivered_at' => $response->successful() ? now() : null,
                     'failed_at' => $response->failed() ? now() : null,
                     'error_message' => $response->failed() ? 'HTTP '.$response->status() : null,
@@ -295,7 +325,6 @@ class ProcessWorkflowAutomation implements ShouldQueue
                 Log::warning('Outbound Webhook Failed', [
                     'url' => $url,
                     'status' => $response->status(),
-                    'body' => $response->body(),
                     'event_id' => $event->id,
                 ]);
 
@@ -306,11 +335,11 @@ class ProcessWorkflowAutomation implements ShouldQueue
                 WebhookDelivery::create([
                     'webhook_id' => $config['webhook_id'],
                     'event' => $event->event_type,
-                    'payload' => $payload,
+                    'payload' => $redactedPayload,
                     'response_status' => 0,
                     'response_body' => null,
                     'failed_at' => now(),
-                    'error_message' => substr($e->getMessage(), 0, 500),
+                    'error_message' => $redactor->truncateString($e->getMessage(), 255),
                 ]);
             }
             throw $e;

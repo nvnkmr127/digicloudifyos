@@ -48,12 +48,14 @@ class CheckCampaignPerformance extends Command
             return;
         }
 
+        $warningPercent = (float) config('performance.campaigns.budget_warning_percent', 90);
+
         $totalSpend = $campaign->dailyMetrics()->sum('spend');
         $budget = $campaign->lifetime_budget ?? ($campaign->daily_budget * 30);
 
         $percentage = ($totalSpend / $budget) * 100;
 
-        if ($percentage >= 90 && $percentage < 100) {
+        if ($percentage >= $warningPercent && $percentage < 100) {
             Alert::create([
                 'campaign_id' => $campaign->id,
                 'organization_id' => $campaign->organization_id,
@@ -64,6 +66,7 @@ class CheckCampaignPerformance extends Command
                     'total_spend' => $totalSpend,
                     'budget' => $budget,
                     'percentage' => $percentage,
+                    'threshold' => $warningPercent,
                 ],
             ]);
 
@@ -77,9 +80,10 @@ class CheckCampaignPerformance extends Command
 
     protected function checkCTRPerformance(Campaign $campaign, int &$alertsCreated): void
     {
+        $ctrThreshold = (float) config('performance.campaigns.ctr_warning_percent', 0.5);
         $avgCTR = $campaign->dailyMetrics()->avg('ctr');
 
-        if ($avgCTR !== null && $avgCTR < 0.5) {
+        if ($avgCTR !== null && $avgCTR < $ctrThreshold) {
             Alert::create([
                 'campaign_id' => $campaign->id,
                 'organization_id' => $campaign->organization_id,
@@ -88,7 +92,7 @@ class CheckCampaignPerformance extends Command
                 'message' => "Campaign CTR is below threshold ({$avgCTR}%)",
                 'details' => [
                     'average_ctr' => $avgCTR,
-                    'threshold' => 0.5,
+                    'threshold' => $ctrThreshold,
                 ],
             ]);
 
@@ -102,6 +106,7 @@ class CheckCampaignPerformance extends Command
 
     protected function checkConversionRate(Campaign $campaign, int &$alertsCreated): void
     {
+        $conversionThreshold = (float) config('performance.campaigns.conversion_rate_warning_percent', 1);
         $metrics = $campaign->dailyMetrics()
             ->selectRaw('SUM(conversions) as total_conversions, SUM(clicks) as total_clicks')
             ->first();
@@ -109,7 +114,7 @@ class CheckCampaignPerformance extends Command
         if ($metrics->total_clicks > 0) {
             $conversionRate = ($metrics->total_conversions / $metrics->total_clicks) * 100;
 
-            if ($conversionRate < 1) {
+            if ($conversionRate < $conversionThreshold) {
                 Alert::create([
                     'campaign_id' => $campaign->id,
                     'organization_id' => $campaign->organization_id,
@@ -118,6 +123,7 @@ class CheckCampaignPerformance extends Command
                     'message' => "Campaign conversion rate is below threshold ({$conversionRate}%)",
                     'details' => [
                         'conversion_rate' => $conversionRate,
+                        'threshold' => $conversionThreshold,
                         'total_conversions' => $metrics->total_conversions,
                         'total_clicks' => $metrics->total_clicks,
                     ],

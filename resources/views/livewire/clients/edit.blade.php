@@ -9,7 +9,7 @@
 
     <x-card>
         <form wire:submit="update" class="space-y-6 max-w-2xl">
-            <x-form-field label="Client Name" name="name">
+            <x-form-field label="Client Name" name="name" required>
                 <x-input id="name" type="text" placeholder="e.g. Acme Corp" wire:model="name" />
             </x-form-field>
 
@@ -134,7 +134,7 @@
                 </div>
             </div>
 
-            <x-form-field label="Status" name="status">
+            <x-form-field label="Status" name="status" required>
                 <x-select id="status" wire:model="status">
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
@@ -148,4 +148,13 @@
             </div>
         </form>
     </x-card>
+
+    <div class="mt-12 space-y-4">
+        <div class="px-6">
+            <h3 class="text-xl font-black text-gray-900 tracking-tight">Onboarding & <span class="text-primary italic font-black">Data Collection</span></h3>
+            <p class="text-sm text-gray-500 font-medium">Tracking essential documentation and account access.</p>
+        </div>
+        
+        @livewire('clients.onboarding-checklist', ['client' => $client])
+    </div>
 </x-app-container>

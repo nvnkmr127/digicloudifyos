@@ -4,6 +4,7 @@ namespace App\Services\Seo;
 
 use App\Models\SeoSiteAudit;
 use App\Models\SeoSiteAuditIssue;
+use App\Services\UrlEgressPolicy;
 use Illuminate\Support\Facades\Http;
 
 class SiteAuditService
@@ -14,6 +15,8 @@ class SiteAuditService
         if (! $baseUrl) {
             return null;
         }
+
+        $baseUrl = app(UrlEgressPolicy::class)->assertAllowed($baseUrl);
 
         $audit = SeoSiteAudit::updateOrCreate(
             [
@@ -172,7 +175,10 @@ class SiteAuditService
 
     protected function fetchHtml(string $url): ?string
     {
-        $resp = Http::timeout(15)->withHeaders([
+        $resp = Http::timeout(15)
+            ->retry(2, 200)
+            ->withOptions(['allow_redirects' => false])
+            ->withHeaders([
             'User-Agent' => 'DCOS-SiteAudit/1.0',
             'Accept' => 'text/html,application/xhtml+xml',
         ])->get($url);
@@ -226,7 +232,11 @@ class SiteAuditService
     protected function checkUrl(string $url): ?int
     {
         try {
-            $resp = Http::timeout(10)->head($url);
+            $url = app(UrlEgressPolicy::class)->assertAllowed($url);
+            $resp = Http::timeout(10)
+                ->retry(2, 200)
+                ->withOptions(['allow_redirects' => false])
+                ->head($url);
 
             return $resp->status();
         } catch (\Throwable $e) {

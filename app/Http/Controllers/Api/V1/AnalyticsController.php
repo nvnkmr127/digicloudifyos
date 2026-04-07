@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AnalyticsDashboardRequest;
+use App\Http\Responses\ApiResponse;
 use App\Services\AnalyticsService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AnalyticsController extends Controller
 {
@@ -15,28 +16,24 @@ class AnalyticsController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function dashboard(Request $request): JsonResponse
+    public function dashboard(AnalyticsDashboardRequest $request): JsonResponse
     {
         $period = $request->input('period', '30days');
-
-        $validPeriods = ['7days', '30days', '90days', 'thisMonth', 'lastMonth', 'thisYear'];
-
-        if (! in_array($period, $validPeriods)) {
-            return response()->json([
-                'message' => 'Invalid period',
-                'valid_periods' => $validPeriods,
-            ], 400);
-        }
 
         $metrics = $this->analyticsService->getDashboardMetrics(
             $request->user()->organization_id,
             $period
         );
 
-        return response()->json([
-            'data' => $metrics,
+        return ApiResponse::success($metrics, null, [
             'period' => $period,
             'generated_at' => now()->toISOString(),
+            'units' => [
+                'roi_estimate' => 'percent',
+                'avg_ctr' => 'percent',
+                'avg_conversion_rate' => 'percent',
+                'avg_cpc' => 'currency_per_click',
+            ],
         ]);
     }
 }

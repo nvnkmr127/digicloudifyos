@@ -19,6 +19,9 @@ class GenerateDailyDeliverables implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 3;
+    public $timeout = 300;
+
     public function __construct(public ?string $date = null)
     {
         $this->onQueue('intelligence');
@@ -29,7 +32,7 @@ class GenerateDailyDeliverables implements ShouldQueue
         $date = $this->date ?? now()->subDay()->toDateString();
         $day = Carbon::parse($date);
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $templates = DeliverableTemplate::where('organization_id', $org->id)->where('is_active', true)->get();
             if ($templates->isEmpty()) {
                 DeliverableTemplate::create([
@@ -76,24 +79,19 @@ class GenerateDailyDeliverables implements ShouldQueue
 
     protected function generateForClient(string $orgId, Client $client, DeliverableTemplate $template, string $date): void
     {
-        $exists = ClientDeliverable::where('organization_id', $orgId)
-            ->where('client_id', $client->id)
-            ->where('deliverable_template_id', $template->id)
-            ->whereDate('deliverable_date', $date)
-            ->exists();
-
-        if ($exists) {
-            return;
-        }
-
-        $deliverable = ClientDeliverable::create([
+        $deliverable = ClientDeliverable::firstOrCreate([
             'organization_id' => $orgId,
             'client_id' => $client->id,
             'deliverable_template_id' => $template->id,
             'deliverable_date' => $date,
+        ], [
             'title' => $template->name.' — '.$client->name,
             'status' => 'scheduled',
         ]);
+
+        if (! $deliverable->wasRecentlyCreated) {
+            return;
+        }
 
         try {
             $snapshots = PerformanceSnapshot::where('organization_id', $orgId)
@@ -105,7 +103,7 @@ class GenerateDailyDeliverables implements ShouldQueue
             $seo = SeoOpportunity::where('organization_id', $orgId)
                 ->where('client_id', $client->id)
                 ->whereDate('opportunity_date', $date)
-                ->orderByRaw("FIELD(severity, 'critical','high','medium','low')")
+                ->orderByRaw("CASE severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 ELSE 5 END")
                 ->get();
 
             $html = view('deliverables.templates.summary', [
@@ -130,8 +128,9 @@ class GenerateDailyDeliverables implements ShouldQueue
             $deliverable->update([
                 'status' => 'failed',
                 'generated_at' => now(),
-                'error_message' => $e->getMessage(),
+                'error_message' => mb_substr($e->getMessage(), 0, 255),
             ]);
+            throw $e;
         }
     }
 }

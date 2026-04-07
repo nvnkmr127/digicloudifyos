@@ -24,7 +24,7 @@ class GenerateAutomationActions implements ShouldQueue
     {
         $date = $this->date ?? now()->subDay()->toDateString();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $clients = Client::where('organization_id', $org->id)->active()->get(['id']);
             foreach ($clients as $client) {
                 $engine->runForClient($org->id, $client->id, $date);

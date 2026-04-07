@@ -180,7 +180,7 @@ class AnomalyDetectionService
 
         $targetBudget = Campaign::where('client_id', $clientId)
             ->where('organization_id', $orgId)
-            ->where('status', 'running')
+            ->whereIn('status', ['running', 'active', 'ACTIVE'])
             ->sum('daily_budget');
 
         if ($targetBudget > 0 && $spend > ($targetBudget * (1 + $threshold / 100))) {
@@ -203,7 +203,7 @@ class AnomalyDetectionService
 
         $targetBudget = Campaign::where('client_id', $clientId)
             ->where('organization_id', $orgId)
-            ->where('status', 'running')
+            ->whereIn('status', ['running', 'active', 'ACTIVE'])
             ->sum('daily_budget');
 
         if ($targetBudget > 0 && $spend < ($targetBudget * (1 - $threshold / 100))) {

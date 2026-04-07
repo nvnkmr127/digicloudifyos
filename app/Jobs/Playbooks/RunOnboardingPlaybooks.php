@@ -25,7 +25,7 @@ class RunOnboardingPlaybooks implements ShouldQueue
     {
         $date = $this->date ?? now()->toDateString();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $service->ensureDefaults($org->id);
 
             $templates = PlaybookTemplate::where('organization_id', $org->id)

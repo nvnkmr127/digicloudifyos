@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\WorkloadAnalysisRequest;
+use App\Http\Responses\ApiResponse;
 use App\Services\WorkloadAnalysisService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class WorkloadController extends Controller
 {
@@ -15,26 +16,16 @@ class WorkloadController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function analysis(Request $request): JsonResponse
+    public function analysis(WorkloadAnalysisRequest $request): JsonResponse
     {
         $period = $request->input('period', 'current_week');
-
-        $validPeriods = ['current_week', 'next_week', 'current_month', 'next_month', 'current_quarter'];
-
-        if (! in_array($period, $validPeriods)) {
-            return response()->json([
-                'message' => 'Invalid period',
-                'valid_periods' => $validPeriods,
-            ], 400);
-        }
 
         $analysis = $this->workloadService->getTeamWorkload(
             $request->user()->organization_id,
             $period
         );
 
-        return response()->json([
-            'data' => $analysis,
+        return ApiResponse::success($analysis, null, [
             'period' => $period,
             'generated_at' => now()->toISOString(),
         ]);

@@ -11,25 +11,25 @@ Artisan::command('inspire', function () {
 // --- Scalable Data Pipeline (Phase 24) ---
 
 // 1. Sync High-Level Metrics (Sparklines/Dashboard)
-Schedule::command('ads:sync-metrics')->hourly();
+Schedule::command('ads:sync-metrics')->hourly()->withoutOverlapping();
 
 // 2. Real-time Lead Intake
-Schedule::command('ads:sync-leads')->everyFifteenMinutes();
+Schedule::command('ads:sync-leads')->everyFifteenMinutes()->withoutOverlapping();
 
 // 3. Structural Discovery (New Campaigns/Ads)
-Schedule::command('ads:sync-structure')->hourly();
+Schedule::command('ads:sync-structure')->hourly()->withoutOverlapping();
 
 // 4. Creative Catalog Sync
-Schedule::command('ads:sync-creatives')->hourly();
+Schedule::command('ads:sync-creatives')->hourly()->withoutOverlapping();
 
 // 5. Deep Performance Insights
-Schedule::command('ads:sync-insights')->hourly();
+Schedule::command('ads:sync-insights')->hourly()->withoutOverlapping();
 
 // 6. Proactive Performance Watchdog (Phase 18)
-Schedule::command('ads:evaluate-rules')->hourly();
+Schedule::command('ads:evaluate-rules')->hourly()->withoutOverlapping();
 
 // 7. Data Hygiene
-Schedule::command('cleanup:old-data')->daily();
+Schedule::command('cleanup:old-data')->daily()->withoutOverlapping();
 
 // --- Performance Intelligence Pipeline ---
 use App\Jobs\Automation\ApplyApprovedAutomationActions;

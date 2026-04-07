@@ -5,6 +5,7 @@ namespace App\Jobs\Integrations;
 use App\Models\ClientChannelConnection;
 use App\Models\IntegrationSyncRun;
 use App\Models\WooCommerceDailyMetric;
+use App\Services\UrlEgressPolicy;
 use App\Services\Integrations\IntegrationAlertService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -55,6 +56,7 @@ class SyncWooCommerceDailyMetrics implements ShouldQueue
         }
 
         $storeUrl = rtrim($storeUrl, '/');
+        $storeUrl = app(UrlEgressPolicy::class)->assertAllowed($storeUrl);
 
         $run = IntegrationSyncRun::updateOrCreate(
             [
@@ -80,7 +82,10 @@ class SyncWooCommerceDailyMetrics implements ShouldQueue
             $start = Carbon::parse($date)->startOfDay()->toDateString();
             $end = Carbon::parse($date)->endOfDay()->toDateString();
 
-            $report = Http::get("{$storeUrl}/wp-json/wc/v3/reports/sales", [
+            $report = Http::timeout(30)
+                ->retry(2, 200)
+                ->withOptions(['allow_redirects' => false])
+                ->get("{$storeUrl}/wp-json/wc/v3/reports/sales", [
                 'date_min' => $start,
                 'date_max' => $end,
                 'consumer_key' => $consumerKey,

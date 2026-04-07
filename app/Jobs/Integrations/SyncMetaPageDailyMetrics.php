@@ -69,7 +69,10 @@ class SyncMetaPageDailyMetrics implements ShouldQueue
             $pageId = $connection->account_id;
             $pageName = $connection->account_name;
 
-            $accounts = Http::withToken($userToken)->get('https://graph.facebook.com/v25.0/me/accounts', [
+            $accounts = Http::withToken($userToken)
+                ->timeout(30)
+                ->retry(2, 200)
+                ->get('https://graph.facebook.com/v25.0/me/accounts', [
                 'fields' => 'id,name,access_token',
             ]);
 
@@ -97,7 +100,10 @@ class SyncMetaPageDailyMetrics implements ShouldQueue
             $pageName = isset($selected['name']) ? (string) $selected['name'] : $pageName;
             $pageToken = (string) $selected['access_token'];
 
-            $insights = Http::withToken($pageToken)->get("https://graph.facebook.com/v25.0/{$pageId}/insights", [
+            $insights = Http::withToken($pageToken)
+                ->timeout(30)
+                ->retry(2, 200)
+                ->get("https://graph.facebook.com/v25.0/{$pageId}/insights", [
                 'metric' => 'page_impressions,page_impressions_unique,page_engaged_users,page_post_engagements',
                 'since' => $date,
                 'until' => $date,

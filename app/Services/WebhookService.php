@@ -25,10 +25,14 @@ class WebhookService
 
     public function deliver(Webhook $webhook, string $event, array $payload): WebhookDelivery
     {
+        $redactor = app(PayloadRedactor::class);
+        $redactedPayload = $redactor->redactArray($payload);
+        $url = app(UrlEgressPolicy::class)->assertAllowed((string) $webhook->url);
+
         $delivery = WebhookDelivery::create([
             'webhook_id' => $webhook->id,
             'event' => $event,
-            'payload' => $payload,
+            'payload' => $redactedPayload,
         ]);
 
         try {
@@ -42,16 +46,18 @@ class WebhookService
 
             $response = Http::withHeaders($headers)
                 ->timeout(30)
-                ->post($webhook->url, $payload);
+                ->retry(2, 200)
+                ->withOptions(['allow_redirects' => false])
+                ->post($url, $payload);
 
             $delivery->update([
                 'response_status' => $response->status(),
-                'response_body' => $response->body(),
+                'response_body' => $redactor->truncateString($response->body(), 1000),
                 'delivered_at' => now(),
             ]);
 
             if (! $response->successful()) {
-                throw new \Exception("HTTP {$response->status()}: {$response->body()}");
+                throw new \Exception("HTTP {$response->status()}");
             }
 
             Log::info('Webhook delivered successfully', [
@@ -63,7 +69,7 @@ class WebhookService
         } catch (\Exception $e) {
             $delivery->update([
                 'failed_at' => now(),
-                'error_message' => $e->getMessage(),
+                'error_message' => $redactor->truncateString($e->getMessage(), 255),
             ]);
 
             Log::error('Webhook delivery failed', [

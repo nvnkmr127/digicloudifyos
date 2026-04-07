@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\CampaignStatus;
 
 return new class extends Migration
 {
@@ -16,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('external_campaign_id')->nullable();
             $table->string('objective')->nullable();
-            $table->enum('status', ['ACTIVE', 'INACTIVE', 'ARCHIVED'])->default('ACTIVE');
+            $table->enum('status', CampaignStatus::values())->default(CampaignStatus::Planning->value);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->decimal('daily_budget', 18, 4)->nullable();

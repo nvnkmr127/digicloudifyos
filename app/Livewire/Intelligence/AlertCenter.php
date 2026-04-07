@@ -33,7 +33,7 @@ class AlertCenter extends Component
         }
 
         return view('livewire.intelligence.alert-center', [
-            'anomalies' => $query->orderByRaw("FIELD(severity, 'critical', 'high', 'medium', 'low')")
+            'anomalies' => $query->orderByRaw("CASE severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 ELSE 5 END")
                 ->latest('detected_at')
                 ->get(),
             'clients' => Client::where('organization_id', auth()->user()->organization_id)->get(),

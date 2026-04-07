@@ -17,7 +17,10 @@ class AmazonLwaTokenService
             return $credential->access_token;
         }
 
-        $response = Http::asForm()->post('https://api.amazon.com/auth/o2/token', [
+        $response = Http::asForm()
+            ->timeout(15)
+            ->retry(2, 200)
+            ->post('https://api.amazon.com/auth/o2/token', [
             'grant_type' => 'refresh_token',
             'refresh_token' => $credential->refresh_token,
             'client_id' => config('services.amazon_sp_api.lwa_client_id', ''),

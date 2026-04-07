@@ -2,15 +2,21 @@
 
 namespace App\Livewire\Campaigns;
 
+use App\Enums\CampaignStatus;
+use App\Enums\CampaignObjective;
 use App\Models\AdAccount;
 use App\Models\Campaign;
 use App\Models\Client;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Edit extends Component
 {
+    use AuthorizesRequests;
+
     public Campaign $campaign;
 
     public $client_id;
@@ -31,20 +37,24 @@ class Edit extends Component
 
     public $lifetime_budget;
 
-    protected $rules = [
-        'client_id' => 'required|uuid|exists:clients,id',
-        'ad_account_id' => 'nullable|uuid|exists:ad_accounts,id',
-        'name' => 'required|min:3',
-        'objective' => 'required|string',
-        'status' => 'required|in:active,paused,completed,planned,archived',
-        'start_date' => 'nullable|date',
-        'end_date' => 'nullable|date',
-        'daily_budget' => 'nullable|numeric|min:0',
-        'lifetime_budget' => 'nullable|numeric|min:0',
-    ];
+    protected function rules(): array
+    {
+        return [
+            'client_id' => 'required|uuid|exists:clients,id',
+            'ad_account_id' => 'required|uuid|exists:ad_accounts,id',
+            'name' => 'required|min:3',
+            'objective' => ['required', 'string', Rule::in(CampaignObjective::values())],
+            'status' => ['required', 'string', Rule::in(CampaignStatus::values())],
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'daily_budget' => 'nullable|numeric|min:0',
+            'lifetime_budget' => 'nullable|numeric|min:0',
+        ];
+    }
 
     public function mount(Campaign $campaign)
     {
+        $this->authorize('update', $campaign);
         $this->campaign = $campaign;
         $this->client_id = $campaign->client_id;
         $this->ad_account_id = $campaign->ad_account_id;
@@ -59,11 +69,12 @@ class Edit extends Component
 
     public function update()
     {
+        $this->authorize('update', $this->campaign);
         $this->validate();
 
         $this->campaign->update([
             'client_id' => $this->client_id,
-            'ad_account_id' => $this->ad_account_id ?: null,
+            'ad_account_id' => $this->ad_account_id,
             'name' => $this->name,
             'objective' => $this->objective,
             'status' => $this->status,

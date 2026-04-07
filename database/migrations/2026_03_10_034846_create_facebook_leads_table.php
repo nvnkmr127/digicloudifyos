@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('form_name')->nullable();
 
             // Link to ads structure
+            $table->foreignUuid('ad_account_id')->nullable()->constrained('ad_accounts')->nullOnDelete();
             $table->uuid('campaign_id')->nullable();
+            $table->uuid('ad_set_id')->nullable();
             $table->uuid('ad_id')->nullable();
 
             // Lead Data
@@ -30,9 +32,14 @@ return new class extends Migration
 
             // Foreign keys to our ads tables
             $table->foreign('campaign_id')->references('id')->on('campaigns')->nullOnDelete();
+            $table->foreign('ad_set_id')->references('id')->on('ad_sets')->nullOnDelete();
             $table->foreign('ad_id')->references('id')->on('ads')->nullOnDelete();
 
             $table->index(['organization_id', 'form_id']);
+            $table->index(['organization_id', 'created_at']);
+            $table->index(['campaign_id', 'created_at']);
+            $table->index(['ad_id', 'created_at']);
+            $table->index(['ad_account_id', 'created_at']);
         });
 
         // Add page_id and page_access_token to ad_accounts for lead gen

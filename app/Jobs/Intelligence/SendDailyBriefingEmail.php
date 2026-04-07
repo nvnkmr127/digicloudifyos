@@ -14,9 +14,14 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class SendDailyBriefingEmail implements ShouldQueue
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+
+class SendDailyBriefingEmail implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public $tries = 3;
+    public $timeout = 300;
 
     /**
      * Create a new job instance.
@@ -24,6 +29,11 @@ class SendDailyBriefingEmail implements ShouldQueue
     public function __construct()
     {
         $this->onQueue('intelligence');
+    }
+
+    public function uniqueId(): string
+    {
+        return now()->toDateString();
     }
 
     /**

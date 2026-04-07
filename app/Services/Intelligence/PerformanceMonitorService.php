@@ -198,7 +198,7 @@ class PerformanceMonitorService
             ->avg('spend');
 
         $currentMonthSpend = PerformanceSnapshot::where('client_id', $clientId)
-            ->whereBetween('snapshot_date', [$targetDate->startOfMonth()->toDateString(), $date])
+            ->whereBetween('snapshot_date', [$targetDate->copy()->startOfMonth()->toDateString(), $date])
             ->sum('spend');
 
         $projectedSpend = $currentMonthSpend + ($recentSpend * $remainingDays);
@@ -291,6 +291,7 @@ class PerformanceMonitorService
                 'high' => 15,
                 'medium' => 5,
                 'low' => 2,
+                default => 0,
             };
 
             if (in_array($anomaly->anomaly_type, ['ctr_drop', 'cpc_spike', 'roas_decline'])) {

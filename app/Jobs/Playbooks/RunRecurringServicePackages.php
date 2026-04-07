@@ -30,7 +30,7 @@ class RunRecurringServicePackages implements ShouldQueue
         $date = $this->date ?? now()->toDateString();
         $day = Carbon::parse($date);
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $playbooks->ensureDefaults($org->id);
             $packages->ensureDefaults($org->id);
 

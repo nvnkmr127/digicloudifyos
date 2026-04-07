@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FacebookUser extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',

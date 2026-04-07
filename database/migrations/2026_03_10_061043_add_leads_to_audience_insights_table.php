@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('audience_insights') || Schema::hasColumn('audience_insights', 'leads')) {
+            return;
+        }
+
         Schema::table('audience_insights', function (Blueprint $table) {
             $table->integer('leads')->default(0)->after('conversions');
         });
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('audience_insights') || ! Schema::hasColumn('audience_insights', 'leads')) {
+            return;
+        }
+
         Schema::table('audience_insights', function (Blueprint $table) {
             $table->dropColumn('leads');
         });

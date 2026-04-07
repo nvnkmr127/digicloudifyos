@@ -93,7 +93,7 @@ class Approvals extends Component
         $actions = AutomationAction::where('organization_id', $user->organization_id)
             ->whereIn('status', ['proposed', 'approved', 'failed'])
             ->with(['client', 'campaign', 'rule'])
-            ->orderByRaw("FIELD(status, 'proposed', 'failed', 'approved')")
+            ->orderByRaw("CASE status WHEN 'proposed' THEN 1 WHEN 'failed' THEN 2 WHEN 'approved' THEN 3 ELSE 4 END")
             ->orderByDesc('created_at')
             ->limit(200)
             ->get();

@@ -120,7 +120,7 @@
                 </div>
                 <h2 class="text-2xl font-black text-white mb-6">Deep Analysis of Performance Shifts</h2>
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    @foreach($client->aiInsights()->latest('insight_date')->limit(2)->get() as $insight)
+                    @foreach($recentInsights as $insight)
                         <div class="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm">
                             <div class="flex items-center gap-2 mb-3">
                                 <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>

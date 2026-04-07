@@ -79,13 +79,13 @@
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-medium text-text-muted mb-1">Quantity</label>
-                                <x-input type="number" step="0.01" wire:model="items.{{ $index }}.quantity" />
+                                <x-input type="number" step="0.01" wire:model.live="items.{{ $index }}.quantity" />
                                 @error('items.' . $index . '.quantity') <span class="text-red-500 text-xs">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-medium text-text-muted mb-1">Unit Price</label>
-                                <x-input type="number" step="0.01" wire:model="items.{{ $index }}.unit_price" />
+                                <x-input type="number" step="0.01" wire:model.live="items.{{ $index }}.unit_price" />
                                 @error('items.' . $index . '.unit_price') <span
                                 class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
@@ -104,8 +104,23 @@
                         </div>
                     @endforeach
                 </div>
-                <div class="mt-4">
-                    <x-button type="button" color="outline" wire:click="addItem" class="text-xs">+ Add Item</x-button>
+                <div class="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <x-button type="button" color="outline" wire:click="addItem" class="text-xs">+ Add Line Item</x-button>
+                    
+                    <div class="w-full md:w-64 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                        <div class="flex justify-between items-center text-sm mb-2">
+                            <span class="text-text-muted">Subtotal:</span>
+                            <span class="font-black text-text-primary">${{ number_format($this->subtotal, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm mb-4">
+                            <span class="text-text-muted">Tax & Discount:</span>
+                            <span class="font-bold text-gray-400 italic">No Capturing Logic</span>
+                        </div>
+                        <div class="pt-4 border-t border-gray-200 flex justify-between items-center">
+                            <span class="text-sm font-black text-gray-900 uppercase tracking-widest tracking-tighter">Total Due</span>
+                            <span class="text-lg font-black text-primary">${{ number_format($this->subtotal, 2) }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

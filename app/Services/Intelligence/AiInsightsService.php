@@ -19,14 +19,15 @@ class AiInsightsService
      */
     public function generateForClient(string $clientId, string $orgId, string $date): void
     {
-        $anomalies = PerformanceAnomaly::where('client_id', $clientId)
+        $anomalies = PerformanceAnomaly::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
             ->whereDate('detected_at', $date)
             ->whereDoesntHave('aiInsight')
             ->get();
 
         if ($anomalies->isNotEmpty()) {
             try {
-                $client = Client::find($clientId);
+                $client = Client::where('organization_id', $orgId)->findOrFail($clientId);
 
                 $data = [
                     'client_name' => $client->name,
@@ -64,7 +65,8 @@ class AiInsightsService
      */
     public function generateOpportunities(string $clientId, string $orgId, string $date): void
     {
-        $snapshots = PerformanceSnapshot::where('client_id', $clientId)
+        $snapshots = PerformanceSnapshot::where('organization_id', $orgId)
+            ->where('client_id', $clientId)
             ->where('snapshot_date', '>=', now()->subDays(7)->toDateString())
             ->orderBy('snapshot_date', 'desc')
             ->limit(21) // 7 days * 3 channels approx
@@ -154,7 +156,9 @@ class AiInsightsService
         $model = 'gemini-1.5-flash';
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
-        $response = Http::post($url, [
+        $response = Http::timeout(30)
+            ->retry(2, 200)
+            ->post($url, [
             'contents' => [
                 ['parts' => [['text' => $prompt]]],
             ],
@@ -164,7 +168,7 @@ class AiInsightsService
         ]);
 
         if ($response->failed()) {
-            throw new AiInsightsException('Gemini API call failed: '.$response->status().' - '.$response->body());
+            throw new AiInsightsException('Gemini API call failed', $response->status());
         }
 
         $result = $response->json();
@@ -184,7 +188,10 @@ class AiInsightsService
             return null;
         }
 
-        $response = Http::withToken($apiKey)->post('https://api.openai.com/v1/chat/completions', [
+        $response = Http::withToken($apiKey)
+            ->timeout(30)
+            ->retry(2, 200)
+            ->post('https://api.openai.com/v1/chat/completions', [
             'model' => 'gpt-4o-mini',
             'messages' => [
                 ['role' => 'system', 'content' => 'You are a senior marketing performance analyst. Return ONLY JSON.'],
@@ -194,7 +201,7 @@ class AiInsightsService
         ]);
 
         if ($response->failed()) {
-            return null;
+            throw new AiInsightsException('OpenAI call failed', $response->status());
         }
 
         $result = $response->json();
@@ -205,6 +212,8 @@ class AiInsightsService
 
     protected function parseAndPersistInsights(array $insights, string $clientId, string $orgId, string $date): void
     {
+        $redactor = app(\App\Services\PayloadRedactor::class);
+
         if (isset($insights['insights'])) {
             $insights = $insights['insights'];
         }
@@ -218,7 +227,7 @@ class AiInsightsService
                 Log::warning('Invalid AI insight payload received', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
-                    'insight' => $insight,
+                    'insight' => $redactor->truncateString(json_encode($insight), 500),
                 ]);
 
                 continue;
@@ -228,7 +237,7 @@ class AiInsightsService
                 Log::warning('Missing title in AI response', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
-                    'insight' => $insight,
+                    'insight' => $redactor->redactArray($insight),
                 ]);
 
                 continue;
@@ -238,7 +247,7 @@ class AiInsightsService
                 Log::warning('Missing issue_description in AI response', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
-                    'insight' => $insight,
+                    'insight' => $redactor->redactArray($insight),
                 ]);
 
                 continue;
@@ -248,7 +257,7 @@ class AiInsightsService
                 Log::warning('Missing recommended_action in AI response', [
                     'client_id' => $clientId,
                     'organization_id' => $orgId,
-                    'insight' => $insight,
+                    'insight' => $redactor->redactArray($insight),
                 ]);
 
                 continue;

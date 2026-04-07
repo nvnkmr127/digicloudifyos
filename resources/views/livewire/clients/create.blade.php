@@ -9,7 +9,7 @@
 
     <x-card>
         <form wire:submit="save" class="space-y-6 max-w-2xl">
-            <x-form-field label="Client Name" name="name">
+            <x-form-field label="Client Name" name="name" required>
                 <x-input id="name" type="text" placeholder="e.g. Acme Corp" wire:model="name" />
             </x-form-field>
 
@@ -115,7 +115,7 @@
                 </div>
             </div>
 
-            <x-form-field label="Status" name="status">
+            <x-form-field label="Status" name="status" required>
                 <x-select id="status" wire:model="status">
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>

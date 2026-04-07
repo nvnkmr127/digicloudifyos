@@ -9,7 +9,7 @@
 
     <x-card>
         <form wire:submit="save" class="space-y-6 max-w-2xl">
-            <x-form-field label="Lead Name" name="name">
+            <x-form-field label="Lead Name" name="name" required>
                 <x-input id="name" type="text" placeholder="e.g. John Doe" wire:model="name" />
             </x-form-field>
 
@@ -23,17 +23,14 @@
             </div>
 
             <div class="grid grid-cols-2 gap-6">
-                <x-form-field label="Source" name="source">
+                <x-form-field label="Source" name="source" required>
                     <x-input id="source" type="text" placeholder="Google, Referral, etc." wire:model="source" />
                 </x-form-field>
-                <x-form-field label="Status" name="status">
+                <x-form-field label="Status" name="status" required>
                     <x-select id="status" wire:model="status">
-                        <option value="New">New</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Interested">Interested</option>
-                        <option value="Offer Sent">Offer Sent</option>
-                        <option value="Won">Won</option>
-                        <option value="Lost">Lost</option>
+                        @foreach(\App\Enums\LeadStatus::cases() as $status)
+                            <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                        @endforeach
                     </x-select>
                 </x-form-field>
             </div>

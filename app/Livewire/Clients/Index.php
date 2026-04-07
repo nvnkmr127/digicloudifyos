@@ -38,6 +38,7 @@ class Index extends Component
                 });
             })
             ->withCount(['campaigns', 'leads'])
+            ->with(['onboardingChecklist'])
             ->orderBy('name')
             ->paginate(10);
 

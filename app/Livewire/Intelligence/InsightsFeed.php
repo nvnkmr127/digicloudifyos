@@ -51,7 +51,7 @@ class InsightsFeed extends Component
             ->with('client');
 
         if (! $this->showCompleted) {
-            $query->active();
+            $query = $query->active();
         }
 
         if ($this->clientFilter) {

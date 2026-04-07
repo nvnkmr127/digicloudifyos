@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\CampaignStatus;
 use App\Models\AccessToken;
 use App\Models\Ad;
 use App\Models\AdAccount;
@@ -904,7 +905,7 @@ class MetaAdsService extends BaseAdsService
             $metaCampaign = new MetaCampaign($campaign->external_campaign_id);
             $metaCampaign->setData([CampaignFields::STATUS => 'PAUSED']);
             $metaCampaign->update();
-            $campaign->update(['status' => 'INACTIVE']);
+            $campaign->update(['status' => CampaignStatus::Ready->value]);
 
             return true;
         } catch (\Exception $e) {
@@ -921,7 +922,7 @@ class MetaAdsService extends BaseAdsService
             $metaCampaign = new MetaCampaign($campaign->external_campaign_id);
             $metaCampaign->setData([CampaignFields::STATUS => 'ARCHIVED']);
             $metaCampaign->update();
-            $campaign->update(['status' => 'ARCHIVED']);
+            $campaign->update(['status' => CampaignStatus::Completed->value]);
 
             return true;
         } catch (\Exception $e) {
@@ -966,7 +967,7 @@ class MetaAdsService extends BaseAdsService
             'name' => $data['name'],
             'external_campaign_id' => $metaCampaign->id,
             'objective' => $data['objective'],
-            'status' => 'INACTIVE',
+            'status' => CampaignStatus::Planning->value,
             'start_date' => $data['start_date'] ?? null,
             'end_date' => $data['end_date'] ?? null,
         ]);
@@ -1071,6 +1072,7 @@ class MetaAdsService extends BaseAdsService
                 [
                     'form_id' => $formId ?: ($mapped['form_id'] ?? 'Unknown'),
                     'form_name' => $formName ?: ($mapped['form_name'] ?? 'Webhook Lead'),
+                    'ad_account_id' => $adAccount->id,
                     'campaign_id' => $campaignId,
                     'ad_set_id' => $adSetId,
                     'ad_id' => $adId,
@@ -1186,6 +1188,7 @@ class MetaAdsService extends BaseAdsService
                     [
                         'form_id' => $formId,
                         'form_name' => $formName,
+                        'ad_account_id' => $adAccount->id,
                         'campaign_id' => $campaignId,
                         'ad_set_id' => $adSetId,
                         'ad_id' => $adId,
@@ -1281,11 +1284,11 @@ class MetaAdsService extends BaseAdsService
     protected function normalizeStatus(string $status): string
     {
         return match ($status) {
-            'ACTIVE' => 'ACTIVE',
-            'PAUSED' => 'INACTIVE',
-            'ARCHIVED' => 'ARCHIVED',
-            'DELETED' => 'ARCHIVED',
-            default => 'INACTIVE',
+            'ACTIVE' => CampaignStatus::Running->value,
+            'PAUSED' => CampaignStatus::Ready->value,
+            'ARCHIVED' => CampaignStatus::Completed->value,
+            'DELETED' => CampaignStatus::Completed->value,
+            default => CampaignStatus::Planning->value,
         };
     }
 }

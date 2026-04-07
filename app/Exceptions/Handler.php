@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,6 +61,7 @@ class Handler extends ExceptionHandler
         $statusCode = $this->getStatusCode($exception);
         $message = $this->getMessage($exception);
         $errors = $this->getErrors($exception);
+        $requestId = $request->attributes->get('request_id');
 
         $response = [
             'success' => false,
@@ -77,6 +80,10 @@ class Handler extends ExceptionHandler
             ];
         }
 
+        if (is_string($requestId) && $requestId !== '') {
+            $response['meta'] = ['request_id' => $requestId];
+        }
+
         return response()->json($response, $statusCode);
     }
 
@@ -87,6 +94,18 @@ class Handler extends ExceptionHandler
     {
         if ($exception instanceof HttpException) {
             return $exception->getStatusCode();
+        }
+
+        if ($exception instanceof AuthenticationException) {
+            return 401;
+        }
+
+        if ($exception instanceof AuthorizationException) {
+            return 403;
+        }
+
+        if ($exception instanceof ModelNotFoundException) {
+            return 404;
         }
 
         if ($exception instanceof ValidationException) {
@@ -105,12 +124,29 @@ class Handler extends ExceptionHandler
             return 'The given data was invalid.';
         }
 
+        if ($exception instanceof AuthenticationException) {
+            return 'Unauthenticated.';
+        }
+
+        if ($exception instanceof AuthorizationException) {
+            return 'Forbidden.';
+        }
+
+        if ($exception instanceof ModelNotFoundException) {
+            return 'Resource not found.';
+        }
+
         if ($exception instanceof NotFoundHttpException) {
             return 'Resource not found.';
         }
 
         if ($exception instanceof UnauthorizedHttpException) {
             return 'Unauthorized.';
+        }
+
+        if ($exception instanceof HttpException && $exception->getStatusCode() < 500) {
+            $msg = $exception->getMessage();
+            return is_string($msg) && $msg !== '' ? $msg : 'An error occurred while processing your request.';
         }
 
         if (config('app.debug')) {

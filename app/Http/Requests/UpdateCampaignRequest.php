@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CampaignObjective;
+use App\Enums\CampaignStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,11 +23,9 @@ class UpdateCampaignRequest extends FormRequest
             'ad_account_id' => ['sometimes', 'uuid', Rule::exists('ad_accounts', 'id')],
             'name' => ['sometimes', 'string', 'min:3', 'max:255'],
             'external_campaign_id' => ['nullable', 'string', 'max:255'],
-            'objective' => ['sometimes', 'string', Rule::in([
-                'AWARENESS', 'TRAFFIC', 'ENGAGEMENT', 'LEADS', 'SALES', 'APP_PROMOTION',
-            ])],
+            'objective' => ['sometimes', 'string', Rule::in(CampaignObjective::values())],
             'status' => ['sometimes', 'string', Rule::in([
-                'planning', 'creative_requested', 'ready', 'running', 'optimizing', 'completed',
+                ...CampaignStatus::values(),
             ])],
             'start_date' => ['sometimes', 'date'],
             'end_date' => ['nullable', 'date', 'after:start_date'],

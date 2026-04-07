@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AdSet extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',

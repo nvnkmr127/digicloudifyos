@@ -15,6 +15,9 @@ class RunDailyIntegrationSync implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 3;
+    public $timeout = 300;
+
     public function __construct(public ?string $date = null)
     {
         $this->onQueue('intelligence');
@@ -24,7 +27,7 @@ class RunDailyIntegrationSync implements ShouldQueue
     {
         $date = $this->date ?? now()->subDay()->toDateString();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $clients = Client::where('organization_id', $org->id)->active()->get();
             $connections = ClientChannelConnection::where('organization_id', $org->id)
                 ->active()

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('forms', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
             $table->json('fields')->nullable();

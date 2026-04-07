@@ -38,11 +38,9 @@
                     <label for="status" class="block text-sm font-medium text-text-primary">Status</label>
                     <select id="status" wire:model="status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        <option value="New">New</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Qualified">Qualified</option>
-                        <option value="Lost">Lost</option>
-                        <option value="Won">Won</option>
+                        @foreach(\App\Enums\LeadStatus::cases() as $status)
+                            <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                        @endforeach
                     </select>
                     @error('status') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>

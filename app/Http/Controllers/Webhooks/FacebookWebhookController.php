@@ -14,19 +14,22 @@ class FacebookWebhookController extends Controller
      */
     public function verify(Request $request)
     {
-        $verifyToken = config('services.facebook.webhook_verify_token', 'dcos_lead_sync_secret');
+        $verifyToken = config('services.facebook.webhook_verify_token');
+        if (! is_string($verifyToken) || $verifyToken === '') {
+            return response('Webhook not configured', 503);
+        }
+
         $mode = $request->query('hub_mode');
         $token = $request->query('hub_verify_token');
         $challenge = $request->query('hub_challenge');
 
-        if ($mode === 'subscribe' && $token === $verifyToken) {
+        if ($mode === 'subscribe' && is_string($token) && hash_equals($verifyToken, $token)) {
             Log::info('Facebook Webhook Verified Successfully');
 
             return response($challenge, 200);
         }
 
         Log::warning('Facebook Webhook Verification Failed', [
-            'received_token' => $token,
             'mode' => $mode,
         ]);
 
@@ -49,10 +52,12 @@ class FacebookWebhookController extends Controller
 
                 return response('Invalid Signature', 401);
             }
-        } elseif (! $signature && app()->environment('production')) {
-            Log::warning('Facebook Webhook Missing Signature in Production');
+        } else {
+            if (! app()->environment(['local', 'testing'])) {
+                Log::warning('Facebook Webhook Missing Signature');
 
-            return response('Missing Signature', 401);
+                return response('Missing Signature', 401);
+            }
         }
 
         // 2. Process Payload

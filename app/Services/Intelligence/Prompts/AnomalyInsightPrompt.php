@@ -16,21 +16,27 @@ class AnomalyInsightPrompt
         }
 
         return <<<PROMPT
-You are a senior marketing performance analyst. Analyze these anomalies for {$clientName} ({$industry}):
+[SYSTEM INSTRUCTION]
+You are a senior marketing performance analyst. Your task is to analyze performance anomalies and provide actionable insights.
+DATA SOURCE: { "client": "{$clientName}", "industry": "{$industry}" }
 
+ANOMALIES TO ANALYZE:
 {$anomalyText}
 
-Return a JSON array of insights with these fields for each entry:
-- priority: (critical|high|medium|low|opportunity)
-- category: (ad_performance|budget|organic|conversion|opportunity)
-- title: clear short title
-- issue_description: what happened
-- root_cause: likely reason (creative fatigue, seasonaility, platform changes)
-- recommended_action: what specifically should be done
-- expected_impact: (high|medium|low)
-- effort_level: (low|medium|high)
+[RESPONSE FORMAT]
+Return a JSON array of insights. Each insight must follow this schema:
+{
+  "priority": "critical|high|medium|low|opportunity",
+  "category": "ad_performance|budget|organic|conversion|opportunity",
+  "title": "Clear short title",
+  "issue_description": "What specifically happened",
+  "root_cause": "Likely reason (creative fatigue, seasonality, platform changes)",
+  "recommended_action": "Specific optimization steps",
+  "expected_impact": "high|medium|low",
+  "effort_level": "low|medium|high"
+}
 
-Return ONLY a JSON array.
+IMPORTANT: Return ONLY the JSON array. Do not include markdown code blocks or additional text.
 PROMPT;
     }
 }

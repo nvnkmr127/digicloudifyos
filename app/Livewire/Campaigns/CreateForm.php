@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Campaigns;
 
+use App\Enums\CampaignStatus;
+use App\Enums\CampaignObjective;
 use App\Models\AdAccount;
 use App\Models\Campaign;
 use App\Models\Client;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateForm extends Component
@@ -21,7 +24,7 @@ class CreateForm extends Component
 
     public $objective = '';
 
-    public $status = 'planned';
+    public $status = 'planning';
 
     public $start_date = '';
 
@@ -31,17 +34,20 @@ class CreateForm extends Component
 
     public $lifetime_budget = 0;
 
-    protected $rules = [
-        'client_id' => 'required|uuid|exists:clients,id',
-        'ad_account_id' => 'nullable|uuid|exists:ad_accounts,id',
-        'name' => 'required|min:3',
-        'objective' => 'required|string',
-        'status' => 'required|in:active,paused,completed,planned,archived',
-        'start_date' => 'nullable|date',
-        'end_date' => 'nullable|date',
-        'daily_budget' => 'nullable|numeric|min:0',
-        'lifetime_budget' => 'nullable|numeric|min:0',
-    ];
+    protected function rules(): array
+    {
+        return [
+            'client_id' => 'required|uuid|exists:clients,id',
+            'ad_account_id' => 'required|uuid|exists:ad_accounts,id',
+            'name' => 'required|min:3',
+            'objective' => ['required', 'string', Rule::in(CampaignObjective::values())],
+            'status' => ['required', 'string', Rule::in(CampaignStatus::values())],
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'daily_budget' => 'nullable|numeric|min:0',
+            'lifetime_budget' => 'nullable|numeric|min:0',
+        ];
+    }
 
     public function save()
     {
@@ -51,7 +57,7 @@ class CreateForm extends Component
         Campaign::create([
             'organization_id' => Auth::user()->organization_id,
             'client_id' => $this->client_id,
-            'ad_account_id' => $this->ad_account_id ?: null,
+            'ad_account_id' => $this->ad_account_id,
             'name' => $this->name,
             'objective' => $this->objective,
             'status' => $this->status,

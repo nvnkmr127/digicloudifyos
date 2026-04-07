@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,10 +17,19 @@ class CustomThrottle
         if (RateLimiter::tooManyAttempts($key, $limit)) {
             $seconds = RateLimiter::availableIn($key);
 
-            return response()->json([
-                'message' => 'Too many requests. Please try again later.',
-                'retry_after' => $seconds,
-            ], 429)->header('Retry-After', $seconds);
+            $requestId = $request->attributes->get('request_id');
+
+            $meta = ['retry_after' => $seconds];
+            if (is_string($requestId) && $requestId !== '') {
+                $meta['request_id'] = $requestId;
+            }
+
+            return ApiResponse::error(
+                'Too many requests. Please try again later.',
+                [],
+                $meta,
+                429
+            )->header('Retry-After', $seconds);
         }
 
         RateLimiter::hit($key, 60);

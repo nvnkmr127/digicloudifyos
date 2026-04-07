@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SocialListeningIngestRequest;
+use App\Http\Responses\ApiResponse;
 use App\Models\SocialListeningEvent;
-use Illuminate\Http\Request;
 
 class SocialListeningIngestController extends Controller
 {
-    public function ingest(Request $request)
+    public function ingest(SocialListeningIngestRequest $request)
     {
         $secret = config('services.social_listening.webhook_secret');
         if (! is_string($secret) || $secret === '') {
@@ -27,19 +28,10 @@ class SocialListeningIngestController extends Controller
             abort(401, 'Invalid signature.');
         }
 
-        $payload = $request->json()->all();
-        if (! is_array($payload)) {
-            abort(422, 'Invalid payload.');
-        }
-
-        $orgId = $payload['organization_id'] ?? null;
-        $clientId = $payload['client_id'] ?? null;
-        $sourceType = $payload['source_type'] ?? 'webhook';
-        $events = $payload['events'] ?? [];
-
-        if (! is_string($orgId) || ! is_string($clientId) || ! is_array($events)) {
-            abort(422, 'Missing required fields.');
-        }
+        $orgId = $request->input('organization_id');
+        $clientId = $request->input('client_id');
+        $sourceType = $request->input('source_type', 'webhook');
+        $events = $request->input('events', []);
 
         $stored = 0;
 
@@ -47,20 +39,13 @@ class SocialListeningIngestController extends Controller
             if (! is_array($event)) {
                 continue;
             }
-            $externalId = $event['external_id'] ?? null;
-            if (! is_string($externalId) || $externalId === '') {
-                continue;
-            }
-
-            $eventDate = $event['event_date'] ?? null;
-            if (! is_string($eventDate) || $eventDate === '') {
-                $eventDate = now()->toDateString();
-            }
+            $externalId = (string) ($event['external_id'] ?? '');
+            $eventDate = isset($event['event_date']) ? (string) $event['event_date'] : now()->toDateString();
 
             SocialListeningEvent::updateOrCreate(
                 [
-                    'organization_id' => $orgId,
-                    'client_id' => $clientId,
+                    'organization_id' => (string) $orgId,
+                    'client_id' => (string) $clientId,
                     'source_type' => (string) $sourceType,
                     'external_id' => $externalId,
                 ],
@@ -79,8 +64,7 @@ class SocialListeningIngestController extends Controller
             $stored++;
         }
 
-        return response()->json([
-            'ok' => true,
+        return ApiResponse::success([
             'stored' => $stored,
         ]);
     }

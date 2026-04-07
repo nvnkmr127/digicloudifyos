@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Services\AgencyManagementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,8 +22,7 @@ class AgencyController extends Controller
             $request->user()->organization_id
         );
 
-        return response()->json([
-            'data' => $dashboard,
+        return ApiResponse::success($dashboard, null, [
             'generated_at' => now()->toISOString(),
         ]);
     }

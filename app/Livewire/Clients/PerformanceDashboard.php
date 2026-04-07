@@ -24,19 +24,13 @@ class PerformanceDashboard extends Component
             ->map(function ($client) use ($startDate) {
                 $totalSpend = 0;
                 $totalConversions = 0;
-                $totalRoasSum = 0;
-                $insightCount = 0;
+                $totalRevenue = 0;
                 $adAccountIds = $client->adAccounts->pluck('id');
 
                 foreach ($client->adAccounts as $account) {
                     $totalSpend += $account->adInsights->sum('spend');
                     $totalConversions += $account->adInsights->sum('conversions');
-
-                    $avgRoas = $account->adInsights->avg('roas');
-                    if ($avgRoas !== null) {
-                        $totalRoasSum += $avgRoas;
-                        $insightCount++;
-                    }
+                    $totalRevenue += $account->adInsights->sum('revenue');
                 }
 
                 $leadsCount = FacebookLead::whereIn('ad_account_id', $adAccountIds)
@@ -49,7 +43,7 @@ class PerformanceDashboard extends Component
                     'spend' => $totalSpend,
                     'leads' => $leadsCount,
                     'cpl' => $leadsCount > 0 ? $totalSpend / $leadsCount : 0,
-                    'roas' => $insightCount > 0 ? $totalRoasSum / $insightCount : 0,
+                    'roas' => $totalSpend > 0 ? $totalRevenue / $totalSpend : 0,
                     'conversions' => $totalConversions,
                 ];
             })->sortByDesc('spend');

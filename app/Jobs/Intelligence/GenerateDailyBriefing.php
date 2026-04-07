@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class GenerateDailyBriefing implements ShouldQueue
@@ -32,64 +33,62 @@ class GenerateDailyBriefing implements ShouldQueue
     {
         Log::info('GenerateDailyBriefing job started.');
 
-        $organizations = Organization::all();
         $date = now()->subDay()->toDateString();
 
-        foreach ($organizations as $org) {
-            $briefing = DailyBriefing::updateOrCreate(
-                ['organization_id' => $org->id, 'briefing_date' => $date],
-                ['status' => 'generating']
-            );
+        foreach (Organization::lazy() as $org) {
+            DB::transaction(function () use ($org, $date) {
+                $briefing = DailyBriefing::updateOrCreate(
+                    ['organization_id' => $org->id, 'briefing_date' => $date],
+                    ['status' => 'generating']
+                );
 
-            // Get all insights for today
-            $insights = AiInsight::where('organization_id', $org->id)
-                ->whereDate('insight_date', $date)
-                ->where('is_dismissed', false)
-                ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low', 'opportunity')")
-                ->get();
+                $insights = AiInsight::where('organization_id', $org->id)
+                    ->whereDate('insight_date', $date)
+                    ->where('is_dismissed', false)
+                    ->orderByRaw("CASE priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 WHEN 'opportunity' THEN 5 ELSE 6 END")
+                    ->get();
 
-            $briefing->actionItems()->delete(); // Clear if re-generating
+                $briefing->actionItems()->delete();
 
-            $itemsCount = 0;
-            $urgentCount = 0;
-            $opportunityCount = 0;
+                $urgentCount = 0;
+                $opportunityCount = 0;
 
-            foreach ($insights as $index => $insight) {
-                $priorityLevel = match ($insight->priority) {
-                    'critical', 'high' => 'urgent',
-                    'opportunity' => 'opportunity',
-                    default => 'important',
-                };
+                foreach ($insights as $index => $insight) {
+                    $priorityLevel = match ($insight->priority) {
+                        'critical', 'high' => 'urgent',
+                        'opportunity' => 'opportunity',
+                        default => 'important',
+                    };
 
-                BriefingActionItem::create([
-                    'briefing_id' => $briefing->id,
-                    'client_id' => $insight->client_id,
-                    'ai_insight_id' => $insight->id,
-                    'sort_order' => $index,
-                    'priority_level' => $priorityLevel,
-                    'title' => $insight->title,
-                    'description' => $insight->issue_description,
-                    'action' => $insight->recommended_action,
-                    'expected_impact' => $insight->expected_impact,
-                    'effort' => $insight->effort_level,
+                    BriefingActionItem::create([
+                        'briefing_id' => $briefing->id,
+                        'client_id' => $insight->client_id,
+                        'ai_insight_id' => $insight->id,
+                        'sort_order' => $index,
+                        'priority_level' => $priorityLevel,
+                        'title' => $insight->title,
+                        'description' => $insight->issue_description,
+                        'action' => $insight->recommended_action,
+                        'expected_impact' => $insight->expected_impact,
+                        'effort' => $insight->effort_level,
+                    ]);
+
+                    if ($priorityLevel === 'urgent') {
+                        $urgentCount++;
+                    }
+                    if ($priorityLevel === 'opportunity') {
+                        $opportunityCount++;
+                    }
+                }
+
+                $briefing->update([
+                    'status' => 'ready',
+                    'total_clients_analyzed' => $insights->unique('client_id')->count(),
+                    'critical_alerts_count' => $urgentCount,
+                    'opportunities_count' => $opportunityCount,
+                    'generated_at' => now(),
                 ]);
-
-                $itemsCount++;
-                if ($priorityLevel === 'urgent') {
-                    $urgentCount++;
-                }
-                if ($priorityLevel === 'opportunity') {
-                    $opportunityCount++;
-                }
-            }
-
-            $briefing->update([
-                'status' => 'ready',
-                'total_clients_analyzed' => $insights->unique('client_id')->count(),
-                'critical_alerts_count' => $urgentCount,
-                'opportunities_count' => $opportunityCount,
-                'generated_at' => now(),
-            ]);
+            });
         }
 
         Log::info('GenerateDailyBriefing job completed.');

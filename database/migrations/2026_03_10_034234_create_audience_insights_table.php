@@ -17,17 +17,21 @@ return new class extends Migration
             $table->uuid('ad_id')->nullable();
             $table->date('date');
 
-            // Breakdown fields
-            $table->string('breakdown_type'); // age, gender, location, placement, device, hourly
-            $table->string('dimension_1')->nullable(); // e.g. '18-24'
-            $table->string('dimension_2')->nullable(); // e.g. 'female' (for age,gender combo)
+            $table->string('breakdown_type');
+            $table->string('age')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('country')->nullable();
+            $table->string('city')->nullable();
+            $table->string('device')->nullable();
+            $table->string('placement')->nullable();
+            $table->string('hour')->nullable();
 
-            // Metrics
             $table->decimal('spend', 18, 4)->default(0);
             $table->integer('impressions')->default(0);
             $table->integer('reach')->default(0);
             $table->integer('clicks')->default(0);
             $table->decimal('conversions', 18, 4)->default(0);
+            $table->integer('leads')->default(0);
 
             $table->json('metadata')->nullable();
             $table->timestamps();
@@ -38,7 +42,7 @@ return new class extends Migration
             $table->foreign('ad_id')->references('id')->on('ads')->nullOnDelete();
 
             $table->index(['ad_account_id', 'date', 'breakdown_type']);
-            $table->unique(['ad_account_id', 'campaign_id', 'ad_set_id', 'ad_id', 'date', 'breakdown_type', 'dimension_1', 'dimension_2'], 'audience_insights_unique_idx');
+            $table->unique(['ad_account_id', 'campaign_id', 'ad_set_id', 'ad_id', 'date', 'breakdown_type', 'age', 'gender', 'country', 'city', 'device', 'placement', 'hour'], 'audience_insights_unique_idx');
         });
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\OrganizationContext;
+use App\Http\Middleware\RequestContext;
 use App\Providers\AuthServiceProvider;
 use App\Providers\HorizonServiceProvider;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'organization' => OrganizationContext::class,
         ]);
+
+        $middleware->append(RequestContext::class);
 
         $middleware->validateCsrfTokens(except: [
             'webhooks/facebook',

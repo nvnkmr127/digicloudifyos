@@ -1,9 +1,12 @@
-@props(['label', 'name', 'type' => 'text', 'placeholder' => ''])
+@props(['label', 'name', 'type' => 'text', 'placeholder' => '', 'required' => false])
 
 <div {{ $attributes->merge(['class' => 'space-y-1']) }}>
     @if($label)
         <label for="{{ $name }}" class="block text-sm font-semibold text-gray-700">
             {{ $label }}
+            @if($required)
+                <span class="text-red-500 ml-1" title="Required">*</span>
+            @endif
         </label>
     @endif
     

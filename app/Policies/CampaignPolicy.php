@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\CampaignStatus;
 use App\Models\Campaign;
 use App\Models\User;
 
@@ -31,7 +32,7 @@ class CampaignPolicy
 
     public function delete(User $user, Campaign $campaign): bool
     {
-        if ($campaign->status === 'ACTIVE') {
+        if (in_array($campaign->status, CampaignStatus::activeValues(), true)) {
             return false;
         }
 

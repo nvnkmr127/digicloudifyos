@@ -123,7 +123,13 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-800">Aggregation Engine</p>
-                            <p class="text-[10px] font-medium text-slate-500">Last sync: today, 02:00 AM</p>
+                            <p class="text-[10px] font-medium text-slate-500">
+                                @if($lastSync)
+                                    Last sync: {{ $lastSync->diffForHumans() }}
+                                @else
+                                    No data synced yet
+                                @endif
+                            </p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
@@ -132,7 +138,7 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-800">Anomaly Audit</p>
-                            <p class="text-[10px] font-medium text-slate-500">Every 4 hours · Active</p>
+                            <p class="text-[10px] font-medium text-slate-500">{{ $activeAlertsCount }} Active Signals · Online</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4">
@@ -141,7 +147,7 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-800">AI Intelligence</p>
-                            <p class="text-[10px] font-medium text-slate-500">Gemini 1.5 Flash · Online</p>
+                            <p class="text-[10px] font-medium text-slate-500">{{ $aiModel }} · Cloud-Active</p>
                         </div>
                     </div>
                 </div>

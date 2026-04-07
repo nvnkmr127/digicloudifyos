@@ -13,6 +13,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CheckDomainExpiry implements ShouldQueue
 {
@@ -31,7 +32,7 @@ class CheckDomainExpiry implements ShouldQueue
     {
         $date = $this->date ?? now()->subDay()->toDateString();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $clients = Client::where('organization_id', $org->id)
                 ->active()
                 ->whereNotNull('website_url')
@@ -43,8 +44,31 @@ class CheckDomainExpiry implements ShouldQueue
                     continue;
                 }
 
-                $rdap = Http::get('https://rdap.org/domain/'.rawurlencode($domain));
+                $rdap = Http::timeout(20)
+                    ->retry(2, 200)
+                    ->get('https://rdap.org/domain/'.rawurlencode($domain));
                 if ($rdap->failed()) {
+                    DomainExpiryCheck::updateOrCreate(
+                        [
+                            'organization_id' => $org->id,
+                            'client_id' => $client->id,
+                            'check_date' => $date,
+                            'domain' => $domain,
+                        ],
+                        [
+                            'expires_on' => null,
+                            'days_remaining' => null,
+                            'registrar' => null,
+                            'raw_data' => null,
+                        ]
+                    );
+
+                    Log::warning('Domain expiry RDAP lookup failed', [
+                        'organization_id' => $org->id,
+                        'client_id' => $client->id,
+                        'domain' => $domain,
+                        'status' => $rdap->status(),
+                    ]);
                     continue;
                 }
 

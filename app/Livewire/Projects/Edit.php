@@ -2,15 +2,22 @@
 
 namespace App\Livewire\Projects;
 
+use App\Enums\ProjectBillingType;
+use App\Enums\ProjectPriority;
+use App\Enums\ProjectStatus;
 use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Project;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Edit extends Component
 {
+    use AuthorizesRequests;
+
     public Project $project;
 
     public $client_id;
@@ -37,23 +44,27 @@ class Edit extends Component
 
     public $project_manager_id;
 
-    protected $rules = [
-        'client_id' => 'required|uuid|exists:clients,id',
-        'name' => 'required|min:3',
-        'description' => 'nullable|string',
-        'project_code' => 'nullable|string',
-        'status' => 'required|in:active,completed,on_hold,cancelled',
-        'priority' => 'required|in:low,medium,high,urgent',
-        'start_date' => 'nullable|date',
-        'end_date' => 'nullable|date',
-        'budget' => 'nullable|numeric|min:0',
-        'billing_type' => 'required|in:fixed,hourly',
-        'hourly_rate' => 'nullable|numeric|min:0',
-        'project_manager_id' => 'nullable|uuid|exists:employees,id',
-    ];
+    protected function rules(): array
+    {
+        return [
+            'client_id' => 'required|uuid|exists:clients,id',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string',
+            'project_code' => 'nullable|string',
+            'status' => ['required', 'string', Rule::in(ProjectStatus::values())],
+            'priority' => ['required', 'string', Rule::in(ProjectPriority::values())],
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'budget' => 'nullable|numeric|min:0',
+            'billing_type' => ['required', 'string', Rule::in(ProjectBillingType::values())],
+            'hourly_rate' => 'nullable|numeric|min:0',
+            'project_manager_id' => 'nullable|uuid|exists:employees,id',
+        ];
+    }
 
     public function mount(Project $project)
     {
+        $this->authorize('update', $project);
         $this->project = $project;
         $this->client_id = $project->client_id;
         $this->name = $project->name;
@@ -71,6 +82,7 @@ class Edit extends Component
 
     public function update()
     {
+        $this->authorize('update', $this->project);
         $this->validate();
 
         $this->project->update([

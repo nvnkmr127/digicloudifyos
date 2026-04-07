@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Http\Requests\StoreCampaignRequest;
 use App\Http\Requests\UpdateCampaignRequest;
 use App\Http\Resources\CampaignResource;
@@ -20,7 +21,7 @@ class CampaignController extends Controller
         $this->middleware('auth:sanctum');
     }
 
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
         $filters = [
             'status' => $request->input('status', 'all'),
@@ -35,20 +36,17 @@ class CampaignController extends Controller
             $filters
         );
 
-        return CampaignResource::collection($campaigns);
+        return ApiResponse::success(CampaignResource::collection($campaigns));
     }
 
     public function store(StoreCampaignRequest $request): JsonResponse
     {
         $campaign = $this->campaignService->create($request->validated());
 
-        return response()->json([
-            'message' => 'Campaign created successfully',
-            'data' => new CampaignResource($campaign),
-        ], 201);
+        return ApiResponse::created(new CampaignResource($campaign), 'Campaign created successfully');
     }
 
-    public function show(Request $request, Campaign $campaign): CampaignResource
+    public function show(Request $request, Campaign $campaign): JsonResponse
     {
         $this->authorize('view', $campaign);
 
@@ -56,13 +54,15 @@ class CampaignController extends Controller
             abort(404);
         }
 
-        return new CampaignResource($campaign->load([
+        $campaign = $campaign->load([
             'client',
             'adAccount',
             'tasks',
             'creativeRequests',
             'alerts',
-        ]));
+        ]);
+
+        return ApiResponse::success(new CampaignResource($campaign));
     }
 
     public function update(UpdateCampaignRequest $request, Campaign $campaign): JsonResponse
@@ -73,10 +73,7 @@ class CampaignController extends Controller
 
         $campaign = $this->campaignService->update($campaign, $request->validated());
 
-        return response()->json([
-            'message' => 'Campaign updated successfully',
-            'data' => new CampaignResource($campaign),
-        ]);
+        return ApiResponse::success(new CampaignResource($campaign), 'Campaign updated successfully');
     }
 
     public function destroy(Request $request, Campaign $campaign): JsonResponse
@@ -89,9 +86,7 @@ class CampaignController extends Controller
 
         $this->campaignService->delete($campaign);
 
-        return response()->json([
-            'message' => 'Campaign deleted successfully',
-        ], 204);
+        return ApiResponse::success(null, 'Campaign deleted successfully');
     }
 
     public function metrics(Request $request, Campaign $campaign): JsonResponse
@@ -104,8 +99,6 @@ class CampaignController extends Controller
 
         $metrics = $this->campaignService->getMetrics($campaign);
 
-        return response()->json([
-            'data' => $metrics,
-        ]);
+        return ApiResponse::success($metrics);
     }
 }

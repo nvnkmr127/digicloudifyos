@@ -17,7 +17,7 @@ class CampaignPolicyTest extends TestCase
 
         $campaign = new Campaign;
         $campaign->organization_id = 'org-1';
-        $campaign->status = 'ACTIVE';
+        $campaign->status = 'running';
 
         $policy = new CampaignPolicy;
 
@@ -32,7 +32,7 @@ class CampaignPolicyTest extends TestCase
 
         $campaign = new Campaign;
         $campaign->organization_id = 'org-1';
-        $campaign->status = 'INACTIVE';
+        $campaign->status = 'completed';
 
         $policy = new CampaignPolicy;
 

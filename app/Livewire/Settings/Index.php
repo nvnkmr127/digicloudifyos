@@ -10,6 +10,8 @@ class Index extends Component
 {
     use WithFileUploads;
 
+    public string $tab = 'organization';
+
     public $name;
 
     public $email;
@@ -24,6 +26,12 @@ class Index extends Component
 
     public function mount()
     {
+        $tab = request()->query('tab');
+        $this->tab = is_string($tab) && $tab !== '' ? $tab : 'organization';
+        if (! in_array($this->tab, ['organization', 'ads'], true)) {
+            $this->tab = 'organization';
+        }
+
         $org = Auth::user()->organization;
         $this->name = $org->name;
         $this->email = $org->email ?? '';
@@ -55,7 +63,7 @@ class Index extends Component
 
         $org->update($data);
 
-        session()->flash('message', 'Settings updated successfully.');
+        session()->flash('success', 'Settings updated successfully.');
     }
 
     public function render()

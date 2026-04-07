@@ -26,7 +26,7 @@ Add the following products to your app:
 - Select **"Page"** from the lookup dropdown.
 - Click **"Subscribe to this object"**.
 - **Callback URL**: `https://your-domain.com/webhooks/facebook`
-- **Verify Token**: `dcos_lead_sync_secret` (Matches `META_VERIFY_TOKEN` in [.env](file:///Users/naveenadicharla/Documents/DC%20OS/.env)).
+- **Verify Token**: set your own secure token (must match `META_VERIFY_TOKEN` in your environment).
 - Subscribe to the **"leadgen"** field.
 
 **Processing Flow (Real-Time):**
@@ -56,7 +56,7 @@ Update your [.env](file:///Users/naveenadicharla/Documents/DC%20OS/.env) file wi
 META_APP_ID=your_app_id
 META_APP_SECRET=your_app_secret
 META_REDIRECT_URI=https://your-domain.com/ads/callback/meta
-META_VERIFY_TOKEN=dcos_lead_sync_secret
+META_VERIFY_TOKEN=your_secure_random_token
 ```
 
 > [!IMPORTANT]

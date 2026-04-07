@@ -8,6 +8,7 @@ use App\Models\PlaybookRunTask;
 use App\Models\PlaybookTemplate;
 use App\Models\Task;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PlaybookService
 {
@@ -88,49 +89,64 @@ class PlaybookService
             return null;
         }
 
-        $run = ClientPlaybookRun::create([
-            'organization_id' => $orgId,
-            'client_id' => $client->id,
-            'playbook_template_id' => $template->id,
-            'run_date' => $date,
-            'status' => 'running',
-        ]);
+        $run = null;
 
-        $steps = is_array($template->steps) ? $template->steps : [];
-        foreach ($steps as $step) {
-            if (! is_array($step)) {
-                continue;
+        try {
+            return DB::transaction(function () use ($orgId, $client, $template, $date, &$run) {
+                $run = ClientPlaybookRun::create([
+                    'organization_id' => $orgId,
+                    'client_id' => $client->id,
+                    'playbook_template_id' => $template->id,
+                    'run_date' => $date,
+                    'status' => 'running',
+                ]);
+
+                $steps = is_array($template->steps) ? $template->steps : [];
+                foreach ($steps as $step) {
+                    if (! is_array($step)) {
+                        continue;
+                    }
+                    $title = $step['title'] ?? null;
+                    if (! is_string($title) || $title === '') {
+                        continue;
+                    }
+
+                    $task = Task::create([
+                        'organization_id' => $orgId,
+                        'client_id' => $client->id,
+                        'title' => $title,
+                        'description' => isset($step['description']) ? (string) $step['description'] : null,
+                        'task_type' => isset($step['task_type']) ? (string) $step['task_type'] : null,
+                        'priority' => isset($step['priority']) ? (string) $step['priority'] : 'medium',
+                        'status' => 'pending',
+                        'deadline' => isset($step['due_days']) ? Carbon::parse($date)->addDays((int) $step['due_days']) : Carbon::parse($date)->addDays(3),
+                    ]);
+
+                    PlaybookRunTask::create([
+                        'organization_id' => $orgId,
+                        'client_playbook_run_id' => $run->id,
+                        'task_id' => $task->id,
+                        'step_key' => isset($step['key']) ? (string) $step['key'] : null,
+                    ]);
+                }
+
+                $run->update([
+                    'status' => 'completed',
+                    'completed_at' => now(),
+                ]);
+
+                return $run;
+            });
+        } catch (\Throwable $e) {
+            if ($run) {
+                $run->update([
+                    'status' => 'failed',
+                    'error_message' => mb_substr($e->getMessage(), 0, 255),
+                ]);
             }
-            $title = $step['title'] ?? null;
-            if (! is_string($title) || $title === '') {
-                continue;
-            }
 
-            $task = Task::create([
-                'organization_id' => $orgId,
-                'client_id' => $client->id,
-                'title' => $title,
-                'description' => isset($step['description']) ? (string) $step['description'] : null,
-                'task_type' => isset($step['task_type']) ? (string) $step['task_type'] : null,
-                'priority' => isset($step['priority']) ? (string) $step['priority'] : 'medium',
-                'status' => 'pending',
-                'deadline' => isset($step['due_days']) ? Carbon::parse($date)->addDays((int) $step['due_days']) : Carbon::parse($date)->addDays(3),
-            ]);
-
-            PlaybookRunTask::create([
-                'organization_id' => $orgId,
-                'client_playbook_run_id' => $run->id,
-                'task_id' => $task->id,
-                'step_key' => isset($step['key']) ? (string) $step['key'] : null,
-            ]);
+            throw $e;
         }
-
-        $run->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-        ]);
-
-        return $run;
     }
 
     protected function leadGenOnboardingSteps(): array

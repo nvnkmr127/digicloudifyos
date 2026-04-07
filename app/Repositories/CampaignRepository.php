@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\Campaign;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class CampaignRepository
 {
@@ -22,12 +24,15 @@ class CampaignRepository
         }
 
         if (isset($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('name', 'ilike', '%'.$filters['search'].'%')
-                    ->orWhereHas('client', function ($clientQuery) use ($filters) {
-                        $clientQuery->where('name', 'ilike', '%'.$filters['search'].'%');
+            $term = trim((string) $filters['search']);
+            if ($term !== '') {
+                $query->where(function ($q) use ($term) {
+                    $this->whereInsensitiveLike($q, 'name', $term);
+                    $q->orWhereHas('client', function ($clientQuery) use ($term) {
+                        $this->whereInsensitiveLike($clientQuery, 'name', $term);
                     });
-            });
+                });
+            }
         }
 
         if (isset($filters['date_from'])) {
@@ -39,6 +44,19 @@ class CampaignRepository
         }
 
         return $query->orderBy('created_at', 'desc')->get();
+    }
+
+    protected function whereInsensitiveLike(Builder $query, string $column, string $term): void
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            $query->where($column, 'ilike', '%'.$term.'%');
+
+            return;
+        }
+
+        $query->whereRaw('LOWER('.$column.') LIKE ?', ['%'.mb_strtolower($term).'%']);
     }
 
     public function find(string $id): ?Campaign

@@ -106,7 +106,7 @@ class Create extends Component
 
         $this->validate();
 
-        Client::create([
+        $client = Client::create([
             'organization_id' => Auth::user()->organization_id ?? null,
             'name' => $this->name,
             'email' => $this->email,
@@ -136,7 +136,7 @@ class Create extends Component
 
         session()->flash('success', 'Client created successfully.');
 
-        return redirect()->route('clients.index');
+        return redirect()->route('clients.edit', $client->id);
     }
 
     public function render()

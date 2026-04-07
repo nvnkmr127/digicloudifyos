@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Leads;
 
+use App\Enums\LeadStatus;
 use App\Models\Lead;
 use App\Models\User;
 use App\Services\LeadService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Create extends Component
@@ -27,15 +29,18 @@ class Create extends Component
 
     public $notes = '';
 
-    protected $rules = [
-        'name' => 'required|min:3',
-        'email' => 'nullable|email',
-        'phone' => 'nullable|string',
-        'source' => 'nullable|string',
-        'status' => 'required|in:New,Contacted,Qualified,Lost,Won',
-        'assigned_user' => 'nullable|uuid|exists:users,id',
-        'notes' => 'nullable|string',
-    ];
+    protected function rules(): array
+    {
+        return [
+            'name' => 'required|min:3',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string',
+            'source' => 'required|string',
+            'status' => ['required', 'string', Rule::in(LeadStatus::values())],
+            'assigned_user' => 'nullable|uuid|exists:users,id',
+            'notes' => 'nullable|string',
+        ];
+    }
 
     protected function getService(): LeadService
     {

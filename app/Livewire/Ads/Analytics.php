@@ -7,6 +7,7 @@ use App\Models\AudienceInsight;
 use App\Models\Campaign;
 use App\Models\Creative;
 use App\Models\FacebookLead;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class Analytics extends Component
@@ -15,14 +16,14 @@ class Analytics extends Component
 
     public function render()
     {
-        $organizationId = auth()->user()->organization_id;
+        $organizationId = Auth::user()->organization_id;
         $startDate = now()->subDays($this->dateRange)->toDateString();
 
         // 1. Account Overview Stats
         $overviewStats = AdInsight::where('organization_id', $organizationId)
             ->where('level', 'account')
             ->where('date', '>=', $startDate)
-            ->selectRaw('SUM(spend) as total_spend, SUM(impressions) as total_impressions, SUM(clicks) as total_clicks, SUM(conversions) as total_conversions, AVG(roas) as avg_roas')
+            ->selectRaw('SUM(spend) as total_spend, SUM(revenue) as total_revenue, SUM(impressions) as total_impressions, SUM(clicks) as total_clicks, SUM(conversions) as total_conversions, (CASE WHEN SUM(spend) > 0 THEN SUM(revenue) / SUM(spend) ELSE 0 END) as blended_roas')
             ->first();
 
         $totalLeads = FacebookLead::where('organization_id', $organizationId)
@@ -30,6 +31,13 @@ class Analytics extends Component
             ->count();
 
         // 2. Campaign Performance
+        $leadsByCampaign = FacebookLead::where('organization_id', $organizationId)
+            ->where('created_at', '>=', $startDate)
+            ->whereNotNull('campaign_id')
+            ->groupBy('campaign_id')
+            ->selectRaw('campaign_id, COUNT(*) as cnt')
+            ->pluck('cnt', 'campaign_id');
+
         $campaigns = Campaign::where('organization_id', $organizationId)
             ->with([
                 'adInsights' => function ($query) use ($startDate) {
@@ -37,14 +45,13 @@ class Analytics extends Component
                 },
             ])
             ->get()
-            ->map(function ($campaign) {
+            ->map(function ($campaign) use ($leadsByCampaign) {
                 $insights = $campaign->adInsights;
                 $spend = $insights->sum('spend');
                 $clicks = $insights->sum('clicks');
                 $impressions = $insights->sum('impressions');
 
-                // Get leads for this campaign
-                $leadsCount = FacebookLead::where('campaign_id', $campaign->id)->count();
+                $leadsCount = (int) ($leadsByCampaign[$campaign->id] ?? 0);
 
                 return [
                     'name' => $campaign->name,
@@ -57,6 +64,13 @@ class Analytics extends Component
             })->sortByDesc('spend');
 
         // 3. Creative Performance Engine (Phase 16)
+        $leadsByAd = FacebookLead::where('organization_id', $organizationId)
+            ->where('created_at', '>=', $startDate)
+            ->whereNotNull('ad_id')
+            ->groupBy('ad_id')
+            ->selectRaw('ad_id, COUNT(*) as cnt')
+            ->pluck('cnt', 'ad_id');
+
         $creatives = Creative::where('organization_id', $organizationId)
             ->with([
                 'ad' => function ($query) use ($startDate) {
@@ -68,7 +82,7 @@ class Analytics extends Component
                 },
             ])
             ->get()
-            ->map(function ($creative) {
+            ->map(function ($creative) use ($leadsByAd) {
                 $ad = $creative->ad;
                 if (! $ad) {
                     return null;
@@ -78,9 +92,7 @@ class Analytics extends Component
                 $spend = $insights->sum('spend');
                 $clicks = $insights->sum('clicks');
                 $impressions = $insights->sum('impressions');
-                $leadsCount = FacebookLead::where('ad_id', $ad->id)
-                    ->where('created_at', '>=', now()->subDays($this->dateRange))
-                    ->count();
+                $leadsCount = (int) ($leadsByAd[$ad->id] ?? 0);
 
                 return [
                     'asset_name' => $creative->headline ?: $creative->creative_id,
@@ -100,24 +112,30 @@ class Analytics extends Component
             ->sortByDesc('ctr');
 
         // 4. Audience Intelligence (Breakdowns)
-        $audienceInsights = AudienceInsight::where('organization_id', $organizationId)
-            ->where('date', '>=', $startDate)
-            ->get();
+        $processBreakdown = function ($type, string $groupCol) use ($organizationId, $startDate) {
+            $types = is_array($type) ? $type : [$type];
 
-        $processBreakdown = function ($type, $groupCol) use ($audienceInsights) {
-            return $audienceInsights->where('breakdown_type', $type)
-                ->filter(fn ($i) => ! empty($i->{$groupCol}))
+            $rows = AudienceInsight::where('organization_id', $organizationId)
+                ->where('date', '>=', $startDate)
+                ->whereIn('breakdown_type', $types)
+                ->whereNotNull($groupCol)
+                ->where($groupCol, '!=', '')
                 ->groupBy($groupCol)
-                ->map(function ($group) {
-                    $spend = $group->sum('spend');
-                    $leads = $group->sum('leads'); // Phase 17: Accurate leads from Meta Actions
+                ->selectRaw($groupCol.' as k, SUM(spend) as spend, SUM(leads) as leads')
+                ->orderByDesc('leads')
+                ->get();
 
-                    return [
-                        'spend' => $spend,
-                        'leads' => $leads,
-                        'cpl' => $leads > 0 ? $spend / $leads : 0,
-                    ];
-                })->sortByDesc('leads');
+            return $rows->mapWithKeys(function ($row) {
+                $key = (string) $row->k;
+                $spend = (float) $row->spend;
+                $leads = (int) $row->leads;
+
+                return [$key => [
+                    'spend' => $spend,
+                    'leads' => $leads,
+                    'cpl' => $leads > 0 ? $spend / $leads : 0,
+                ]];
+            });
         };
 
         return view('livewire.ads.analytics', [
@@ -129,7 +147,7 @@ class Analytics extends Component
             'genderStats' => $processBreakdown('gender', 'gender'),
             'deviceStats' => $processBreakdown('device_platform', 'device'),
             'placementStats' => $processBreakdown('publisher_platform,platform_position', 'placement'),
-            'cityStats' => $processBreakdown('city', 'city'),
+            'cityStats' => $processBreakdown(['region', 'city'], 'city'),
         ])->layout('layouts.app');
     }
 }

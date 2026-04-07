@@ -15,7 +15,7 @@ class Index extends Component
 
     public function delete($id)
     {
-        $project = Project::findOrFail($id);
+        $project = Project::where('organization_id', Auth::user()->organization_id)->findOrFail($id);
         $this->authorize('delete', $project);
         $project->delete();
 

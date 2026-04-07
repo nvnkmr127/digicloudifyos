@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: DC OS API
+  version: "1.0.0"
+servers:
+  - url: /api
+paths:
+  /v1/campaigns:
+    get:
+      security:
+        - sanctum: []
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: client_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: date_from
+          schema: { type: string, format: date }
+        - in: query
+          name: date_to
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Campaign list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+    post:
+      security:
+        - sanctum: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignCreate"
+      responses:
+        "201":
+          description: Campaign created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+  /v1/campaigns/{campaign}:
+    get:
+      security:
+        - sanctum: []
+      parameters:
+        - in: path
+          name: campaign
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Campaign detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+    patch:
+      security:
+        - sanctum: []
+      parameters:
+        - in: path
+          name: campaign
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignUpdate"
+      responses:
+        "200":
+          description: Campaign updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+    delete:
+      security:
+        - sanctum: []
+      parameters:
+        - in: path
+          name: campaign
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Campaign deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+  /v1/campaigns/{campaign}/metrics:
+    get:
+      security:
+        - sanctum: []
+      parameters:
+        - in: path
+          name: campaign
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Campaign metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+  /v1/exports/campaigns:
+    post:
+      security:
+        - sanctum: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportCampaigns"
+      responses:
+        "200":
+          description: Export created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+  /v1/analytics/dashboard:
+    get:
+      security:
+        - sanctum: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string }
+      responses:
+        "200":
+          description: Analytics dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+  /v1/workload/analysis:
+    get:
+      security:
+        - sanctum: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string }
+      responses:
+        "200":
+          description: Workload analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+  /v1/agency/dashboard:
+    get:
+      security:
+        - sanctum: []
+      responses:
+        "200":
+          description: Agency dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+  /v1/social-listening/ingest:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SocialListeningIngest"
+      responses:
+        "200":
+          description: Events stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+components:
+  securitySchemes:
+    sanctum:
+      type: apiKey
+      in: cookie
+      name: laravel_session
+  schemas:
+    ApiSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        message: { type: string, nullable: true }
+        data: { nullable: true }
+        meta:
+          type: object
+          additionalProperties: true
+    ApiError:
+      type: object
+      required: [success, message, errors]
+      properties:
+        success: { type: boolean, enum: [false] }
+        message: { type: string }
+        errors:
+          type: object
+          additionalProperties: true
+        meta:
+          type: object
+          additionalProperties: true
+    CampaignCreate:
+      type: object
+      required: [client_id, ad_account_id, name, objective, status, start_date]
+      properties:
+        client_id: { type: string, format: uuid }
+        ad_account_id: { type: string, format: uuid }
+        name: { type: string }
+        external_campaign_id: { type: string, nullable: true }
+        objective: { type: string }
+        status: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date, nullable: true }
+        daily_budget: { type: number, nullable: true }
+        lifetime_budget: { type: number, nullable: true }
+    CampaignUpdate:
+      type: object
+      properties:
+        client_id: { type: string, format: uuid }
+        ad_account_id: { type: string, format: uuid }
+        name: { type: string }
+        external_campaign_id: { type: string, nullable: true }
+        objective: { type: string }
+        status: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date, nullable: true }
+        daily_budget: { type: number, nullable: true }
+        lifetime_budget: { type: number, nullable: true }
+    ExportCampaigns:
+      type: object
+      required: [format]
+      properties:
+        format:
+          type: string
+          enum: [xlsx, xls, csv, pdf]
+        status: { type: string, nullable: true }
+        client_id: { type: string, format: uuid, nullable: true }
+        date_from: { type: string, format: date, nullable: true }
+        date_to: { type: string, format: date, nullable: true }
+    SocialListeningIngest:
+      type: object
+      required: [organization_id, client_id, events]
+      properties:
+        organization_id: { type: string, format: uuid }
+        client_id: { type: string, format: uuid }
+        source_type: { type: string, nullable: true }
+        events:
+          type: array
+          items:
+            type: object
+            required: [external_id]
+            properties:
+              external_id: { type: string }
+              event_date: { type: string, format: date, nullable: true }
+              client_competitor_id: { type: string, format: uuid, nullable: true }
+              title: { type: string, nullable: true }
+              url: { type: string, nullable: true }
+              content: { type: string, nullable: true }
+              author: { type: string, nullable: true }
+              published_at: { type: string, format: date-time, nullable: true }

@@ -12,7 +12,7 @@ class Index extends Component
 
     public function delete($id)
     {
-        $invoice = Invoice::findOrFail($id);
+        $invoice = Invoice::where('organization_id', Auth::user()->organization_id)->findOrFail($id);
         $invoice->delete();
 
         session()->flash('success', 'Invoice deleted successfully.');

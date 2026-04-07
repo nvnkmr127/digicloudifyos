@@ -39,9 +39,16 @@ class Create extends Component
         'due_date' => 'required|date',
         'status' => 'required|in:draft,sent,paid,overdue,void',
         'items.*.description' => 'required|string',
-        'items.*.quantity' => 'required|numeric|min:0.01',
+        'items.*.quantity' => 'required|numeric|min:0',
         'items.*.unit_price' => 'required|numeric|min:0',
     ];
+
+    public function getSubtotalProperty()
+    {
+        return collect($this->items)->sum(function ($item) {
+            return (float) ($item['quantity'] ?? 0) * (float) ($item['unit_price'] ?? 0);
+        });
+    }
 
     public function mount()
     {
@@ -68,10 +75,12 @@ class Create extends Component
     {
         $this->validate();
 
-        $subtotal = 0;
-        foreach ($this->items as $item) {
-            $subtotal += $item['quantity'] * $item['unit_price'];
-        }
+        // Regenerate unique number at save time to avoid race conditions
+        $lastInvoice = Invoice::where('organization_id', Auth::user()->organization_id)->latest()->first();
+        $nextNum = $lastInvoice ? ((int) str_replace('INV-', '', $lastInvoice->invoice_number)) + 1 : 1;
+        $this->invoice_number = 'INV-'.str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+
+        $subtotal = $this->subtotal;
 
         $invoice = Invoice::create([
             'organization_id' => Auth::user()->organization_id,

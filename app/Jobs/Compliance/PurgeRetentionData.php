@@ -14,18 +14,26 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
+use Illuminate\Support\Facades\Log;
+
 class PurgeRetentionData implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct()
+    public $tries = 3;
+    public $timeout = 300;
+
+    public function __construct(public bool $dryRun = false)
     {
         $this->onQueue('intelligence');
     }
 
     public function handle(): void
     {
+        Log::info('Starting PurgeRetentionData job', ['dry_run' => $this->dryRun]);
+
         $clients = Client::whereNotNull('data_retention_days')->get(['id', 'organization_id', 'data_retention_days']);
+        $totalPurged = 0;
 
         foreach ($clients as $client) {
             $days = (int) $client->data_retention_days;
@@ -35,30 +43,87 @@ class PurgeRetentionData implements ShouldQueue
 
             $cutoff = now()->subDays($days)->startOfDay();
 
-            PerformanceSnapshot::where('organization_id', $client->organization_id)
+            $snapshotsCount = PerformanceSnapshot::where('organization_id', $client->organization_id)
                 ->where('client_id', $client->id)
                 ->where('snapshot_date', '<', $cutoff->toDateString())
-                ->update(['raw_data' => null]);
+                ->whereNotNull('raw_data')
+                ->count();
 
-            IntegrationSyncRun::where('organization_id', $client->organization_id)
+            $syncsCount = IntegrationSyncRun::where('organization_id', $client->organization_id)
                 ->where('client_id', $client->id)
                 ->where('created_at', '<', $cutoff)
-                ->update(['metrics' => null]);
+                ->whereNotNull('metrics')
+                ->count();
 
-            SocialListeningEvent::where('organization_id', $client->organization_id)
+            $socialCount = SocialListeningEvent::where('organization_id', $client->organization_id)
                 ->where('client_id', $client->id)
                 ->where('created_at', '<', $cutoff)
-                ->update(['content' => null, 'raw_data' => null]);
+                ->where(function ($query) {
+                    $query->whereNotNull('content')->orWhereNotNull('raw_data');
+                })
+                ->count();
 
-            MetaAdLibraryAd::where('organization_id', $client->organization_id)
+            $adsCount = MetaAdLibraryAd::where('organization_id', $client->organization_id)
                 ->where('client_id', $client->id)
                 ->where('created_at', '<', $cutoff)
-                ->update(['raw_data' => null]);
+                ->whereNotNull('raw_data')
+                ->count();
 
-            GoogleMerchantCenterDailyMetric::where('organization_id', $client->organization_id)
+            $merchantCount = GoogleMerchantCenterDailyMetric::where('organization_id', $client->organization_id)
                 ->where('client_id', $client->id)
                 ->where('metric_date', '<', $cutoff->toDateString())
-                ->update(['raw_data' => null, 'feed_statuses' => null, 'top_issue_examples' => null]);
+                ->where(function ($query) {
+                    $query->whereNotNull('raw_data')->orWhereNotNull('feed_statuses')->orWhereNotNull('top_issue_examples');
+                })
+                ->count();
+
+            $totalForClient = $snapshotsCount + $syncsCount + $socialCount + $adsCount + $merchantCount;
+
+            if ($totalForClient > 0) {
+                Log::info("PurgeRetentionData: Found records to purge for client", [
+                    'client_id' => $client->id,
+                    'cutoff_date' => $cutoff->toDateString(),
+                    'snapshots' => $snapshotsCount,
+                    'syncs' => $syncsCount,
+                    'social' => $socialCount,
+                    'ads' => $adsCount,
+                    'merchant' => $merchantCount,
+                ]);
+            }
+
+            if (! $this->dryRun) {
+                PerformanceSnapshot::where('organization_id', $client->organization_id)
+                    ->where('client_id', $client->id)
+                    ->where('snapshot_date', '<', $cutoff->toDateString())
+                    ->update(['raw_data' => null]);
+
+                IntegrationSyncRun::where('organization_id', $client->organization_id)
+                    ->where('client_id', $client->id)
+                    ->where('created_at', '<', $cutoff)
+                    ->update(['metrics' => null]);
+
+                SocialListeningEvent::where('organization_id', $client->organization_id)
+                    ->where('client_id', $client->id)
+                    ->where('created_at', '<', $cutoff)
+                    ->update(['content' => null, 'raw_data' => null]);
+
+                MetaAdLibraryAd::where('organization_id', $client->organization_id)
+                    ->where('client_id', $client->id)
+                    ->where('created_at', '<', $cutoff)
+                    ->update(['raw_data' => null]);
+
+                GoogleMerchantCenterDailyMetric::where('organization_id', $client->organization_id)
+                    ->where('client_id', $client->id)
+                    ->where('metric_date', '<', $cutoff->toDateString())
+                    ->update(['raw_data' => null, 'feed_statuses' => null, 'top_issue_examples' => null]);
+            }
+
+            $totalPurged += $totalForClient;
         }
+
+        Log::info('Finished PurgeRetentionData job', [
+            'dry_run' => $this->dryRun,
+            'total_records_affected' => $totalPurged,
+        ]);
     }
 }

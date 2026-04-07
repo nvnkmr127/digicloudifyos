@@ -73,7 +73,10 @@ class SyncGoogleAnalyticsDailyMetrics implements ShouldQueue
                 throw new \RuntimeException('No GA4 property available.');
             }
 
-            $report = Http::withToken($accessToken)->post("https://analyticsdata.googleapis.com/v1beta/properties/{$propertyId}:runReport", [
+            $report = Http::withToken($accessToken)
+                ->timeout(30)
+                ->retry(2, 200)
+                ->post("https://analyticsdata.googleapis.com/v1beta/properties/{$propertyId}:runReport", [
                 'dateRanges' => [
                     ['startDate' => $date, 'endDate' => $date],
                 ],
@@ -169,7 +172,10 @@ class SyncGoogleAnalyticsDailyMetrics implements ShouldQueue
             return $connection->account_id;
         }
 
-        $response = Http::withToken($accessToken)->get('https://analyticsadmin.googleapis.com/v1beta/accountSummaries');
+        $response = Http::withToken($accessToken)
+            ->timeout(30)
+            ->retry(2, 200)
+            ->get('https://analyticsadmin.googleapis.com/v1beta/accountSummaries');
         if ($response->failed()) {
             return null;
         }

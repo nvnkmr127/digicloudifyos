@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AudienceInsight extends Model
 {
-    use HasFactory, HasUuids, OrganizationScoped, OrganizationScoped;
+    use HasFactory, HasUuids, OrganizationScoped;
 
     protected $fillable = [
         'organization_id',
@@ -20,8 +20,13 @@ class AudienceInsight extends Model
         'ad_id',
         'date',
         'breakdown_type',
-        'dimension_1',
-        'dimension_2',
+        'age',
+        'gender',
+        'country',
+        'city',
+        'device',
+        'placement',
+        'hour',
         'spend',
         'impressions',
         'reach',

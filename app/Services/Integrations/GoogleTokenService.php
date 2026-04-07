@@ -25,7 +25,10 @@ class GoogleTokenService
             return $credential->access_token;
         }
 
-        $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+        $response = Http::asForm()
+            ->timeout(15)
+            ->retry(2, 200)
+            ->post('https://oauth2.googleapis.com/token', [
             'client_id' => config('services.google.client_id', ''),
             'client_secret' => config('services.google.client_secret', ''),
             'grant_type' => 'refresh_token',

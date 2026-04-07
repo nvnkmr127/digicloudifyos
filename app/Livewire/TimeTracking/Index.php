@@ -103,7 +103,7 @@ class Index extends Component
             $suggestions = Task::where('organization_id', $orgId)
                 ->where('assigned_to', $employee->id)
                 ->whereIn('status', ['pending', 'in_progress'])
-                ->orderByRaw("FIELD(status, 'in_progress', 'pending')")
+                ->orderByRaw("CASE status WHEN 'in_progress' THEN 1 WHEN 'pending' THEN 2 ELSE 3 END")
                 ->orderByDesc('updated_at')
                 ->limit(8)
                 ->get();

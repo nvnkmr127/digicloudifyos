@@ -28,7 +28,7 @@ class DetectCreativeFatigue implements ShouldQueue
         $date = $this->date ?? now()->subDay()->toDateString();
         $end = Carbon::parse($date)->endOfDay();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $this->runForOrg($org->id, $end);
         }
     }

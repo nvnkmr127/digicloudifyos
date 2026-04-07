@@ -18,6 +18,8 @@ class ClientPerformanceCenter extends Component
 
     public $healthTrend;
 
+    public $recentInsights;
+
     public function mount(Client $client)
     {
         $this->client = $client;
@@ -40,6 +42,13 @@ class ClientPerformanceCenter extends Component
             return ClientHealthScore::where('client_id', $clientId)
                 ->orderBy('score_date', 'asc')
                 ->limit(30)
+                ->get();
+        });
+
+        $this->recentInsights = Cache::remember("client_recent_insights_{$clientId}", 600, function () use ($clientId) {
+            return $this->client->aiInsights()
+                ->latest('insight_date')
+                ->limit(2)
                 ->get();
         });
     }

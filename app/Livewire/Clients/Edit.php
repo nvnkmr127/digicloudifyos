@@ -220,7 +220,7 @@ class Edit extends Component
 
         session()->flash('success', 'Client updated successfully.');
 
-        return redirect()->route('clients.index');
+        return redirect()->route('clients.edit', $this->client->id);
     }
 
     public function render()

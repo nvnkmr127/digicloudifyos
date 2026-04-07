@@ -33,7 +33,7 @@ class ClientPortalController extends Controller
             ->where('client_id', $client->id)
             ->whereDate('insight_date', $date)
             ->where('is_dismissed', false)
-            ->orderByRaw("FIELD(priority, 'critical', 'high', 'medium', 'low', 'opportunity')")
+            ->orderByRaw("CASE priority WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 WHEN 'opportunity' THEN 5 ELSE 6 END")
             ->get();
 
         return view('portal.client', [

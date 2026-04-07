@@ -2,13 +2,19 @@
 
 namespace App\Services\Competitive;
 
+use App\Services\UrlEgressPolicy;
 use Illuminate\Support\Facades\Http;
 
 class RssFeedService
 {
     public function fetch(string $url): array
     {
-        $response = Http::get($url);
+        $url = app(UrlEgressPolicy::class)->assertAllowed($url);
+
+        $response = Http::timeout(20)
+            ->retry(2, 200)
+            ->withOptions(['allow_redirects' => false])
+            ->get($url);
         if ($response->failed()) {
             throw new \RuntimeException('RSS fetch failed.');
         }

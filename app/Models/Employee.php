@@ -109,7 +109,7 @@ class Employee extends Model
 
     public function getFullNameAttribute(): string
     {
-        return $this->user->name ?? 'N/A';
+        return $this->user?->full_name ?? $this->user?->name ?? 'N/A';
     }
 
     public function getCurrentWorkload(): float

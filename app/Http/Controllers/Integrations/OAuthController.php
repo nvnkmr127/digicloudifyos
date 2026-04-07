@@ -393,14 +393,20 @@ class OAuthController extends Controller
             throw new \RuntimeException('Missing shop in callback.');
         }
 
-        $tokenResponse = Http::asForm()->post("https://{$shop}/admin/oauth/access_token", [
+        $shop = $this->validateShopifyShop($shop);
+
+        $tokenResponse = Http::asForm()
+            ->timeout(20)
+            ->retry(2, 200)
+            ->withOptions(['allow_redirects' => false])
+            ->post("https://{$shop}/admin/oauth/access_token", [
             'client_id' => config('services.shopify.client_id', ''),
             'client_secret' => config('services.shopify.client_secret', ''),
             'code' => $code,
         ]);
 
         if ($tokenResponse->failed()) {
-            throw new \RuntimeException('Shopify token exchange failed: '.$tokenResponse->body());
+            throw new \RuntimeException('Shopify token exchange failed.');
         }
 
         $token = $tokenResponse->json();
@@ -449,6 +455,21 @@ class OAuthController extends Controller
         );
 
         return redirect()->route('clients.integrations', $client->id)->with('success', 'Connected successfully.');
+    }
+
+    protected function validateShopifyShop(string $shop): string
+    {
+        $shop = mb_strtolower(trim($shop));
+
+        if (str_contains($shop, '/') || str_contains($shop, '@') || str_contains($shop, ':')) {
+            throw new \RuntimeException('Invalid shop domain.');
+        }
+
+        if (! preg_match('/\A[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.myshopify\.com\z/', $shop)) {
+            throw new \RuntimeException('Invalid shop domain.');
+        }
+
+        return $shop;
     }
 
     protected function handleMetaCallback(Client $client, string $provider, string $code)

@@ -52,9 +52,9 @@ class Create extends Component
         // If product_id changes, update price
         if (str_ends_with($key, '.product_id')) {
             $index = explode('.', $key)[0];
-            $product = Product::find($value);
+            $product = Product::where('organization_id', Auth::user()->organization_id)->find($value);
             if ($product) {
-                $this->items[$index]['price'] = $product->price;
+                $this->items[$index]['price'] = (float) $product->price;
             }
         }
     }
@@ -65,10 +65,15 @@ class Create extends Component
 
         $total = collect($this->items)->sum(fn ($item) => $item['price'] * $item['quantity']);
 
+        // Sequential-at-save numbering to prevent race conditions
+        $lastOrder = Order::where('organization_id', Auth::user()->organization_id)->latest()->first();
+        $nextNum = $lastOrder ? ((int) str_replace('ORD-', '', $lastOrder->order_number)) + 1 : 1;
+        $orderNum = 'ORD-'.str_pad($nextNum, 5, '0', STR_PAD_LEFT);
+
         $order = Order::create([
             'organization_id' => Auth::user()->organization_id,
             'client_id' => $this->client_id,
-            'order_number' => 'ORD-'.strtoupper(uniqid()),
+            'order_number' => $orderNum,
             'status' => $this->status,
             'total_amount' => $total,
             'ordered_at' => now(),

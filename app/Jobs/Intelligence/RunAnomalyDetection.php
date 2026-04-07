@@ -66,10 +66,18 @@ class RunAnomalyDetection implements ShouldQueue
             $anomalyTypes = [];
             foreach ($anomalies as $anomalyData) {
                 $anomalyTypes[] = $anomalyData['anomaly_type'];
-                PerformanceAnomaly::create(array_merge($anomalyData, [
-                    'snapshot_id' => $snapshot->id,
-                    'detected_at' => Carbon::parse($date)->endOfDay(),
-                ]));
+                PerformanceAnomaly::updateOrCreate(
+                    [
+                        'organization_id' => $anomalyData['organization_id'],
+                        'client_id'       => $anomalyData['client_id'],
+                        'channel_type'    => $anomalyData['channel_type'],
+                        'anomaly_type'    => $anomalyData['anomaly_type'],
+                        'snapshot_id'     => $snapshot->id,
+                    ],
+                    array_merge($anomalyData, [
+                        'detected_at' => Carbon::parse($date)->endOfDay(),
+                    ])
+                );
             }
 
             $snapshot->update(['anomaly_flags' => $anomalyTypes]);

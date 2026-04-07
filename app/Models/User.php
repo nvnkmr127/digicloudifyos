@@ -88,6 +88,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function getNameAttribute(): string
+    {
+        return (string) ($this->full_name ?? '');
+    }
+
     public function employee(): HasOne
     {
         return $this->hasOne(Employee::class);

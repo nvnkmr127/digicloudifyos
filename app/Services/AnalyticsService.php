@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\LeadStatus;
 use App\Models\AmazonSpDailyMetric;
 use App\Models\Campaign;
 use App\Models\GoogleAnalyticsDailyMetric;
@@ -11,6 +12,7 @@ use App\Models\Task;
 use App\Models\WooCommerceDailyMetric;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AnalyticsService
 {
@@ -56,13 +58,13 @@ class AnalyticsService
 
         return [
             'total' => $leads->count(),
-            'new' => $leads->where('status', 'new')->count(),
-            'qualified' => $leads->where('status', 'qualified')->count(),
-            'converted' => $leads->where('status', 'converted')->count(),
+            'new' => $leads->where('status', LeadStatus::New->value)->count(),
+            'qualified' => $leads->where('status', LeadStatus::Interested->value)->count(),
+            'converted' => $leads->where('status', LeadStatus::Won->value)->count(),
             'by_status' => $leads->groupBy('status')->map->count(),
             'by_source' => $leads->groupBy('source')->map->count(),
             'conversion_rate' => $leads->count() > 0
-                ? ($leads->where('status', 'converted')->count() / $leads->count()) * 100
+                ? ($leads->where('status', LeadStatus::Won->value)->count() / $leads->count()) * 100
                 : 0,
         ];
     }
@@ -88,6 +90,8 @@ class AnalyticsService
 
     protected function getPerformanceMetrics(string $organizationId, $startDate, $endDate): array
     {
+        $kpi = app(KpiCalculator::class);
+
         $campaigns = Campaign::where('organization_id', $organizationId)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->with('dailyMetrics')
@@ -107,40 +111,56 @@ class AnalyticsService
             $totalMetrics['total_conversions'] += $campaign->dailyMetrics->sum('conversions');
         }
 
-        $totalMetrics['avg_ctr'] = $totalMetrics['total_impressions'] > 0
-            ? ($totalMetrics['total_clicks'] / $totalMetrics['total_impressions']) * 100
-            : 0;
+        $totalMetrics['avg_ctr'] = $kpi->ctrPercent(
+            (float) $totalMetrics['total_clicks'],
+            (float) $totalMetrics['total_impressions']
+        );
 
-        $totalMetrics['avg_cpc'] = $totalMetrics['total_clicks'] > 0
-            ? $totalMetrics['total_spend'] / $totalMetrics['total_clicks']
-            : 0;
+        $totalMetrics['avg_cpc'] = $kpi->cpc(
+            (float) $totalMetrics['total_spend'],
+            (float) $totalMetrics['total_clicks']
+        );
 
-        $totalMetrics['avg_conversion_rate'] = $totalMetrics['total_clicks'] > 0
-            ? ($totalMetrics['total_conversions'] / $totalMetrics['total_clicks']) * 100
-            : 0;
+        $totalMetrics['avg_conversion_rate'] = $kpi->conversionRatePercent(
+            (float) $totalMetrics['total_conversions'],
+            (float) $totalMetrics['total_clicks']
+        );
 
-        $shopifyRevenue = (float) ShopifyDailyMetric::where('organization_id', $organizationId)
-            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->sum('net_sales');
+        $shopifyRevenue = 0.0;
+        if (Schema::hasTable('shopify_daily_metrics')) {
+            $shopifyRevenue = (float) ShopifyDailyMetric::where('organization_id', $organizationId)
+                ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->sum('net_sales');
+        }
 
-        $wooRevenue = (float) WooCommerceDailyMetric::where('organization_id', $organizationId)
-            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->sum('net_sales');
+        $wooRevenue = 0.0;
+        if (Schema::hasTable('woo_commerce_daily_metrics')) {
+            $wooRevenue = (float) WooCommerceDailyMetric::where('organization_id', $organizationId)
+                ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->sum('net_sales');
+        }
 
-        $gaSessions = (int) GoogleAnalyticsDailyMetric::where('organization_id', $organizationId)
-            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->sum('sessions');
+        $gaSessions = 0;
+        if (Schema::hasTable('google_analytics_daily_metrics')) {
+            $gaSessions = (int) GoogleAnalyticsDailyMetric::where('organization_id', $organizationId)
+                ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->sum('sessions');
+        }
 
-        $amazonRevenue = (float) AmazonSpDailyMetric::where('organization_id', $organizationId)
-            ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->sum('net_sales');
+        $amazonRevenue = 0.0;
+        if (Schema::hasTable('amazon_sp_daily_metrics')) {
+            $amazonRevenue = (float) AmazonSpDailyMetric::where('organization_id', $organizationId)
+                ->whereBetween('metric_date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->sum('net_sales');
+        }
 
         $totalRevenue = $shopifyRevenue + $wooRevenue + $amazonRevenue;
         $totalMetrics['total_revenue'] = $totalRevenue;
         $totalMetrics['total_sessions'] = $gaSessions;
-        $totalMetrics['roi_estimate'] = $totalMetrics['total_spend'] > 0
-            ? (($totalRevenue - $totalMetrics['total_spend']) / $totalMetrics['total_spend']) * 100
-            : null;
+        $totalMetrics['roi_estimate'] = $kpi->roiPercent(
+            (float) $totalRevenue,
+            (float) $totalMetrics['total_spend']
+        );
 
         return $totalMetrics;
     }

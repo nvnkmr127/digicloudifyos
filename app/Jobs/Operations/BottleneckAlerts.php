@@ -22,7 +22,7 @@ class BottleneckAlerts implements ShouldQueue
 
     public function handle(): void
     {
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $this->staleTasks($org->id);
             $this->wipOverload($org->id);
         }

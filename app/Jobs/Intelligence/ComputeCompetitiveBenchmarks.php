@@ -23,7 +23,7 @@ class ComputeCompetitiveBenchmarks implements ShouldQueue
     {
         $date = $this->date ?? now()->subDay()->toDateString();
 
-        foreach (Organization::all() as $org) {
+        foreach (Organization::lazy() as $org) {
             $benchmarks->runForOrganization($org->id, $date);
         }
     }

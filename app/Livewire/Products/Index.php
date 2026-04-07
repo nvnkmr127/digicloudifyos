@@ -10,7 +10,7 @@ class Index extends Component
 {
     public function delete($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::where('organization_id', Auth::user()->organization_id)->findOrFail($id);
         $product->delete();
 
         session()->flash('success', 'Product deleted successfully.');
@@ -18,9 +18,9 @@ class Index extends Component
 
     public function render()
     {
-        $products = Product::where('organization_id', Auth::user()->organization_id ?? null)
+        $products = Product::where('organization_id', Auth::user()->organization_id)
             ->latest()
-            ->get();
+            ->paginate(12);
 
         return view('livewire.products.index', [
             'products' => $products,

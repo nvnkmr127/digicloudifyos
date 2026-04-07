@@ -17,7 +17,7 @@ class LeadService
 
     public function getAllForOrganization(string $organizationId, array $filters = []): Collection
     {
-        $cacheKey = "leads.org.{$organizationId}.".md5(serialize($filters));
+        $cacheKey = "leads.org.{$organizationId}.v".$this->cacheVersion($organizationId).'.'.md5(serialize($filters));
 
         return $this->withCache($cacheKey, ["org.{$organizationId}", 'leads'], function () use ($organizationId, $filters) {
             return $this->repository->getByOrganization($organizationId, $filters);
@@ -72,8 +72,12 @@ class LeadService
         if (config('cache.default') !== 'file' && config('cache.default') !== 'database') {
             Cache::tags(['leads', "org.{$organizationId}"])->flush();
         } else {
-            // Log warning or use fallback invalidation if needed
-            Log::debug('Cache tags not supported for current driver. Skipping tag-based flush.');
+            $versionKey = $this->cacheVersionKey($organizationId);
+            $existing = Cache::get($versionKey);
+            if (! is_int($existing) || $existing < 1) {
+                Cache::forever($versionKey, 1);
+            }
+            Cache::increment($versionKey);
         }
     }
 
@@ -84,5 +88,22 @@ class LeadService
         }
 
         return Cache::remember($key, 300, $callback);
+    }
+
+    protected function cacheVersionKey(string $organizationId): string
+    {
+        return "cache_versions.leads.org.{$organizationId}";
+    }
+
+    protected function cacheVersion(string $organizationId): int
+    {
+        $key = $this->cacheVersionKey($organizationId);
+        $version = Cache::get($key);
+        if (! is_int($version) || $version < 1) {
+            Cache::forever($key, 1);
+            return 1;
+        }
+
+        return $version;
     }
 }

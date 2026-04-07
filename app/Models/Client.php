@@ -136,6 +136,21 @@ class Client extends Model
         return $query->with('latestHealthScore');
     }
 
+    public function onboardingChecklist(): HasOne
+    {
+        return $this->hasOne(ClientOnboardingChecklist::class);
+    }
+
+    public function getOnboardingProgressAttribute(): int
+    {
+        $items = $this->onboardingChecklist?->items ?? [];
+        if (empty($items)) return 0;
+        
+        $total = count($items);
+        $completed = collect($items)->where('completed', true)->count();
+        return (int) round(($completed / $total) * 100);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'ACTIVE');

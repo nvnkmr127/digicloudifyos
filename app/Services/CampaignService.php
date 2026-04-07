@@ -20,7 +20,7 @@ class CampaignService
 
     public function getAllForOrganization(string $organizationId, array $filters = []): Collection
     {
-        $cacheKey = "campaigns.org.{$organizationId}.".md5(serialize($filters));
+        $cacheKey = "campaigns.org.{$organizationId}.v".$this->cacheVersion($organizationId).'.'.md5(serialize($filters));
 
         return Cache::remember($cacheKey, 300, function () use ($organizationId, $filters) {
             return $this->repository->getByOrganization($organizationId, $filters);
@@ -96,7 +96,7 @@ class CampaignService
 
     public function getMetrics(Campaign $campaign): array
     {
-        $cacheKey = "campaign.metrics.{$campaign->id}";
+        $cacheKey = "campaign.metrics.{$campaign->organization_id}.v".$this->cacheVersion($campaign->organization_id).".{$campaign->id}";
 
         return Cache::remember($cacheKey, 300, function () use ($campaign) {
             return [
@@ -119,7 +119,29 @@ class CampaignService
         if (config('cache.default') !== 'file' && config('cache.default') !== 'database') {
             Cache::tags(['campaigns', "org.{$organizationId}"])->flush();
         } else {
-            Log::debug('Cache tags not supported for current driver. Skipping tag-based flush in CampaignService.');
+            $versionKey = $this->cacheVersionKey($organizationId);
+            $existing = Cache::get($versionKey);
+            if (! is_int($existing) || $existing < 1) {
+                Cache::forever($versionKey, 1);
+            }
+            Cache::increment($versionKey);
         }
+    }
+
+    protected function cacheVersionKey(string $organizationId): string
+    {
+        return "cache_versions.campaigns.org.{$organizationId}";
+    }
+
+    protected function cacheVersion(string $organizationId): int
+    {
+        $key = $this->cacheVersionKey($organizationId);
+        $version = Cache::get($key);
+        if (! is_int($version) || $version < 1) {
+            Cache::forever($key, 1);
+            return 1;
+        }
+
+        return $version;
     }
 }
