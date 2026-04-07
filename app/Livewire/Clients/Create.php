@@ -58,6 +58,11 @@ class Create extends Component
     public $external_ref = '';
 
     public $status = 'ACTIVE';
+    
+    public function mount()
+    {
+        \Log::debug('Mounting Client Create component');
+    }
 
     protected $rules = [
         'name' => 'required|min:3',
@@ -171,6 +176,11 @@ class Create extends Component
 
     public function render()
     {
+        \Log::debug('Rendering Client Create component', [
+            'user_id' => Auth::id(),
+            'organization_id' => Auth::user()->organization_id ?? null,
+        ]);
+
         $this->authorize('create', Client::class);
 
         return view('livewire.clients.create');
