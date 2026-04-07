@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignUuid('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('client_id')->constrained()->cascadeOnDelete();
             $table->date('metric_date');
-            $table->string('url', 2048);
+            $table->string('url', 512);
 
             $table->unsignedSmallInteger('performance_mobile')->nullable();
             $table->unsignedSmallInteger('performance_desktop')->nullable();
