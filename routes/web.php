@@ -94,6 +94,9 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/clients/create', App\Livewire\Clients\Create::class)
         ->middleware('can:manage-organization')
         ->name('clients.create');
+    Route::get('/clients/{client}/onboarding', App\Livewire\Clients\OnboardingWizard::class)
+        ->middleware('can:manage-organization')
+        ->name('clients.onboarding');
     Route::get('/clients/{client}/edit', App\Livewire\Clients\Edit::class)
         ->middleware('can:manage-organization')
         ->name('clients.edit');
