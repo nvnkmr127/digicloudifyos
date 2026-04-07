@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['organization_id', 'client_id', 'metric_date'], 'gbp_daily_unique');
-            $table->index(['client_id', 'metric_date']);
+            $table->index(['client_id', 'metric_date'], 'gbp_daily_metrics_client_date_idx');
         });
 
         Schema::create('google_business_profile_monthly_keywords', function (Blueprint $table) {
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['organization_id', 'client_id', 'month_start', 'keyword'], 'gbp_kw_unique');
-            $table->index(['client_id', 'month_start']);
+            $table->index(['client_id', 'month_start'], 'gbp_monthly_kw_client_month_idx');
         });
     }
 
