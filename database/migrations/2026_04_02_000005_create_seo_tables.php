@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['organization_id', 'client_id', 'metric_date', 'dimension', 'key'], 'sc_dim_unique');
-            $table->index(['client_id', 'metric_date', 'dimension']);
+            $table->index(['client_id', 'metric_date', 'dimension'], 'sc_dim_client_date_idx');
         });
 
         Schema::create('seo_opportunities', function (Blueprint $table) {
