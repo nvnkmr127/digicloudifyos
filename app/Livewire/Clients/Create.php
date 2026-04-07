@@ -28,13 +28,18 @@ class Create extends Component
         // Check DB connection on mount
         try {
             DB::connection()->getPdo();
-            Log::debug('Database connection is healthy.');
+            Log::debug('App: DB Connection Test Passed');
         } catch (\Exception $e) {
-            Log::error('DATABASE CONNECTION FAILURE', [
-                'message' => $e->getMessage()
-            ]);
-            session()->flash('error', 'Database Connection Error. Please check your system settings.');
+            Log::error('App: DB Connection Test FAILED', ['msg' => $e->getMessage()]);
         }
+    }
+
+    public function updated($propertyName)
+    {
+        Log::debug("Livewire Reactivity: Property [{$propertyName}] updated.", [
+            'value' => $this->{$propertyName}
+        ]);
+        $this->validateOnly($propertyName);
     }
 
     protected $rules = [

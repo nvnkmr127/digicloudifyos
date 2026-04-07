@@ -1,64 +1,91 @@
-# Dependencies
-/node_modules/
-/vendor/
-
-# Environment files
+# Environment
 .env
 .env.backup
+.env.production
 .env.local
 .env.*.local
-.phpunit.result.cache
 auth.json
 
-# Storage & Cache
-/public/hot
-/public/storage
-/storage/*.key
-/storage/framework/cache/data/*
+# Git
+.git/
+
+# Logs
+/storage/logs/*
+!/storage/logs/.gitignore
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+error_log
+error_log.old
+
+# Laravel / Storage
+/storage/app/*
+!/storage/app/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
 /storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
 /storage/framework/testing/*
+!/storage/framework/testing/.gitignore
 /storage/framework/views/*
-/storage/logs/*.log
-/.phpunit.cache/
-/bootstrap/cache/*.php
+!/storage/framework/views/.gitignore
+/storage/*.key
 
-# Build artifacts
-dist/
-/public/build/
-/public/css/
-/public/js/
-/public/manifest.json
+# Cache & Bootstrap
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+/cache
+/cache/
 
-# Database
-/database/*.sqlite
-/database/*.sqlite-journal
-/database/*.sqlite-shm
-/database/*.sqlite-wal
+# Uploads and generated files
+/public/storage
+/public/hot
+/public/build
+/public/css
+/public/images
+/public/docs
+/public/info.php
+/public/notification-demo.html
 
-# IDE files
+# Debug / developer scripts
+test.php
+debug_*.php
+check_*.php
+verify_*.php
+fix_permissions.php
+gdrive_diagnosis.php
+redis-test.php
+routes.json
+sample_certificate.html
+push-to-github.sh
+crontab_backup.txt
+deploy.sh
+scratch_*.php
+temp_*.php
+
+# IDE / Editor
+.DS_Store
 .idea/
 .vscode/
-.zed/
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
-.phpstorm.meta.php
-_ide_*.php
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.phpunit.result.cache
 
-# Log files
-*.log
-npm-debug.log
-yarn-error.log
-php-errors.log
-
-# Testing
-coverage/
-.coverage
-*.coverage
+# Package Managers
+/node_modules
+/vendor
+composer.phar
+composer.lock.backup
 
 # Misc
-docker-compose.override.yml
-homestead.json
-homestead.yaml
+*.bak
+*.bak*
+
+# Tools
+.phpstan.cache/
+.phpstan.result.cache
+.phpunit.cache/
