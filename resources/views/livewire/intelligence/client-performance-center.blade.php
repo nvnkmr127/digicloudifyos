@@ -3,19 +3,27 @@
     <div class="flex flex-col items-start justify-between gap-4 mb-10 md:flex-row md:items-center">
         <div>
             <div class="flex items-center gap-2 mb-2">
-                <a href="{{ route('intelligence.briefing') }}" class="text-xs font-bold tracking-widest text-indigo-600 uppercase hover:underline">← Agency Command</a>
+                <a href="{{ route('intelligence.briefing') }}" class="text-xs font-bold tracking-widest text-indigo-600 uppercase hover:underline dark:text-indigo-400">← Agency Command</a>
             </div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">{{ $client->name }}</h1>
-            <p class="mt-1 text-slate-500">Performance Intelligence Report for {{ $date }}</p>
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{{ $client->name }}</h1>
+            <p class="mt-1 text-slate-500 dark:text-slate-400">Performance Intelligence Report for {{ $date }}</p>
         </div>
 
         @if($client->latestHealthScore)
-            <div class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+            @php
+                $score = $client->latestHealthScore->overall_score;
+                $scoreDarkClass = $score >= 70
+                    ? 'dark:bg-green-900/30 dark:text-green-200 dark:border-green-800'
+                    : ($score >= 40
+                        ? 'dark:bg-yellow-900/30 dark:text-yellow-200 dark:border-yellow-800'
+                        : 'dark:bg-red-900/30 dark:text-red-200 dark:border-red-800');
+            @endphp
+            <div class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl shadow-sm dark:bg-slate-900 dark:border-slate-800">
                 <div class="mr-4">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-right">Health Score</div>
-                    <div class="text-3xl font-black text-slate-900 text-right">{{ $client->latestHealthScore->overall_score }}<span class="text-sm font-bold text-slate-400">/100</span></div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-right dark:text-slate-500">Health Score</div>
+                    <div class="text-3xl font-black text-slate-900 text-right dark:text-slate-100">{{ $client->latestHealthScore->overall_score }}<span class="text-sm font-bold text-slate-400 dark:text-slate-500">/100</span></div>
                 </div>
-                <div class="w-12 h-12 flex items-center justify-center rounded-xl {{ $client->latestHealthScore->getScoreBadgeClass() }}">
+                <div class="w-12 h-12 flex items-center justify-center rounded-xl border {{ $client->latestHealthScore->getScoreBadgeClass() }} {{ $scoreDarkClass }}">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                 </div>
             </div>
@@ -25,10 +33,10 @@
     <!-- Metrics Grid -->
     <div class="grid grid-cols-1 gap-6 mb-10 lg:grid-cols-3">
         @forelse($snapshots as $snapshot)
-            <div class="relative overflow-hidden bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-all">
+            <div class="relative overflow-hidden bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-all dark:bg-slate-900 dark:border-slate-800">
                 @if($snapshot->hasAnomalies())
                     <div class="absolute top-0 right-0 p-4">
-                        <span class="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-full animate-pulse shadow-lg ring-4 ring-red-50">
+                        <span class="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-full animate-pulse shadow-lg ring-4 ring-red-50 dark:ring-red-900/30">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                         </span>
                     </div>
@@ -36,24 +44,20 @@
 
                 <div class="p-8">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2 bg-indigo-50 rounded-lg">
-                            @if($snapshot->channel_type === 'meta_ads')
-                                <svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96C18.34 21.21 22 17.06 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/></svg>
-                            @else
-                                <svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C9.03,19.27 6.1,17.27 6.1,12.1C6.1,6.84 9.17,4.92 12.18,4.92C14.54,4.92 16.33,6.29 16.33,6.29L18.15,4.35C18.15,4.35 15.6,2.65 12.18,2.65C6.7,2.65 3.32,6.96 3.32,12.1C3.32,17.22 6.7,21.54 12.18,21.54C18,21.54 21.5,17.22 21.5,12.1C21.5,11.53 21.35,11.1 21.35,11.1Z"/></svg>
-                            @endif
+                        <div class="p-2 bg-indigo-50 rounded-lg dark:bg-indigo-900/20">
+                            <x-intelligence.channel-icon :channel="$snapshot->channel_type" />
                         </div>
-                        <h3 class="text-sm font-black tracking-widest text-slate-400 uppercase">{{ str_replace('_', ' ', $snapshot->channel_type) }}</h3>
+                        <h3 class="text-sm font-black tracking-widest text-slate-400 uppercase dark:text-slate-500">{{ str_replace('_', ' ', $snapshot->channel_type) }}</h3>
                     </div>
 
                     <div class="grid grid-cols-2 gap-y-6">
                         <div>
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Spend</div>
-                            <div class="text-xl font-bold text-slate-900">${{ number_format($snapshot->spend, 2) }}</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-slate-500">Spend</div>
+                            <div class="text-xl font-bold text-slate-900 dark:text-slate-100">${{ number_format($snapshot->spend, 2) }}</div>
                         </div>
                         <div>
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">CTR</div>
-                            <div class="flex items-center text-xl font-bold text-slate-900">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-slate-500">CTR</div>
+                            <div class="flex items-center text-xl font-bold text-slate-900 dark:text-slate-100">
                                 {{ number_format($snapshot->ctr * 100, 2) }}%
                                 @php $ctrChange = $snapshot->getCtrChangePercent() @endphp
                                 @if($ctrChange !== null)
@@ -64,8 +68,8 @@
                             </div>
                         </div>
                         <div>
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ROAS</div>
-                            <div class="flex items-center text-xl font-bold text-slate-900">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-slate-500">ROAS</div>
+                            <div class="flex items-center text-xl font-bold text-slate-900 dark:text-slate-100">
                                 {{ number_format($snapshot->roas, 2) }}x
                                 @php $roasChange = $snapshot->getRoasChangePercent() @endphp
                                 @if($roasChange !== null)
@@ -76,8 +80,8 @@
                             </div>
                         </div>
                         <div>
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">CPC</div>
-                            <div class="flex items-center text-xl font-bold text-slate-900">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-slate-500">CPC</div>
+                            <div class="flex items-center text-xl font-bold text-slate-900 dark:text-slate-100">
                                 ${{ number_format($snapshot->cpc, 2) }}
                                 @php $cpcChange = $snapshot->getCpcChangePercent() @endphp
                                 @if($cpcChange !== null)
@@ -91,25 +95,25 @@
                 </div>
 
                 @if($snapshot->hasAnomalies())
-                    <div class="px-8 py-4 bg-red-50 border-t border-red-100 italic">
-                        <p class="text-[11px] font-bold text-red-700 tracking-wide uppercase">Detected Anomaly</p>
+                    <div class="px-8 py-4 bg-red-50 border-t border-red-100 italic dark:bg-red-900/20 dark:border-red-800">
+                        <p class="text-[11px] font-bold text-red-700 tracking-wide uppercase dark:text-red-200">Detected Anomaly</p>
                     </div>
                 @endif
             </div>
         @empty
-            <div class="flex flex-col items-center justify-center col-span-1 p-12 bg-white border border-slate-200 lg:col-span-3 rounded-3xl sm:p-24">
-                <div class="p-4 mb-4 bg-slate-50 rounded-full text-slate-300">
+            <div class="flex flex-col items-center justify-center col-span-1 p-12 bg-white border border-slate-200 lg:col-span-3 rounded-3xl sm:p-24 dark:bg-slate-900 dark:border-slate-800">
+                <div class="p-4 mb-4 bg-slate-50 rounded-full text-slate-300 dark:bg-slate-800 dark:text-slate-600">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900">No Historical Data Yet</h3>
-                <p class="mt-2 text-slate-500">Wait for the next sync cycle to see performance snapshots.</p>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">No Historical Data Yet</h3>
+                <p class="mt-2 text-slate-500 dark:text-slate-400">Wait for the next sync cycle to see performance snapshots.</p>
             </div>
         @endforelse
     </div>
 
     <!-- AI Investigation Section -->
     @if($snapshots->some(fn($s) => $s->hasAnomalies()))
-        <div class="p-10 mb-10 overflow-hidden bg-slate-900 rounded-3xl shadow-2xl relative">
+        <div class="p-10 mb-10 overflow-hidden bg-slate-900 rounded-3xl shadow-2xl relative dark:bg-slate-950">
             <div class="absolute top-0 right-0 p-8 opacity-10">
                 <svg class="w-32 h-32 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9Z"/></svg>
             </div>

@@ -10,6 +10,6 @@
     $icon = $icons[$channel] ?? $icons['google_ads'];
 @endphp
 
-<div class="w-5 h-5 text-indigo-500">
+<div {{ $attributes->merge(['class' => 'w-5 h-5 text-indigo-500 dark:text-indigo-400']) }}>
     {!! $icon !!}
 </div>
