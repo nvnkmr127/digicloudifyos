@@ -23,7 +23,7 @@ use App\Livewire\Dashboard\Index;
 use App\Livewire\Dashboards\Builder;
 use App\Livewire\Intelligence\AlertCenter;
 use App\Livewire\Intelligence\BriefingDashboard;
-use App\Livewire\Intelligence\ClientPerformanceCenter;
+use App\Livewire\Intelligence\ClientWorkspace;
 use App\Livewire\Intelligence\InsightsFeed;
 use App\Livewire\Intelligence\Overview;
 use App\Livewire\Orders\Show;
@@ -241,7 +241,16 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/intelligence/briefing/{id}', BriefingDashboard::class)->name('intelligence.briefing.show');
     Route::get('/intelligence/insights', InsightsFeed::class)->name('intelligence.insights');
     Route::get('/intelligence/alerts', AlertCenter::class)->name('intelligence.alerts');
-    Route::get('/intelligence/client/{client}', ClientPerformanceCenter::class)->name('intelligence.client');
+    Route::get('/intelligence/clients/{client}/workspace', ClientWorkspace::class)
+        ->middleware('can:view,client')
+        ->name('intelligence.client.workspace');
+
+    // Legacy: keep old URL working (redirect to new canonical route)
+    Route::get('/intelligence/client/{client}', function (Client $client) {
+        return redirect()->route('intelligence.client.workspace', $client);
+    })
+        ->middleware('can:view,client')
+        ->name('intelligence.client');
 
     // Notifications
     Route::get('/notifications', App\Livewire\Notifications\Index::class)->name('notifications.index');
