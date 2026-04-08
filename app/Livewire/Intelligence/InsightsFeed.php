@@ -29,13 +29,13 @@ class InsightsFeed extends Component
 
     public function dismiss($id)
     {
-        $insight = AiInsight::findOrFail($id);
+        $insight = AiInsight::where('organization_id', auth()->user()->organization_id)->findOrFail($id);
         $insight->dismiss(auth()->id());
     }
 
     public function complete($id)
     {
-        $insight = AiInsight::findOrFail($id);
+        $insight = AiInsight::where('organization_id', auth()->user()->organization_id)->findOrFail($id);
         $insight->complete(auth()->id());
     }
 

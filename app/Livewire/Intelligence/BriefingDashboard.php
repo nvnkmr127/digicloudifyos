@@ -14,10 +14,13 @@ class BriefingDashboard extends Component
 
     public function mount($id = null)
     {
+        $orgId = auth()->user()->organization_id;
+
         if ($id) {
-            $this->briefing = DailyBriefing::findOrFail($id);
+            $this->briefing = DailyBriefing::where('organization_id', $orgId)->findOrFail($id);
+            return;
         } else {
-            $this->briefing = DailyBriefing::where('organization_id', auth()->user()->organization_id)
+            $this->briefing = DailyBriefing::where('organization_id', $orgId)
                 ->latest('briefing_date')
                 ->first();
         }

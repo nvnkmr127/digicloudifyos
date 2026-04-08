@@ -14,7 +14,7 @@ class AlertCenter extends Component
 
     public function resolve($anomalyId)
     {
-        $anomaly = PerformanceAnomaly::findOrFail($anomalyId);
+        $anomaly = PerformanceAnomaly::where('organization_id', auth()->user()->organization_id)->findOrFail($anomalyId);
         $anomaly->resolve();
     }
 
