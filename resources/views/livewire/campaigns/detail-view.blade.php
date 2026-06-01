@@ -1,4 +1,4 @@
-<x-app-container>
+<div class="max-w-7xl mx-auto w-full">
     @if (session()->has('message'))
         <x-alert type="success" class="mb-4">
             {{ session('message') }}
@@ -534,4 +534,4 @@
                     </div>
                 @endif
             </x-modal>
-</x-app-container>
+</div>

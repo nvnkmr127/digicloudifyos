@@ -309,7 +309,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
 
 ### 1.3 — Update Existing Client Model
 
-- [ ] `🟡` **[TASK-018]** Add new relationships and methods to `app/Models/Client.php`:
+- [x] `🟡` **[TASK-018]** Add new relationships and methods to `app/Models/Client.php`:
   ```php
   // New relationships
   public function channelConnections(): HasMany
@@ -613,7 +613,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
   - Subject: `📋 Agency Briefing — {date} | {urgent_count} urgent items`
   - `envelope()` and `content()` methods following Laravel 11 Mail pattern
 
-- [ ] `🟡` **[TASK-036]** Create `resources/views/emails/intelligence/daily-briefing.blade.php`
+- [x] `🟡` **[TASK-036]** Create `resources/views/emails/intelligence/daily-briefing.blade.php`
   - Markdown email template
   - Sections: Urgent actions, Important items, Opportunities, Quick stats table
   - Link to `/intelligence/briefing` for full view
@@ -655,14 +655,14 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
 
 ### 4.2 — Overview Component
 
-- [ ] `🟡` **[TASK-039]** Create `app/Livewire/Intelligence/Overview.php`
+- [x] `🟡` **[TASK-039]** Create `app/Livewire/Intelligence/Overview.php`
   - Loads all clients with their `latestHealthScore`
   - Groups by health status: healthy (≥70), attention (40-69), critical (<40)
   - Loads aggregate KPIs: total spend (yesterday), total leads (yesterday), avg ROAS, top performer, worst performer
   - Loads count of active anomalies by severity
   - Returns view with layout `layouts.app`
 
-- [ ] `🟡` **[TASK-040]** Create `resources/views/livewire/intelligence/overview.blade.php`
+- [x] `🟡` **[TASK-040]** Create `resources/views/livewire/intelligence/overview.blade.php`
   - **Header**: "Performance Intelligence" with "Run Now" button (dispatches Artisan command)
   - **Section 1**: 4 KPI stat cards (total spend, total leads, avg ROAS, active alerts)
   - **Section 2**: Client health grid — card per client showing:
@@ -679,7 +679,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
 
 ### 4.3 — Briefing Dashboard Component
 
-- [ ] `🟡` **[TASK-041]** Create `app/Livewire/Intelligence/BriefingDashboard.php`
+- [x] `🟡` **[TASK-041]** Create `app/Livewire/Intelligence/BriefingDashboard.php`
   - Loads today's `DailyBriefing` for the org (or most recent if today not generated)
   - Eager loads `actionItems.client`
   - Public method: `completeItem($itemId)` — marks `BriefingActionItem` completed
@@ -687,7 +687,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
   - Public method: `regenerate()` — dispatches `GenerateDailyBriefing` job (OWNER/ADMIN only)
   - Polls for `status = ready` if `status = generating`
 
-- [ ] `🟡` **[TASK-042]** Create `resources/views/livewire/intelligence/briefing-dashboard.blade.php`
+- [x] `🟡` **[TASK-042]** Create `resources/views/livewire/intelligence/briefing-dashboard.blade.php`
   - **Header**: Date, briefing status badge, "Regenerate" button
   - **Summary bar**: X urgent · Y important · Z opportunities · X% completed today
   - **Section 1 — URGENT** (red left border): Action items sorted by sort_order
@@ -702,14 +702,14 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
 
 ### 4.4 — Insights Feed Component
 
-- [ ] `🟡` **[TASK-043]** Create `app/Livewire/Intelligence/InsightsFeed.php`
+- [x] `🟡` **[TASK-043]** Create `app/Livewire/Intelligence/InsightsFeed.php`
   - Public properties: `$filter = 'all'`, `$clientFilter = ''`, `$channelFilter = ''`, `$priorityFilter = ''`
   - Loads paginated `AiInsight` records (15 per page) with filters applied
   - Only shows non-dismissed, non-completed by default
   - Toggle: `showCompleted` and `showDismissed` booleans
   - Public methods: `dismiss($id)`, `complete($id)`, `setFilter($value)`
 
-- [ ] `🟡` **[TASK-044]** Create `resources/views/livewire/intelligence/insights-feed.blade.php`
+- [x] `🟡` **[TASK-044]** Create `resources/views/livewire/intelligence/insights-feed.blade.php`
   - **Filter bar**: Priority pills, Client dropdown, Channel dropdown, Status toggles
   - **Feed**: Stacked insight cards, each showing:
     - Priority badge (color-coded), category icon
@@ -726,7 +726,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
 
 ### 4.5 — Alert Center Component
 
-- [ ] `🟡` **[TASK-045]** Create `app/Livewire/Intelligence/AlertCenter.php`
+- [x] `🟡` **[TASK-045]** Create `app/Livewire/Intelligence/AlertCenter.php`
   - Loads `PerformanceAnomaly` records with `resolved_at IS NULL`
   - Groups by: critical → high → medium → low
   - Eager loads `client`, `snapshot`
@@ -734,7 +734,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
   - Public method: `resolve($anomalyId)` — marks anomaly resolved
   - Public method: `viewClient($clientId)` — redirect to client workspace
 
-- [ ] `🟡` **[TASK-046]** Create `resources/views/livewire/intelligence/alert-center.blade.php`
+- [x] `🟡` **[TASK-046]** Create `resources/views/livewire/intelligence/alert-center.blade.php`
   - **Summary banner**: X critical · X high · X medium · X low — color-coded counts
   - **Filter row**: severity pills + client dropdown
   - **Alert list** grouped by severity, each row showing:
@@ -750,7 +750,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
 
 ### 4.6 — Client Workspace Component
 
-- [ ] `🟡` **[TASK-047]** Create `app/Livewire/Intelligence/ClientWorkspace.php`
+- [x] `🟡` **[TASK-047]** Create `app/Livewire/Intelligence/ClientWorkspace.php`
   - Route model binding: receives `Client $client`
   - Authorization: user must belong to same organization
   - Public property: `$dateRange = '7d'` (options: 1d, 7d, 30d)
@@ -763,7 +763,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
   - Public method: `setDateRange($range)` — updates property, refreshes data
   - Computes channel-level metrics for display
 
-- [ ] `🟡` **[TASK-048]** Create `resources/views/livewire/intelligence/client-workspace.blade.php`
+- [x] `🟡` **[TASK-048]** Create `resources/views/livewire/intelligence/client-workspace.blade.php`
   - **Header**: Client name, industry, health score ring, trend badge, date range selector
   - **Health Score Card**: Large score number, 4 dimension scores as horizontal bars
   - **Channel Grid**: One card per connected channel showing:
@@ -779,7 +779,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
 
 ### 4.7 — Navigation Integration
 
-- [ ] `🟡` **[TASK-049]** Add "Intelligence" nav group to sidebar — update `resources/views/components/layouts/sidebar-navigation.blade.php`:
+- [x] `🟡` **[TASK-049]** Add "Intelligence" nav group to sidebar — update `resources/views/components/layouts/sidebar-navigation.blade.php`:
   ```html
   <!-- Intelligence -->
   <div class="nav-group-label">Intelligence</div>
@@ -807,11 +807,11 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
   </a>
   ```
 
-- [ ] `🟡⚡` **[TASK-050]** Create `app/View/Composers/NavigationComposer.php`
+- [x] `🟡⚡` **[TASK-050]** Create `app/View/Composers/NavigationComposer.php`
   - Provides `$urgentCount` (today's urgent briefing items not completed) and `$criticalCount` (unresolved critical anomalies) to sidebar
   - Registered in `AppServiceProvider::boot()` via `View::composer()`
 
-- [ ] `🟡⚡` **[TASK-051]** Register the view composer in `app/Providers/AppServiceProvider.php`:
+- [x] `🟡⚡` **[TASK-051]** Register the view composer in `app/Providers/AppServiceProvider.php`:
   ```php
   View::composer('components.layouts.sidebar-navigation', NavigationComposer::class);
   ```
@@ -858,7 +858,7 @@ All models follow the existing pattern: `HasUuids` + `OrganizationScoped` trait.
   ],
   ```
 
-- [ ] `🟡` **[TASK-053]** Update `resources/views/livewire/dashboard/index.blade.php` — add new bottom section after existing content:
+- [x] `🟡` **[TASK-053]** Update `resources/views/livewire/dashboard/index.blade.php` — add new bottom section after existing content:
 
   **Section: Performance Intelligence Preview**
   - Client health score mini-grid (up to 8 clients, 2-col grid)
