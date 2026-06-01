@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SocialListeningIngestRequest;
 use App\Http\Responses\ApiResponse;
+use App\Models\Client;
 use App\Models\SocialListeningEvent;
 
 class SocialListeningIngestController extends Controller
@@ -32,6 +33,15 @@ class SocialListeningIngestController extends Controller
         $clientId = $request->input('client_id');
         $sourceType = $request->input('source_type', 'webhook');
         $events = $request->input('events', []);
+
+        // Security: Verify that the target client exists and belongs to the specified organization (D003)
+        $clientExists = Client::where('id', $clientId)
+            ->where('organization_id', (string) $orgId)
+            ->exists();
+
+        if (! $clientExists) {
+            abort(403, 'Unauthorized target organization or client.');
+        }
 
         $stored = 0;
 

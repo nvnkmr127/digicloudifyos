@@ -38,7 +38,7 @@ class Index extends Component
 
         // Fetch Tasks
         $tasks = Task::where('organization_id', $orgId)
-            ->whereBetween('due_at', [$startOfMonth, $endOfMonth])
+            ->whereBetween('deadline', [$startOfMonth, $endOfMonth])
             ->get();
 
         // Fetch Social Posts
@@ -48,7 +48,7 @@ class Index extends Component
 
         // Fetch Projects
         $projects = Project::where('organization_id', $orgId)
-            ->whereBetween('deadline', [$startOfMonth, $endOfMonth])
+            ->whereBetween('end_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
             ->get();
 
         $startOfWeek = $startOfMonth->copy()->startOfWeek(Carbon::SUNDAY);
@@ -61,9 +61,9 @@ class Index extends Component
                 'day' => $date->day,
                 'isCurrentMonth' => $date->month === $currentMonth->month,
                 'items' => collect()
-                    ->merge($tasks->filter(fn ($t) => $t->due_at->format('Y-m-d') === $dateString)->map(fn ($t) => ['type' => 'task', 'title' => $t->title, 'color' => 'indigo']))
-                    ->merge($posts->filter(fn ($p) => $p->scheduled_at->format('Y-m-d') === $dateString)->map(fn ($p) => ['type' => 'social', 'title' => 'Social: '.str($p->content)->limit(10), 'color' => 'pink']))
-                    ->merge($projects->filter(fn ($pr) => $pr->deadline->format('Y-m-d') === $dateString)->map(fn ($pr) => ['type' => 'project', 'title' => 'Deadline: '.$pr->name, 'color' => 'amber'])),
+                    ->merge($tasks->filter(fn ($t) => $t->deadline?->format('Y-m-d') === $dateString)->map(fn ($t) => ['type' => 'task', 'title' => $t->title, 'class' => 'bg-primary-soft text-primary hover:bg-primary-soft/70']))
+                    ->merge($posts->filter(fn ($p) => $p->scheduled_at?->format('Y-m-d') === $dateString)->map(fn ($p) => ['type' => 'social', 'title' => 'Social: '.str($p->content)->limit(10), 'class' => 'bg-info-soft text-info hover:bg-info-soft/70']))
+                    ->merge($projects->filter(fn ($pr) => $pr->end_date?->format('Y-m-d') === $dateString)->map(fn ($pr) => ['type' => 'project', 'title' => 'Deadline: '.$pr->name, 'class' => 'bg-warning-soft text-warning hover:bg-warning-soft/70'])),
             ];
         }
 

@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Report;
 use App\Services\ReportGeneratorService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -31,7 +32,11 @@ class Dashboard extends Component
             'reportName' => 'required|string|max:255',
             'reportType' => 'required',
             'reportFormat' => 'required',
-            'clientId' => 'nullable|exists:clients,id',
+            'clientId' => [
+                'nullable',
+                'uuid',
+                Rule::exists('clients', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
         ]);
 
         $report = Report::create([
@@ -58,7 +63,9 @@ class Dashboard extends Component
 
     public function download($reportId)
     {
-        $report = Report::findOrFail($reportId);
+        // Enforce organization scoping to prevent B020 (IDOR)
+        $report = Report::where('organization_id', Auth::user()->organization_id)
+            ->findOrFail($reportId);
         if ($report->file_path && \Storage::disk('public')->exists($report->file_path)) {
             $path = \Storage::disk('public')->path($report->file_path);
 
@@ -69,7 +76,9 @@ class Dashboard extends Component
 
     public function deleteReport($id)
     {
-        $report = Report::findOrFail($id);
+        // Enforce organization scoping to prevent B020 (IDOR)
+        $report = Report::where('organization_id', Auth::user()->organization_id)
+            ->findOrFail($id);
         if ($report->file_path) {
             \Storage::disk('public')->delete($report->file_path);
         }

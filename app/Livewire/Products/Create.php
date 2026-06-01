@@ -12,19 +12,20 @@ class Create extends Component
 
     public $sku;
 
-    public $price;
-
-    public $stock = 0;
-
-    public $description;
-
-    protected $rules = [
-        'name' => 'required|min:3',
-        'sku' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-        'stock' => 'nullable|integer|min:0',
-        'description' => 'nullable|string',
-    ];
+    protected function rules()
+    {
+        return [
+            'name' => 'required|min:3',
+            'sku' => [
+                'nullable',
+                'string',
+                Rule::unique('products', 'sku')->where('organization_id', Auth::user()->organization_id),
+            ],
+            'price' => 'required|numeric|min:0',
+            'stock' => 'nullable|integer|min:0',
+            'description' => 'nullable|string',
+        ];
+    }
 
     public function save()
     {

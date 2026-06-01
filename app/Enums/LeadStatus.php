@@ -13,7 +13,7 @@ enum LeadStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::OfferSent => 'Offer Sent',
             default => ucfirst($this->value),
         };
@@ -24,4 +24,3 @@ enum LeadStatus: string
         return array_map(fn (self $s) => $s->value, self::cases());
     }
 }
-

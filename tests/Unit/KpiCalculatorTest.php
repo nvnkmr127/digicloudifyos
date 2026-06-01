@@ -29,4 +29,3 @@ class KpiCalculatorTest extends TestCase
         $this->assertNull($kpi->roiPercent(10, 0));
     }
 }
-

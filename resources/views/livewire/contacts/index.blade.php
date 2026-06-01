@@ -1,6 +1,6 @@
 <x-app-container>
     <x-page-header title="Contacts">
-        <a href="{{ route('contacts.create') }}">
+        <a href="{{ route('contacts.create') }}" wire:navigate>
             <x-button color="primary">Add Contact</x-button>
         </a>
     </x-page-header>
@@ -18,7 +18,7 @@
             <h4 class="text-sm font-semibold text-text-muted">Customers</h4>
             <p class="text-2xl font-bold text-primary mt-2">{{ \App\Models\Contact::where('type', 'customer')->count() }}</p>
         </x-card>
-        <x-card class="bg-indigo-50 border-none p-4">
+        <x-card class="bg-primary-soft border-none p-4">
             <h4 class="text-sm font-semibold text-text-muted">Partners</h4>
             <p class="text-2xl font-bold text-primary mt-2">{{ \App\Models\Contact::where('type', 'partner')->count() }}</p>
         </x-card>
@@ -26,20 +26,23 @@
 
     <x-card class="p-0 overflow-hidden">
         <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
-            <div class="flex space-x-2">
-                <x-input 
-                    type="text" 
-                    wire:model.live.debounce.300ms="search" 
-                    placeholder="Search contacts..." 
-                    class="w-80" 
-                />
-                <x-select wire:model.live="type">
-                    <option value="">All Types</option>
-                    <option value="lead">Lead</option>
-                    <option value="customer">Customer</option>
-                    <option value="partner">Partner</option>
-                </x-select>
-            </div>
+            <x-toolbar class="w-full" variant="subtle">
+                <x-slot name="left">
+                    <x-input
+                        type="search"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Search contacts…"
+                        aria-label="Search contacts"
+                        class="w-full sm:w-96"
+                    />
+                    <x-select wire:model.live="type" class="w-full sm:w-56">
+                        <option value="">All Types</option>
+                        <option value="lead">Lead</option>
+                        <option value="customer">Customer</option>
+                        <option value="partner">Partner</option>
+                    </x-select>
+                </x-slot>
+            </x-toolbar>
         </div>
 
         <x-table>
@@ -61,7 +64,7 @@
                                 {{ substr($contact->first_name ?: 'C', 0, 1) }}{{ substr($contact->last_name ?: '', 0, 1) }}
                             </div>
                             <div>
-                                <div class="text-sm font-black text-gray-900 tracking-tight group-hover:text-primary transition-colors">{{ $contact->first_name }} {{ $contact->last_name }}</div>
+                                <div class="text-sm font-semibold text-gray-900 tracking-tight group-hover:text-primary transition-colors">{{ $contact->first_name }} {{ $contact->last_name }}</div>
                                 <div class="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">{{ $contact->company_name ?? 'Individual' }}</div>
                             </div>
                         </a>

@@ -12,4 +12,3 @@ return [
         'creative_fatigue_frequency' => 3,
     ],
 ];
-

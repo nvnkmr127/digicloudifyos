@@ -29,19 +29,44 @@ class WorkloadAnalysisService
 
     protected function getEmployeeWorkload(string $organizationId, $startDate, $endDate): array
     {
+        // Performance: Eager load relationships and use withSum to avoid N+1 queries (C004)
         $employees = Employee::where('organization_id', $organizationId)
             ->active()
-            ->with(['workloadEntries' => function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                    ->orWhereBetween('end_date', [$startDate, $endDate]);
+            ->with([
+                'workloadEntries' => function ($query) use ($startDate, $endDate) {
+                    $query->where('start_date', '<=', $endDate)
+                        ->where('end_date', '>=', $startDate);
+                },
+            ])
+            ->withCount(['projectAssignments as active_projects_count' => function ($query) {
+                $query->active();
             }])
             ->get();
 
-        return $employees->map(function ($employee) use ($startDate, $endDate) {
-            $allocatedHours = $employee->workloadEntries->sum('allocated_hours');
-            $actualHours = $employee->timeEntries()
-                ->whereBetween('date', [$startDate, $endDate])
-                ->sum('hours');
+        // Performance: Fetch all time entries for the period in one go to avoid N+1 in map
+        $allActualHours = TimeEntry::where('organization_id', $organizationId)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->selectRaw('employee_id, SUM(hours) as total_hours')
+            ->groupBy('employee_id')
+            ->pluck('total_hours', 'employee_id');
+
+        return $employees->map(function ($employee) use ($startDate, $endDate, $allActualHours) {
+            // Logical: Calculate proportional allocation (B004)
+            $allocatedHours = $employee->workloadEntries->sum(function ($entry) use ($startDate, $endDate) {
+                $overlapStart = $entry->start_date->max($startDate);
+                $overlapEnd = $entry->end_date->min($endDate);
+
+                $overlapDays = $overlapStart->diffInDays($overlapEnd) + 1;
+                $totalEntryDays = $entry->start_date->diffInDays($entry->end_date) + 1;
+
+                if ($totalEntryDays <= 0) {
+                    return 0;
+                }
+
+                return ($overlapDays / $totalEntryDays) * $entry->allocated_hours;
+            });
+
+            $actualHours = $allActualHours->get($employee->id, 0);
 
             $availableHours = $this->getAvailableHours($employee, $startDate, $endDate);
             $utilizationRate = $availableHours > 0 ? ($allocatedHours / $availableHours) * 100 : 0;
@@ -57,35 +82,60 @@ class WorkloadAnalysisService
                 'utilization_rate' => round($utilizationRate, 2),
                 'is_overallocated' => $utilizationRate > 100,
                 'capacity_status' => $this->getCapacityStatus($utilizationRate),
-                'active_projects' => $employee->projectAssignments()->active()->count(),
+                'active_projects' => $employee->active_projects_count,
             ];
         })->toArray();
     }
 
     protected function getProjectWorkload(string $organizationId, $startDate, $endDate): array
     {
+        // Performance: Optimize project loading
         $projects = Project::where('organization_id', $organizationId)
             ->active()
-            ->with(['workloadEntries', 'timeEntries', 'assignments'])
+            ->with(['client'])
+            ->withCount(['assignments as team_size' => function ($q) {
+                $q->active();
+            }])
             ->get();
 
-        return $projects->map(function ($project) use ($startDate, $endDate) {
-            $allocatedHours = $project->workloadEntries()
-                ->whereBetween('start_date', [$startDate, $endDate])
-                ->sum('allocated_hours');
+        $allAllocated = WorkloadEntry::where('organization_id', $organizationId)
+            ->where('start_date', '<=', $endDate)
+            ->where('end_date', '>=', $startDate)
+            ->selectRaw('project_id, start_date, end_date, allocated_hours')
+            ->get()
+            ->groupBy('project_id');
 
-            $actualHours = $project->timeEntries()
-                ->whereBetween('date', [$startDate, $endDate])
-                ->sum('hours');
+        $allActual = TimeEntry::where('organization_id', $organizationId)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->selectRaw('project_id, SUM(hours) as total_hours')
+            ->groupBy('project_id')
+            ->pluck('total_hours', 'project_id');
 
-            $teamSize = $project->assignments()->active()->count();
+        return $projects->map(function ($project) use ($startDate, $endDate, $allAllocated, $allActual) {
+            $projectAllocated = $allAllocated->get($project->id, collect());
+
+            $allocatedHours = $projectAllocated->sum(function ($entry) use ($startDate, $endDate) {
+                $overlapStart = $entry->start_date->max($startDate);
+                $overlapEnd = $entry->end_date->min($endDate);
+
+                $overlapDays = $overlapStart->diffInDays($overlapEnd) + 1;
+                $totalEntryDays = $entry->start_date->diffInDays($entry->end_date) + 1;
+
+                if ($totalEntryDays <= 0) {
+                    return 0;
+                }
+
+                return ($overlapDays / $totalEntryDays) * $entry->allocated_hours;
+            });
+
+            $actualHours = $allActual->get($project->id, 0);
 
             return [
                 'project_id' => $project->id,
                 'name' => $project->name,
                 'client' => $project->client->name ?? 'N/A',
                 'status' => $project->status,
-                'team_size' => $teamSize,
+                'team_size' => $project->team_size,
                 'allocated_hours' => round($allocatedHours, 2),
                 'actual_hours' => round($actualHours, 2),
                 'budget_utilization' => round($project->getBudgetUtilization(), 2),
@@ -97,32 +147,42 @@ class WorkloadAnalysisService
 
     protected function getDepartmentWorkload(string $organizationId, $startDate, $endDate): array
     {
-        $departments = Employee::where('organization_id', $organizationId)
+        // Performance: Consolidate department query (B027)
+        $data = Employee::where('organization_id', $organizationId)
             ->active()
-            ->select('department')
-            ->distinct()
-            ->pluck('department');
+            ->selectRaw('department, COUNT(*) as employee_count, SUM(work_hours_per_week) as total_base_capacity')
+            ->groupBy('department')
+            ->get();
 
-        return $departments->map(function ($department) use ($organizationId, $startDate, $endDate) {
-            $employees = Employee::where('organization_id', $organizationId)
-                ->byDepartment($department)
-                ->active()
-                ->get();
+        $weeksInPeriod = $this->getWeeksInPeriod($startDate, $endDate);
 
-            $totalAllocated = WorkloadEntry::whereIn('employee_id', $employees->pluck('id'))
-                ->whereBetween('start_date', [$startDate, $endDate])
-                ->sum('allocated_hours');
+        return $data->map(function ($row) use ($organizationId, $startDate, $endDate, $weeksInPeriod) {
+            $employeeIds = Employee::where('organization_id', $organizationId)
+                ->where('department', $row->department)
+                ->pluck('id');
 
-            $totalActual = TimeEntry::whereIn('employee_id', $employees->pluck('id'))
+            $totalAllocated = WorkloadEntry::whereIn('employee_id', $employeeIds)
+                ->where('start_date', '<=', $endDate)
+                ->where('end_date', '>=', $startDate)
+                ->get()
+                ->sum(function ($entry) use ($startDate, $endDate) {
+                    $overlapStart = $entry->start_date->max($startDate);
+                    $overlapEnd = $entry->end_date->min($endDate);
+                    $overlapDays = $overlapStart->diffInDays($overlapEnd) + 1;
+                    $totalEntryDays = $entry->start_date->diffInDays($entry->end_date) + 1;
+
+                    return $totalEntryDays > 0 ? ($overlapDays / $totalEntryDays) * $entry->allocated_hours : 0;
+                });
+
+            $totalActual = TimeEntry::whereIn('employee_id', $employeeIds)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->sum('hours');
 
-            $totalAvailable = $employees->sum('work_hours_per_week') *
-                $this->getWeeksInPeriod($startDate, $endDate);
+            $totalAvailable = $row->total_base_capacity * $weeksInPeriod;
 
             return [
-                'department' => $department,
-                'employee_count' => $employees->count(),
+                'department' => $row->department,
+                'employee_count' => $row->employee_count,
                 'total_available_hours' => round($totalAvailable, 2),
                 'total_allocated_hours' => round($totalAllocated, 2),
                 'total_actual_hours' => round($totalActual, 2),

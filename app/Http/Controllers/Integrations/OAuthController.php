@@ -400,10 +400,10 @@ class OAuthController extends Controller
             ->retry(2, 200)
             ->withOptions(['allow_redirects' => false])
             ->post("https://{$shop}/admin/oauth/access_token", [
-            'client_id' => config('services.shopify.client_id', ''),
-            'client_secret' => config('services.shopify.client_secret', ''),
-            'code' => $code,
-        ]);
+                'client_id' => config('services.shopify.client_id', ''),
+                'client_secret' => config('services.shopify.client_secret', ''),
+                'code' => $code,
+            ]);
 
         if ($tokenResponse->failed()) {
             throw new \RuntimeException('Shopify token exchange failed.');

@@ -34,7 +34,7 @@
 
                     <div class="space-y-2">
                         @foreach($dayData['items'] as $item)
-                            <div class="px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest leading-tight shadow-sm border border-transparent hover:border-{{ $item['color'] }}-200 transition bg-{{ $item['color'] }}-50 text-{{ $item['color'] }}-600 truncate" title="{{ $item['title'] }}">
+                            <div class="px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest leading-tight shadow-sm border border-transparent transition truncate {{ $item['class'] ?? 'bg-gray-50 text-text-muted' }}" title="{{ $item['title'] }}">
                                 {{ $item['title'] }}
                             </div>
                         @endforeach

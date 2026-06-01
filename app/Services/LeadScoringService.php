@@ -44,7 +44,8 @@ class LeadScoringService
         $score += $statusWeight[$lead->status] ?? 0;
 
         // 4. Custom Logic (e.g. email domain)
-        if (str_contains($lead->email, '.edu') || str_contains($lead->email, '.gov')) {
+        $email = (string) $lead->email;
+        if ($email !== '' && (str_contains($email, '.edu') || str_contains($email, '.gov'))) {
             $score += 20;
         }
 

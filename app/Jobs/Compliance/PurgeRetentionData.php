@@ -13,7 +13,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-
 use Illuminate\Support\Facades\Log;
 
 class PurgeRetentionData implements ShouldQueue
@@ -21,6 +20,7 @@ class PurgeRetentionData implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 300;
 
     public function __construct(public bool $dryRun = false)
@@ -80,7 +80,7 @@ class PurgeRetentionData implements ShouldQueue
             $totalForClient = $snapshotsCount + $syncsCount + $socialCount + $adsCount + $merchantCount;
 
             if ($totalForClient > 0) {
-                Log::info("PurgeRetentionData: Found records to purge for client", [
+                Log::info('PurgeRetentionData: Found records to purge for client', [
                     'client_id' => $client->id,
                     'cutoff_date' => $cutoff->toDateString(),
                     'snapshots' => $snapshotsCount,

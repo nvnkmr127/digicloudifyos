@@ -21,9 +21,37 @@ class Logs extends Component
     {
         $organizationId = Auth::user()->organization_id;
 
-        $this->selectedLog = AutomationLog::with(['rule'])
+        $log = AutomationLog::with(['rule'])
             ->whereHas('rule', fn ($query) => $query->where('organization_id', $organizationId))
             ->find($id);
+
+        if ($log) {
+            // S031: Redact PII on-the-fly for inspector view
+            $redact = function (&$data) use (&$redact) {
+                if (! is_array($data)) {
+                    return;
+                }
+                $sensitiveKeys = ['password', 'token', 'secret', 'key', 'auth', 'cvv'];
+                foreach ($data as $k => &$v) {
+                    if (in_array(strtolower($k), $sensitiveKeys)) {
+                        $v = '[REDACTED]';
+                    } elseif (is_array($v)) {
+                        $redact($v);
+                    }
+                }
+            };
+
+            $details = $log->details;
+            $result = $log->result;
+
+            $redact($details);
+            $redact($result);
+
+            $log->details = $details;
+            $log->result = $result;
+
+            $this->selectedLog = $log;
+        }
     }
 
     public function closeInspector()

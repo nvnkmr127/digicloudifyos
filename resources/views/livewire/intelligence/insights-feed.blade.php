@@ -74,7 +74,7 @@
                                         <span class="text-xs font-bold text-indigo-700 capitalize dark:text-indigo-200">{{ $insight->effort_level }}</span>
                                     </div>
                                     
-                                    @if(!$insight->is_completed)
+                                    @if(!$insight->is_completed && !auth()->user()->hasRole('VIEWER'))
                                         <div class="ml-auto flex items-center gap-2">
                                             <button wire:click="dismiss('{{ $insight->id }}')" class="p-2 text-slate-400 hover:text-red-600 transition dark:text-slate-500 dark:hover:text-red-400" title="Dismiss">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -83,7 +83,7 @@
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                             </button>
                                         </div>
-                                    @else
+                                    @elseif($insight->is_completed)
                                         <div class="ml-auto">
                                             <span class="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-lg uppercase tracking-widest">Done</span>
                                         </div>

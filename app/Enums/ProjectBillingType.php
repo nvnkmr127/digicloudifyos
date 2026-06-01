@@ -20,4 +20,3 @@ enum ProjectBillingType: string
         return array_map(fn (self $t) => $t->value, self::cases());
     }
 }
-

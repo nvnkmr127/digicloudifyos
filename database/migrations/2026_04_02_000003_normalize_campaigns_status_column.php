@@ -19,7 +19,7 @@ return new class extends Migration
         }
 
         if ($driver === 'pgsql') {
-            DB::statement("ALTER TABLE campaigns ALTER COLUMN status TYPE VARCHAR(50)");
+            DB::statement('ALTER TABLE campaigns ALTER COLUMN status TYPE VARCHAR(50)');
             DB::statement("ALTER TABLE campaigns ALTER COLUMN status SET DEFAULT 'planning'");
         }
 
@@ -36,8 +36,5 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };
-

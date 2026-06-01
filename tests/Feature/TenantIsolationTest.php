@@ -63,6 +63,7 @@ class TenantIsolationTest extends TestCase
         if (! $org instanceof Organization) {
             throw new \RuntimeException('Failed to create organization.');
         }
+
         return $org;
     }
 
@@ -72,6 +73,7 @@ class TenantIsolationTest extends TestCase
         if (! $user instanceof User) {
             throw new \RuntimeException('Failed to create user.');
         }
+
         return $user;
     }
 }

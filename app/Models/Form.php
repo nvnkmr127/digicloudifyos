@@ -15,13 +15,17 @@ class Form extends Model
     protected $fillable = [
         'organization_id',
         'name',
+        'slug',
         'description',
         'fields',
         'status',
+        'is_published',
+        'public_key',
     ];
 
     protected $casts = [
         'fields' => 'array',
+        'is_published' => 'boolean',
     ];
 
     public function submissions(): HasMany

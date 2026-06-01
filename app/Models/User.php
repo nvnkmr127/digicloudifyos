@@ -17,19 +17,22 @@ class User extends Authenticatable
 
     protected static function booted()
     {
-        static::created(function ($user) {
-            if (in_array($user->role, ['OWNER', 'ADMIN', 'OPERATOR'])) {
+        $syncEmployee = function ($user) {
+            if (in_array($user->role, ['OWNER', 'ADMIN', 'OPERATOR', 'ANALYST'])) {
                 Employee::updateOrCreate(
                     ['user_id' => $user->id],
                     [
                         'organization_id' => $user->organization_id,
                         'status' => 'active',
-                        'department' => 'Operations',
+                        'department' => $user->employee->department ?? 'Operations',
                         'position' => $user->role,
                     ]
                 );
             }
-        });
+        };
+
+        static::created($syncEmployee);
+        static::updated($syncEmployee);
     }
 
     private const ROLE_ALIASES = [

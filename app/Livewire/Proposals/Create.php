@@ -4,11 +4,15 @@ namespace App\Livewire\Proposals;
 
 use App\Models\Client;
 use App\Models\Proposal;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Create extends Component
 {
+    use AuthorizesRequests;
+
     public $clientId;
 
     public $title = '';
@@ -21,12 +25,19 @@ class Create extends Component
 
     public $content = [];
 
-    protected $rules = [
-        'clientId' => 'required|exists:clients,id',
-        'title' => 'required|string|max:255',
-        'totalAmount' => 'required|numeric|min:0',
-        'validUntil' => 'nullable|date|after:today',
-    ];
+    protected function rules()
+    {
+        return [
+            'clientId' => [
+                'required',
+                'uuid',
+                Rule::exists('clients', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
+            'title' => 'required|string|max:255',
+            'totalAmount' => 'required|numeric|min:0',
+            'validUntil' => 'nullable|date|after:today',
+        ];
+    }
 
     public function mount()
     {
@@ -35,6 +46,7 @@ class Create extends Component
 
     public function save()
     {
+        $this->authorize('create', Proposal::class);
         $this->validate();
 
         $proposalNumber = 'PROP-'.strtoupper(str()->random(8));
@@ -46,12 +58,12 @@ class Create extends Component
             'title' => $this->title,
             'description' => $this->description,
             'total_amount' => $this->totalAmount,
-            'status' => 'pending',
+            'status' => 'draft',
             'valid_until' => $this->validUntil,
             'content' => $this->content,
         ]);
 
-        session()->flash('message', 'Proposal created successfully.');
+        session()->flash('success', 'Proposal created successfully.');
 
         return redirect()->route('proposals.index');
     }

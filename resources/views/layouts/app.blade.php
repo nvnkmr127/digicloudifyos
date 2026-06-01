@@ -29,7 +29,7 @@
             class="fixed inset-y-0 left-0 flex flex-col w-64 bg-white border-r border-gray-200 z-50 md:hidden" x-cloak>
             <div class="h-16 flex items-center px-6 border-b border-gray-200 justify-between">
                 <span class="text-xl font-bold text-primary">{{ config('app.name') }}</span>
-                <button @click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700">
+                <button @click="sidebarOpen = false" class="text-gray-500 hover:text-gray-700" aria-label="Close sidebar">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                         </path>
@@ -71,18 +71,20 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
+                    @livewire('notifications.bell')
+
                     <!-- Settings Dropdown -->
                     <div class="flex items-center sm:ms-6">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 <button
                                     aria-label="User menu"
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-button text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                                     <div class="flex items-center">
                                         <div
-                                            class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                                            class="h-8 w-8 rounded-full bg-primary-soft flex items-center justify-center mr-2">
                                             <span
-                                                class="text-xs font-medium text-indigo-700">{{ substr(Auth::user()->full_name, 0, 1) }}</span>
+                                                class="text-xs font-medium text-primary">{{ substr(Auth::user()->full_name, 0, 1) }}</span>
                                         </div>
                                         <div class="hidden sm:block">{{ Auth::user()->full_name }}</div>
                                     </div>
@@ -100,31 +102,11 @@
                             <x-slot name="content">
                                 <div class="px-4 py-2 border-b border-gray-100">
                                     <p class="text-xs text-gray-500">Current Role</p>
-                                    <p class="text-sm font-semibold text-indigo-600">{{ Auth::user()->role }}</p>
+                                    <p class="text-sm font-semibold text-primary">{{ Auth::user()->role }}</p>
                                 </div>
                                 <x-dropdown-link :href="route('profile.edit')">
                                     {{ __('Profile') }}
                                 </x-dropdown-link>
-
-                                <div class="border-t border-gray-100"></div>
-
-                                <!-- Role Switcher -->
-                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                    {{ __('Switch Role') }}
-                                </div>
-
-                                <!-- Role Switcher -->
-                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                    {{ __('Switch Role') }}
-                                </div>
-
-                                @foreach(['OWNER', 'ADMIN', 'ANALYST', 'OPERATOR', 'VIEWER'] as $role)
-                                    <x-dropdown-link :href="route('auto-login', ['role' => strtolower($role)])">
-                                        <span class="{{ Auth::user()->role === $role ? 'font-bold text-indigo-600' : '' }}">
-                                            {{ $role }}
-                                        </span>
-                                    </x-dropdown-link>
-                                @endforeach
 
                                 <div class="border-t border-gray-100"></div>
 
@@ -176,14 +158,14 @@
                 x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="translate-y-0 opacity-100" x-transition:leave-end="translate-y-2 opacity-0"
                 :class="{
-                    'bg-green-600': message.type === 'success',
-                    'bg-red-600': message.type === 'error',
-                    'bg-blue-600': message.type === 'info',
-                    'bg-yellow-600': message.type === 'warning'
+                    'bg-success': message.type === 'success',
+                    'bg-danger': message.type === 'error',
+                    'bg-info': message.type === 'info',
+                    'bg-warning': message.type === 'warning'
                 }"
                 class="text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between pointer-events-auto">
                 <span x-text="message.msg" class="text-sm font-medium"></span>
-                <button @click="remove(message.id)" class="ml-4 text-white/80 hover:text-white">
+                <button @click="remove(message.id)" class="ml-4 text-white/80 hover:text-white" aria-label="Dismiss notification">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />

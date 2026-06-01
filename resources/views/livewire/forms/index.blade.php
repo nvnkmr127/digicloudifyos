@@ -25,10 +25,10 @@
                         <span class="text-2xl font-black text-gray-900">{{ $form->submissions_count }}</span>
                     </div>
                     <div class="space-x-2">
-                        <x-button color="outline" class="p-2 rounded-xl">
+                        <x-button color="outline" class="p-2 rounded-xl" href="{{ route('forms.show', $form) }}" wire:navigate aria-label="View form">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         </x-button>
-                        <x-button color="outline" class="p-2 rounded-xl text-indigo-600">
+                        <x-button color="outline" class="p-2 rounded-xl text-indigo-600" href="{{ route('forms.submissions', $form) }}" wire:navigate aria-label="View submissions">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                         </x-button>
                     </div>
@@ -44,28 +44,4 @@
             </div>
         @endforelse
     </div>
-
-    <!-- Create Form Modal Stub -->
-    <x-modal name="create-form-modal">
-        <div class="p-10">
-            <h2 class="text-2xl font-black text-gray-900 tracking-tight mb-6 uppercase">Design New Form</h2>
-            <div class="space-y-6">
-                <div>
-                    <x-input-label>Form Name</x-input-label>
-                    <x-text-input class="w-full mt-2 rounded-2xl" placeholder="e.g., Q1 Lead Magnet" />
-                </div>
-                <div>
-                    <x-input-label>Goal / Description</x-input-label>
-                    <x-textarea class="w-full mt-2 rounded-2xl" placeholder="What is this form for?" rows="3"></x-textarea>
-                </div>
-                <div class="p-6 bg-indigo-50/50 rounded-[2rem] border border-indigo-100 border-dashed text-center">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2">Drag & Drop Builder</p>
-                    <span class="text-xs text-indigo-300 font-bold">Advanced Field Mapping Component Loads Here</span>
-                </div>
-            </div>
-            <div class="mt-10 flex justify-end">
-                <x-button color="primary" class="rounded-2xl px-10 py-4 shadow-xl shadow-indigo-100">Launch Form</x-button>
-            </div>
-        </div>
-    </x-modal>
 </x-app-container>

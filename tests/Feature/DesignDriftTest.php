@@ -36,6 +36,7 @@ class DesignDriftTest extends TestCase
 
             if (preg_match('/\bg-\[#|\btext-\[#|\bborder-\[#/i', $content)) {
                 $hexViolations[] = $file;
+
                 continue;
             }
 

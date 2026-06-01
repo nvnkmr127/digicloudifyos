@@ -30,4 +30,3 @@ class GenerateAiInsightsForClient implements ShouldQueue
         $aiInsightsService->generateForClient($this->clientId, $this->organizationId, $this->date);
     }
 }
-

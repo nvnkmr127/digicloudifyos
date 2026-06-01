@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Project;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Create extends Component
@@ -31,17 +32,28 @@ class Create extends Component
         ['description' => '', 'quantity' => 1, 'unit_price' => 0],
     ];
 
-    protected $rules = [
-        'client_id' => 'required|uuid|exists:clients,id',
-        'project_id' => 'nullable|uuid|exists:projects,id',
-        'invoice_number' => 'required|string',
-        'issue_date' => 'required|date',
-        'due_date' => 'required|date',
-        'status' => 'required|in:draft,sent,paid,overdue,void',
-        'items.*.description' => 'required|string',
-        'items.*.quantity' => 'required|numeric|min:0',
-        'items.*.unit_price' => 'required|numeric|min:0',
-    ];
+    protected function rules()
+    {
+        return [
+            'client_id' => [
+                'required',
+                'uuid',
+                Rule::exists('clients', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
+            'project_id' => [
+                'nullable',
+                'uuid',
+                Rule::exists('projects', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
+            'invoice_number' => 'required|string',
+            'issue_date' => 'required|date',
+            'due_date' => 'required|date',
+            'status' => 'required|in:draft,sent,paid,overdue,void',
+            'items.*.description' => 'required|string',
+            'items.*.quantity' => 'required|numeric|min:0',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ];
+    }
 
     public function getSubtotalProperty()
     {
@@ -75,37 +87,44 @@ class Create extends Component
     {
         $this->validate();
 
-        // Regenerate unique number at save time to avoid race conditions
-        $lastInvoice = Invoice::where('organization_id', Auth::user()->organization_id)->latest()->first();
-        $nextNum = $lastInvoice ? ((int) str_replace('INV-', '', $lastInvoice->invoice_number)) + 1 : 1;
-        $this->invoice_number = 'INV-'.str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+        $invoice = \DB::transaction(function () {
+            // Regenerate unique number at save time to avoid race conditions (B007)
+            $lastInvoice = Invoice::where('organization_id', Auth::user()->organization_id)
+                ->lockForUpdate()
+                ->latest()
+                ->first();
 
-        $subtotal = $this->subtotal;
+            $nextNum = $lastInvoice ? ((int) str_replace('INV-', '', $lastInvoice->invoice_number)) + 1 : 1;
+            $this->invoice_number = 'INV-'.str_pad($nextNum, 4, '0', STR_PAD_LEFT);
 
-        $invoice = Invoice::create([
-            'organization_id' => Auth::user()->organization_id,
-            'client_id' => $this->client_id,
-            'project_id' => $this->project_id ?: null,
-            'invoice_number' => $this->invoice_number,
-            'issue_date' => $this->issue_date,
-            'due_date' => $this->due_date,
-            'status' => $this->status,
-            'subtotal' => $subtotal,
-            'tax_amount' => 0, // Placeholder
-            'discount_amount' => 0, // Placeholder
-            'total_amount' => $subtotal,
-            'paid_amount' => 0,
-            'notes' => $this->notes,
-            'payment_terms' => $this->payment_terms,
-        ]);
+            $subtotal = collect($this->items)->sum(fn ($i) => $i['quantity'] * $i['unit_price']);
+
+            return Invoice::create([
+                'organization_id' => Auth::user()->organization_id,
+                'client_id' => $this->client_id,
+                'project_id' => $this->project_id ?: null,
+                'invoice_number' => $this->invoice_number,
+                'issue_date' => $this->issue_date,
+                'due_date' => $this->due_date,
+                'status' => $this->status,
+                'subtotal' => $subtotal,
+                'tax_amount' => 0,
+                'discount_amount' => 0,
+                'total_amount' => $subtotal,
+                'paid_amount' => 0,
+                'notes' => $this->notes,
+                'payment_terms' => $this->payment_terms,
+            ]);
+        });
 
         foreach ($this->items as $item) {
+            $amount = round($item['quantity'] * $item['unit_price'], 2);
             InvoiceItem::create([
                 'invoice_id' => $invoice->id,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
-                'amount' => $item['quantity'] * $item['unit_price'],
+                'amount' => $amount,
             ]);
         }
 

@@ -9,12 +9,19 @@ use Livewire\Component;
 class Edit extends Component
 {
     public Contact $contact;
+
     public $first_name;
+
     public $last_name;
+
     public $email;
+
     public $phone;
+
     public $company_name;
+
     public $type;
+
     public $tags = [];
 
     protected $rules = [

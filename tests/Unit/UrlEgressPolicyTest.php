@@ -23,4 +23,3 @@ class UrlEgressPolicyTest extends TestCase
         $policy->assertAllowed('https://user:pass@example.com/');
     }
 }
-

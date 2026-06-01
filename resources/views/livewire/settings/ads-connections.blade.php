@@ -24,14 +24,14 @@
     "
 >
     @if (session()->has('success'))
-        <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm font-medium">
+        <x-alert type="success" class="mb-4">
             {{ session('success') }}
-        </div>
+        </x-alert>
     @endif
     @if (session()->has('error'))
-        <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm font-medium">
+        <x-alert type="error" class="mb-4">
             {{ session('error') }}
-        </div>
+        </x-alert>
     @endif
     <div class="border-b border-gray-100 pb-4 mb-6 flex justify-between items-center">
         <div>
@@ -181,7 +181,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-sm text-text-muted italic font-medium">
+                                <td colspan="7" class="px-6 py-10 text-center text-sm text-text-muted italic font-medium">
                                     No ad accounts linked yet. Use the sync feature to import accounts.
                                 </td>
                             </tr>
@@ -225,7 +225,7 @@
                         
                         <div wire:loading.remove wire:target="openPageSelector" class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                             @forelse($pages as $page)
-                                <button wire:click="connectPage('{{ $page['id'] }}', '{{ $page['access_token'] }}')" wire:loading.attr="disabled" wire:target="connectPage" class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-primary-50 hover:border-primary-100 hover:scale-[1.02] transition-all group">
+                                <button wire:click="connectPage('{{ $page['id'] }}')" wire:loading.attr="disabled" wire:target="connectPage" class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-primary-50 hover:border-primary-100 hover:scale-[1.02] transition-all group">
                                     <div class="flex items-center gap-4">
                                         <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary font-black group-hover:bg-primary group-hover:text-white transition cursor-pointer">
                                             {{ substr($page['name'], 0, 1) }}

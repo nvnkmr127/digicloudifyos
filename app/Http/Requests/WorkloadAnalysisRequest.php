@@ -21,4 +21,3 @@ class WorkloadAnalysisRequest extends FormRequest
         ];
     }
 }
-

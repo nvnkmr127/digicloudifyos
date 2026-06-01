@@ -20,7 +20,7 @@ class Index extends Component
         $projectsCount = Project::where('organization_id', $orgId)->count();
 
         // Calculate a dummy conversion rate / cac based on clients
-        $conversionRate = $clientsCount > 0 ? 65 : 0; 
+        $conversionRate = $clientsCount > 0 ? 65 : 0;
         $cac = 450;
 
         return view('livewire.analytics.index', [

@@ -9,43 +9,63 @@ use Livewire\Component;
 class OnboardingWizard extends Component
 {
     public Client $client;
+
     public int $currentStep = 1;
+
     public int $totalSteps = 5;
+
     public array $stepTitles = [
         1 => 'Company Profile',
         2 => 'Global Configuration',
         3 => 'Strategic Goals',
         4 => 'Compliance & Status',
-        5 => 'Next Steps & Checklist'
+        5 => 'Next Steps & Checklist',
     ];
 
     // Step 1: Business Profile
     public $industry = '';
+
     public $website_url = '';
+
     public $phone = '';
+
     public $business_description = '';
 
     // Step 2: Address & Config
     public $timezone = '';
+
     public $currency_code = '';
+
     public $address_line1 = '';
+
     public $address_line2 = '';
+
     public $city = '';
+
     public $state = '';
+
     public $postal_code = '';
+
     public $country_code = '';
 
     // Step 3: Strategy
     public $goalsText = '';
+
     public $targetAudienceText = '';
+
     public $competitorsText = '';
+
     public $primaryKpisText = '';
 
     // Step 4: Compliance & Status
     public $gdpr_consent = false;
+
     public $ccpa_opt_out = false;
+
     public $data_retention_days = null;
+
     public $privacy_contact_email = '';
+
     public $status = 'ACTIVE';
 
     public function mount(Client $client)
@@ -55,13 +75,13 @@ class OnboardingWizard extends Component
         }
 
         $this->client = $client;
-        
+
         // Pre-fill from existing data if any
         $this->industry = $client->industry;
         $this->website_url = $client->website_url;
         $this->phone = $client->phone;
         $this->business_description = $client->business_description;
-        
+
         $this->timezone = $client->timezone;
         $this->currency_code = $client->currency_code;
         $this->address_line1 = $client->address_line1;
@@ -122,7 +142,7 @@ class OnboardingWizard extends Component
     public function nextStep()
     {
         $this->validate($this->stepRules()[$this->currentStep]);
-        
+
         $this->saveCurrentStepData();
 
         if ($this->currentStep < $this->totalSteps) {
@@ -171,8 +191,8 @@ class OnboardingWizard extends Component
             ];
         } elseif ($this->currentStep === 4) {
             $data = [
-                'gdpr_consent_at' => $this->gdpr_consent ? now() : null,
-                'ccpa_opt_out_at' => $this->ccpa_opt_out ? now() : null,
+                'gdpr_consent_at' => $this->gdpr_consent ? ($this->client->gdpr_consent_at ?? now()) : null,
+                'ccpa_opt_out_at' => $this->ccpa_opt_out ? ($this->client->ccpa_opt_out_at ?? now()) : null,
                 'data_retention_days' => $this->data_retention_days,
                 'privacy_contact_email' => $this->privacy_contact_email,
                 'status' => $this->status,

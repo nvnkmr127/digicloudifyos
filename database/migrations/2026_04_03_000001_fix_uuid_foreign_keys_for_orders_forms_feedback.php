@@ -15,7 +15,10 @@ return new class extends Migration
 
         if (Schema::hasTable('forms') && Schema::hasColumn('forms', 'organization_id')) {
             Schema::table('forms', function (Blueprint $table) {
-                try { $table->dropForeign(['organization_id']); } catch (\Throwable $e) {}
+                try {
+                    $table->dropForeign(['organization_id']);
+                } catch (Throwable $e) {
+                }
                 $table->uuid('organization_id')->change();
                 $table->foreign('organization_id')->references('id')->on('organizations')->cascadeOnDelete();
             });
@@ -23,8 +26,14 @@ return new class extends Migration
 
         if (Schema::hasTable('feedback') && Schema::hasColumn('feedback', 'organization_id')) {
             Schema::table('feedback', function (Blueprint $table) {
-                try { $table->dropForeign(['organization_id']); } catch (\Throwable $e) {}
-                try { $table->dropForeign(['user_id']); } catch (\Throwable $e) {}
+                try {
+                    $table->dropForeign(['organization_id']);
+                } catch (Throwable $e) {
+                }
+                try {
+                    $table->dropForeign(['user_id']);
+                } catch (Throwable $e) {
+                }
                 $table->uuid('organization_id')->change();
                 $table->uuid('user_id')->nullable()->change();
                 $table->foreign('organization_id')->references('id')->on('organizations')->cascadeOnDelete();
@@ -34,8 +43,14 @@ return new class extends Migration
 
         if (Schema::hasTable('orders') && Schema::hasColumn('orders', 'organization_id')) {
             Schema::table('orders', function (Blueprint $table) {
-                try { $table->dropForeign(['organization_id']); } catch (\Throwable $e) {}
-                try { $table->dropForeign(['client_id']); } catch (\Throwable $e) {}
+                try {
+                    $table->dropForeign(['organization_id']);
+                } catch (Throwable $e) {
+                }
+                try {
+                    $table->dropForeign(['client_id']);
+                } catch (Throwable $e) {
+                }
                 $table->uuid('organization_id')->change();
                 $table->uuid('client_id')->nullable()->change();
                 $table->foreign('organization_id')->references('id')->on('organizations')->cascadeOnDelete();
@@ -44,8 +59,5 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };
-

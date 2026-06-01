@@ -175,13 +175,17 @@ class SiteAuditService
 
     protected function fetchHtml(string $url): ?string
     {
+        // Security: Limit response size to 5MB to prevent memory exhaustion (I003)
         $resp = Http::timeout(15)
             ->retry(2, 200)
-            ->withOptions(['allow_redirects' => false])
+            ->withOptions([
+                'allow_redirects' => false,
+                'max_body_size' => 5 * 1024 * 1024,
+            ])
             ->withHeaders([
-            'User-Agent' => 'DCOS-SiteAudit/1.0',
-            'Accept' => 'text/html,application/xhtml+xml',
-        ])->get($url);
+                'User-Agent' => 'DCOS-SiteAudit/1.0',
+                'Accept' => 'text/html,application/xhtml+xml',
+            ])->get($url);
 
         if ($resp->failed()) {
             return null;

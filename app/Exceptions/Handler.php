@@ -146,6 +146,7 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof HttpException && $exception->getStatusCode() < 500) {
             $msg = $exception->getMessage();
+
             return is_string($msg) && $msg !== '' ? $msg : 'An error occurred while processing your request.';
         }
 

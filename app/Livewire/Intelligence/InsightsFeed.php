@@ -29,12 +29,24 @@ class InsightsFeed extends Component
 
     public function dismiss($id)
     {
+        if (auth()->user()->hasRole('VIEWER')) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'You do not have permission to dismiss insights.']);
+
+            return;
+        }
+
         $insight = AiInsight::where('organization_id', auth()->user()->organization_id)->findOrFail($id);
         $insight->dismiss(auth()->id());
     }
 
     public function complete($id)
     {
+        if (auth()->user()->hasRole('VIEWER')) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'You do not have permission to complete insights.']);
+
+            return;
+        }
+
         $insight = AiInsight::where('organization_id', auth()->user()->organization_id)->findOrFail($id);
         $insight->complete(auth()->id());
     }

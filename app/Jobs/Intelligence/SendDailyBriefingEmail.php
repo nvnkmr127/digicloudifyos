@@ -7,6 +7,7 @@ use App\Models\DailyBriefing;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -14,13 +15,12 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-use Illuminate\Contracts\Queue\ShouldBeUnique;
-
-class SendDailyBriefingEmail implements ShouldQueue, ShouldBeUnique
+class SendDailyBriefingEmail implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 300;
 
     /**

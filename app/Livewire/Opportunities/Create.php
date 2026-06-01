@@ -7,6 +7,7 @@ use App\Models\Opportunity;
 use App\Models\Pipeline;
 use App\Models\PipelineStage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Create extends Component
@@ -23,13 +24,27 @@ class Create extends Component
 
     public $status = 'open';
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'monetary_value' => 'required|numeric|min:0',
-        'pipeline_id' => 'required',
-        'pipeline_stage_id' => 'required',
-        'contact_id' => 'nullable',
-    ];
+    protected function rules()
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'monetary_value' => 'required|numeric|min:0',
+            'pipeline_id' => [
+                'required',
+                Rule::exists('pipelines', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
+            'pipeline_stage_id' => [
+                'required',
+                Rule::exists('pipeline_stages', 'id')->whereHas('pipeline', function ($q) {
+                    $q->where('organization_id', Auth::user()->organization_id);
+                }),
+            ],
+            'contact_id' => [
+                'nullable',
+                Rule::exists('contacts', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
+        ];
+    }
 
     public function mount()
     {

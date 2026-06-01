@@ -41,4 +41,3 @@ class SetupAdsAutomationsTest extends TestCase
         }
     }
 }
-

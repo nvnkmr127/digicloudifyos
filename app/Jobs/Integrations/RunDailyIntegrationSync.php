@@ -16,6 +16,7 @@ class RunDailyIntegrationSync implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 300;
 
     public function __construct(public ?string $date = null)

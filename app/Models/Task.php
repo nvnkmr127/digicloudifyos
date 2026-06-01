@@ -13,6 +13,30 @@ class Task extends Model
 {
     use HasFactory, HasUuids, OrganizationScoped;
 
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_IN_PROGRESS = 'in_progress';
+
+    public const STATUS_REVIEW = 'review';
+
+    public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_BLOCKED = 'blocked';
+
+    /**
+     * Get all available statuses with their metadata.
+     */
+    public static function getStatuses(): array
+    {
+        return [
+            self::STATUS_PENDING => ['title' => 'Pending', 'color' => 'bg-gray-100'],
+            self::STATUS_IN_PROGRESS => ['title' => 'In Progress', 'color' => 'bg-blue-100'],
+            self::STATUS_REVIEW => ['title' => 'Review', 'color' => 'bg-purple-100'],
+            self::STATUS_COMPLETED => ['title' => 'Completed', 'color' => 'bg-green-100'],
+            self::STATUS_BLOCKED => ['title' => 'Blocked', 'color' => 'bg-red-100'],
+        ];
+    }
+
     protected $fillable = [
         'organization_id',
         'client_id',

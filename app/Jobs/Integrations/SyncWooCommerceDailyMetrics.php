@@ -5,8 +5,8 @@ namespace App\Jobs\Integrations;
 use App\Models\ClientChannelConnection;
 use App\Models\IntegrationSyncRun;
 use App\Models\WooCommerceDailyMetric;
-use App\Services\UrlEgressPolicy;
 use App\Services\Integrations\IntegrationAlertService;
+use App\Services\UrlEgressPolicy;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -86,11 +86,11 @@ class SyncWooCommerceDailyMetrics implements ShouldQueue
                 ->retry(2, 200)
                 ->withOptions(['allow_redirects' => false])
                 ->get("{$storeUrl}/wp-json/wc/v3/reports/sales", [
-                'date_min' => $start,
-                'date_max' => $end,
-                'consumer_key' => $consumerKey,
-                'consumer_secret' => $consumerSecret,
-            ]);
+                    'date_min' => $start,
+                    'date_max' => $end,
+                    'consumer_key' => $consumerKey,
+                    'consumer_secret' => $consumerSecret,
+                ]);
 
             if ($report->failed()) {
                 throw new \RuntimeException('WooCommerce sales report failed.');

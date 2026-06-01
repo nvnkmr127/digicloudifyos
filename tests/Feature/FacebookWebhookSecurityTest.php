@@ -37,4 +37,3 @@ class FacebookWebhookSecurityTest extends TestCase
             ->assertStatus(401);
     }
 }
-

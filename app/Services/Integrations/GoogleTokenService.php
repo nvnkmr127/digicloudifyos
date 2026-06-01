@@ -29,11 +29,11 @@ class GoogleTokenService
             ->timeout(15)
             ->retry(2, 200)
             ->post('https://oauth2.googleapis.com/token', [
-            'client_id' => config('services.google.client_id', ''),
-            'client_secret' => config('services.google.client_secret', ''),
-            'grant_type' => 'refresh_token',
-            'refresh_token' => $credential->refresh_token,
-        ]);
+                'client_id' => config('services.google.client_id', ''),
+                'client_secret' => config('services.google.client_secret', ''),
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $credential->refresh_token,
+            ]);
 
         if ($response->failed()) {
             throw new \RuntimeException('Token refresh failed.');

@@ -12,6 +12,8 @@ class Notification extends Model
 {
     use HasFactory, HasUuids, OrganizationScoped;
 
+    protected $table = 'app_notifications';
+
     protected $fillable = [
         'organization_id',
         'trigger',

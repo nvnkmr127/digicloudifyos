@@ -21,6 +21,7 @@ class FacebookConnection extends Model
 
     protected $casts = [
         'token_expires' => 'datetime',
+        'access_token' => 'encrypted',
     ];
 
     public function user(): BelongsTo

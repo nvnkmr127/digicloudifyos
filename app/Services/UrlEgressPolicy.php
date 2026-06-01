@@ -224,4 +224,3 @@ class UrlEgressPolicy
         return (ord($ipBin[$bytes]) & ord($mask)) === (ord($cidrBin[$bytes]) & ord($mask));
     }
 }
-

@@ -24,4 +24,3 @@ enum TaskPriority: string
         return array_map(fn (self $p) => $p->value, self::cases());
     }
 }
-

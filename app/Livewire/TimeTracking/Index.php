@@ -21,18 +21,62 @@ class Index extends Component
 
     public function mount()
     {
-        $this->activeTimer = TimeEntry::where('organization_id', Auth::user()->organization_id)
-            ->whereNull('end_at')
-            ->first();
+        $user = Auth::user();
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if ($employee) {
+            $this->activeTimer = TimeEntry::where('organization_id', $user->organization_id)
+                ->where('employee_id', $employee->id)
+                ->whereNull('end_at')
+                ->first();
+        }
     }
 
+    /**
+     * Start a new time entry, ensuring no other timers are running for the user.
+     *
+     * @return void
+     */
     public function startTimer()
     {
         $user = Auth::user();
         $employee = Employee::where('user_id', $user->id)->first();
 
         if (! $employee) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Employee record not found.']);
+
             return;
+        }
+
+        // Prevent multiple active timers (B011)
+        $existing = TimeEntry::where('employee_id', $employee->id)->whereNull('end_at')->exists();
+        if ($existing) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'You already have an active timer running.']);
+
+            return;
+        }
+
+        // Enforce organization scoping (B012)
+        if ($this->projectId) {
+            $projectExists = Project::where('id', $this->projectId)
+                ->where('organization_id', $user->organization_id)
+                ->exists();
+            if (! $projectExists) {
+                $this->dispatch('notify', ['type' => 'error', 'message' => 'Invalid project selected.']);
+
+                return;
+            }
+        }
+
+        if ($this->taskId) {
+            $taskExists = Task::where('id', $this->taskId)
+                ->where('organization_id', $user->organization_id)
+                ->exists();
+            if (! $taskExists) {
+                $this->dispatch('notify', ['type' => 'error', 'message' => 'Invalid task selected.']);
+
+                return;
+            }
         }
 
         $this->activeTimer = TimeEntry::create([
@@ -48,6 +92,7 @@ class Index extends Component
 
         $this->description = '';
         $this->taskId = '';
+        $this->projectId = '';
     }
 
     public function startFromTask(string $taskId): void
@@ -56,10 +101,9 @@ class Index extends Component
             return;
         }
 
-        $task = Task::with('project')->find($taskId);
-        if (! $task) {
-            return;
-        }
+        $task = Task::where('organization_id', Auth::user()->organization_id)
+            ->with('project')
+            ->findOrFail($taskId);
 
         $this->projectId = $task->project_id ?: '';
         $this->taskId = $task->id;

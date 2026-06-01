@@ -96,4 +96,3 @@ class ClientWorkspace extends Component
         ])->layout('layouts.app');
     }
 }
-

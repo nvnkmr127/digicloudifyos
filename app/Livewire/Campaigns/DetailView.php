@@ -19,22 +19,63 @@ class DetailView extends Component
 
     public $activeTab = 'creative'; // Default tab: creative, adsets, performance, audience
 
-    public function mount($id)
+    public $selectedAd = null;
+
+    public $showAdModal = false;
+
+    public function showAdPreview($adId)
     {
-        $this->loadCampaign($id);
+        $this->selectedAd = \App\Models\Ad::with('adCreative')
+            ->where('id', $adId)
+            ->where('organization_id', auth()->user()->organization_id)
+            ->firstOrFail();
+        $this->showAdModal = true;
+    }
+
+    public function mount(Campaign $campaign)
+    {
+        $this->loadCampaign($campaign->id);
     }
 
     protected function loadCampaign($id)
     {
-        $this->campaign = Campaign::with(['client', 'adAccount', 'creativeRequests', 'tasks', 'adSets.ads', 'dailyMetrics', 'facebookLeads', 'audienceInsights'])
-            ->findOrFail($id);
+        // Enforce organization scoping early to prevent unauthorized DB load (B029)
+        $this->campaign = Campaign::where('id', $id)
+            ->where('organization_id', auth()->user()->organization_id)
+            ->firstOrFail();
 
         $this->authorize('view', $this->campaign);
+
+        // Load only core relations; others are deferred to setTab (B026)
+        $this->campaign->load(['client', 'adAccount']);
+
+        // Load initial tab data
+        $this->loadTabData();
     }
 
+    /**
+     * Set the active tab and load associated data if needed.
+     */
     public function setTab($tab)
     {
         $this->activeTab = $tab;
+        $this->loadTabData();
+    }
+
+    /**
+     * Efficiently handle deferred loading of tab-specific relationships (B026)
+     */
+    protected function loadTabData()
+    {
+        match ($this->activeTab) {
+            'creative' => $this->campaign->load('creativeRequests'),
+            'adsets' => $this->campaign->load('adSets.ads'),
+            'performance' => $this->campaign->load('adInsights'),
+            'audience' => $this->campaign->load('audienceInsights'),
+            'tasks' => $this->campaign->load('tasks'),
+            'leads' => $this->campaign->load('facebookLeads'),
+            default => null
+        };
     }
 
     public function syncMetrics()
@@ -72,21 +113,43 @@ class DetailView extends Component
     {
         $this->authorize('delete', $this->campaign);
         $service = $this->getService();
-        if ($service && $service->deleteCampaign($this->campaign)) {
-            return redirect()->route('campaigns.index')->with('message', 'Campaign deleted successfully.');
-        } else {
-            session()->flash('error', 'Failed to delete campaign.');
+
+        $platformDeleted = false;
+        if ($service) {
+            try {
+                $platformDeleted = $service->deleteCampaign($this->campaign);
+            } catch (\Exception $e) {
+                \Log::warning('Platform campaign deletion failed for ID: '.$this->campaign?->id.'. Error: '.$e->getMessage());
+            }
         }
+
+        // Atomicity Patch: Always ensure local deletion if it was a draft or platform delete was attempted
+        if (! $this->campaign->external_campaign_id || $platformDeleted) {
+            if ($this->campaign->exists) {
+                $this->campaign->delete();
+            }
+
+            return redirect()->route('campaigns.index')->with('success', 'Campaign removed successfully.');
+        }
+
+        // If it had an external ID but service failed, still allow local-only delete with specific flag
+        if ($this->campaign->exists) {
+            $this->campaign->delete();
+
+            return redirect()->route('campaigns.index')->with('success', 'Campaign removed locally (platform deletion may have failed).');
+        }
+
+        return redirect()->route('campaigns.index')->with('error', 'Failed to remove campaign.');
     }
 
     protected function getService()
     {
         $platform = $this->campaign->adAccount->platform ?? null;
 
-        return match ($platform) {
-            'META_ADS' => new MetaAdsService,
-            'GOOGLE_ADS' => new GoogleAdsService,
-            'LINKEDIN_ADS' => new LinkedInAdsService,
+        return match (strtoupper($platform)) {
+            'META_ADS', 'META', 'FACEBOOK' => new MetaAdsService,
+            'GOOGLE_ADS', 'GOOGLE' => new GoogleAdsService,
+            'LINKEDIN_ADS', 'LINKEDIN' => new LinkedInAdsService,
             default => null,
         };
     }

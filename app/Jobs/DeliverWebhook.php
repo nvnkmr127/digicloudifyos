@@ -5,13 +5,13 @@ namespace App\Jobs;
 use App\Models\Webhook;
 use App\Services\WebhookService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 
-class DeliverWebhook implements ShouldQueue, ShouldBeUnique
+class DeliverWebhook implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -31,7 +31,7 @@ class DeliverWebhook implements ShouldQueue, ShouldBeUnique
 
     public function uniqueId(): string
     {
-        return $this->webhook->id . ':' . $this->event . ':' . md5(json_encode($this->payload));
+        return $this->webhook->id.':'.$this->event.':'.md5(json_encode($this->payload));
     }
 
     public function handle(WebhookService $webhookService): void

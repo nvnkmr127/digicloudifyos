@@ -105,6 +105,27 @@ class KanbanBoard extends Component
         }
     }
 
+    public function deleteLead($leadId)
+    {
+        try {
+            $lead = Lead::findOrFail($leadId);
+            $this->authorize('delete', $lead);
+
+            $lead->delete();
+            $this->refreshLeads();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Lead removed successfully',
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to delete lead: '.$e->getMessage(),
+            ]);
+        }
+    }
+
     public function clearFilters()
     {
         $this->sourceFilter = 'all';

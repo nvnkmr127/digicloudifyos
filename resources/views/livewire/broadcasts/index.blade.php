@@ -101,6 +101,22 @@
                         <x-input-error :messages="$errors->get('content_body')" class="mt-2" />
                     </div>
 
+                    @if($channel === 'EMAIL')
+                        <div class="col-span-2">
+                            <x-input-label for="content_subject">Email Subject</x-input-label>
+                            <x-text-input wire:model="content_subject" id="content_subject" class="w-full mt-2 rounded-2xl" placeholder="e.g. Important Update for You" />
+                            <x-input-error :messages="$errors->get('content_subject')" class="mt-2" />
+                        </div>
+                    @endif
+
+                    @if($channel === 'WHATSAPP')
+                        <div class="col-span-2">
+                            <x-input-label for="whatsapp_template">WhatsApp Template Name</x-input-label>
+                            <x-text-input wire:model="whatsapp_template" id="whatsapp_template" class="w-full mt-2 rounded-2xl" placeholder="e.g. marketing_update_q2" />
+                            <x-input-error :messages="$errors->get('whatsapp_template')" class="mt-2" />
+                        </div>
+                    @endif
+
                     <div>
                         <x-input-label for="automation_rule_id">Follow-up Automation</x-input-label>
                         <x-select wire:model="automation_rule_id" id="automation_rule_id" class="w-full mt-2 rounded-2xl">

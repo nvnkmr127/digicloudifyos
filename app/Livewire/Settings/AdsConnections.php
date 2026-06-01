@@ -111,7 +111,9 @@ class AdsConnections extends Component
         $account = AdAccount::where('organization_id', Auth::user()?->organization_id)->findOrFail($accountId);
 
         try {
-            $this->pages = app(MetaAdsService::class)->getPages($account->access_token)->toArray();
+            // Only expose id and name to the frontend to prevent token leakage (B025)
+            $allPages = app(MetaAdsService::class)->getPages($account->access_token);
+            $this->pages = $allPages->map(fn ($p) => ['id' => $p['id'], 'name' => $p['name']])->toArray();
         } catch (\Throwable $e) {
             Log::warning('Failed to fetch Meta pages for selector: '.$e->getMessage());
             $this->pageSelectorError = 'Failed to load pages from Meta. Please try again.';
@@ -120,12 +122,23 @@ class AdsConnections extends Component
         $this->showPageSelector = true;
     }
 
-    public function connectPage($pageId, $pageToken)
+    public function connectPage($pageId)
     {
         $account = AdAccount::where('organization_id', Auth::user()?->organization_id)->findOrFail($this->selectedAccountId);
+
+        // Re-fetch only the required page token from Meta securely (B025)
+        $allPages = app(MetaAdsService::class)->getPages($account->access_token);
+        $targetPage = $allPages->firstWhere('id', $pageId);
+
+        if (! $targetPage) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Requested page not found in your Meta account.']);
+
+            return;
+        }
+
         $account->update([
             'facebook_page_id' => $pageId,
-            'facebook_page_token' => $pageToken,
+            'facebook_page_token' => $targetPage['access_token'], // Already encrypted by model cast
         ]);
 
         $this->showPageSelector = false;

@@ -56,8 +56,19 @@ class AdsIntegrationController extends Controller
         // For now, we'll try to get client_id from session or default if not provided
         $clientId = session('current_connect_client_id');
 
+        if ($clientId) {
+            // I006: Verify client belongs to organization to prevent cross-tenant association
+            $isValidClient = Client::where('id', $clientId)
+                ->where('organization_id', $organizationId)
+                ->exists();
+
+            if (! $isValidClient) {
+                $clientId = null;
+            }
+        }
+
         if (! $clientId) {
-            // Fallback: use first available client or throw error
+            // Fallback: use first available client scoped to organization
             $client = Client::where('organization_id', $organizationId)->first();
             $clientId = $client ? $client->id : null;
         }

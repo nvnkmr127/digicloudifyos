@@ -77,18 +77,18 @@ class SyncGoogleAnalyticsDailyMetrics implements ShouldQueue
                 ->timeout(30)
                 ->retry(2, 200)
                 ->post("https://analyticsdata.googleapis.com/v1beta/properties/{$propertyId}:runReport", [
-                'dateRanges' => [
-                    ['startDate' => $date, 'endDate' => $date],
-                ],
-                'metrics' => [
-                    ['name' => 'sessions'],
-                    ['name' => 'totalUsers'],
-                    ['name' => 'newUsers'],
-                    ['name' => 'engagedSessions'],
-                    ['name' => 'conversions'],
-                    ['name' => 'purchaseRevenue'],
-                ],
-            ]);
+                    'dateRanges' => [
+                        ['startDate' => $date, 'endDate' => $date],
+                    ],
+                    'metrics' => [
+                        ['name' => 'sessions'],
+                        ['name' => 'totalUsers'],
+                        ['name' => 'newUsers'],
+                        ['name' => 'engagedSessions'],
+                        ['name' => 'conversions'],
+                        ['name' => 'purchaseRevenue'],
+                    ],
+                ]);
 
             if ($report->failed()) {
                 throw new \RuntimeException('GA4 report failed.');

@@ -4,7 +4,9 @@ namespace App\Livewire\Automations;
 
 use App\Models\WorkflowAction;
 use App\Models\WorkflowRule;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Builder extends Component
@@ -78,34 +80,62 @@ class Builder extends Component
         $this->conditions = array_values($this->conditions);
     }
 
+    /**
+     * Store or update the automation rule with transactional safety.
+     *
+     * @return RedirectResponse
+     */
     public function save()
     {
         $this->validate();
 
-        $rule = WorkflowRule::updateOrCreate(
-            ['name' => $this->name, 'organization_id' => Auth::user()->organization_id],
-            [
-                'description' => $this->description,
-                'event_type' => $this->event_type,
-                'is_active' => $this->is_active,
-                'conditions' => $this->conditions,
-            ]
-        );
+        return DB::transaction(function () {
+            // Check for direct recursion (B008 prevention)
+            foreach ($this->actions as $action) {
+                if ($action['type'] === 'update_status' && str_contains($this->event_type, 'changed')) {
+                    // This is a coarse check, but handles the most common infinite loop case
+                    $this->addError('event_type', 'Circular triggers (updating status on a status change event) are restricted to prevent infinite loops.');
 
-        // Simple sync: delete old and create new (MVP style)
-        $rule->actions()->delete();
+                    return null;
+                }
+            }
 
-        foreach ($this->actions as $actionData) {
-            WorkflowAction::create([
-                'workflow_rule_id' => $rule->id,
-                'action_type' => $actionData['type'],
-                'config' => $actionData['config'],
-            ]);
-        }
+            $rule = WorkflowRule::updateOrCreate(
+                ['name' => $this->name, 'organization_id' => Auth::user()->organization_id],
+                [
+                    'description' => $this->description,
+                    'event_type' => $this->event_type,
+                    'is_active' => $this->is_active,
+                    'conditions' => $this->conditions,
+                ]
+            );
 
-        session()->flash('message', 'Automation rule saved successfully.');
+            // B006: Non-destructive sync (preserve IDs for stable history/logs)
+            $existingActionIds = $rule->actions()->pluck('id')->toArray();
+            $newActionIds = [];
 
-        return redirect()->route('automations.index');
+            foreach ($this->actions as $actionData) {
+                $action = WorkflowAction::updateOrCreate(
+                    [
+                        'id' => $actionData['id'] ?? null,
+                        'workflow_rule_id' => $rule->id,
+                    ],
+                    [
+                        'action_type' => $actionData['type'],
+                        'config' => $actionData['config'],
+                    ]
+                );
+                $newActionIds[] = $action->id;
+            }
+
+            // Clean up removed actions
+            $toDelete = array_diff($existingActionIds, $newActionIds);
+            WorkflowAction::whereIn('id', $toDelete)->delete();
+
+            session()->flash('message', 'Automation rule saved successfully.');
+
+            return redirect()->route('automations.index');
+        });
     }
 
     public function render()

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Client;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Organization;
 use App\Models\Product;
-use App\Models\Client;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

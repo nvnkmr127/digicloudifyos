@@ -1,10 +1,10 @@
 <div class="relative" x-data="{ open: false }">
-    <button @click="open = !open" class="relative p-2 text-gray-500 hover:text-primary transition duration-150 focus:outline-none">
+    <button @click="open = !open" class="relative p-2 text-gray-500 hover:text-primary transition duration-150 focus:outline-none" aria-label="Notifications">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
         </svg>
         @if($unreadCount > 0)
-            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full border-2 border-white">
+            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-danger rounded-full border-2 border-white">
                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}
             </span>
         @endif
@@ -50,7 +50,7 @@
             @endforelse
         </div>
         <div class="p-3 bg-gray-50 text-center border-t border-gray-100">
-            <a href="{{ route('notifications.index') }}" class="text-[10px] font-bold text-primary hover:text-indigo-700 uppercase tracking-widest">View All Notifications</a>
+            <a href="{{ route('notifications.index') }}" class="text-[10px] font-bold text-primary hover:text-primary-hover uppercase tracking-widest">View All Notifications</a>
         </div>
     </div>
 </div>

@@ -11,15 +11,15 @@ class ArchitectureTest extends TestCase
      */
     public function test_models_do_not_depend_on_delivery_or_application_layers(): void
     {
-        // For a full Pest implementation: 
+        // For a full Pest implementation:
         // expect('App\Models')->toOnlyUse('Illuminate\Database\Eloquent', 'Illuminate\Support');
-        
+
         $this->assertLayerIndependence('app/Models', [
             'App\Http\\',
             'App\Livewire\\',
             'App\Console\\',
             'App\Services\\',
-            'App\Jobs\\'
+            'App\Jobs\\',
         ]);
     }
 
@@ -31,7 +31,7 @@ class ArchitectureTest extends TestCase
         $this->assertLayerIndependence('app/Services', [
             'App\Http\Controllers\\',
             'App\Livewire\\',
-            'App\Console\\'
+            'App\Console\\',
         ]);
     }
 
@@ -43,7 +43,7 @@ class ArchitectureTest extends TestCase
         $this->assertLayerIndependence('app/Jobs', [
             'App\Http\Controllers\\',
             'App\Livewire\\',
-            'App\Console\\'
+            'App\Console\\',
         ]);
     }
 
@@ -69,12 +69,12 @@ class ArchitectureTest extends TestCase
 
             foreach ($forbiddenNamespaces as $namespace) {
                 // Look for "use App\Forbidden\Namespace"
-                if (preg_match('/^use\s+' . preg_quote($namespace, '/') . '/m', $content)) {
+                if (preg_match('/^use\s+'.preg_quote($namespace, '/').'/m', $content)) {
                     $violations[] = "File {$file->getFilename()} imports forbidden namespace {$namespace}";
                 }
             }
         }
 
-        $this->assertEmpty($violations, "Architectural boundary violations found:\n" . implode("\n", $violations));
+        $this->assertEmpty($violations, "Architectural boundary violations found:\n".implode("\n", $violations));
     }
 }

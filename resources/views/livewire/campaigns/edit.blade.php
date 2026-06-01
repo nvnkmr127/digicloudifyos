@@ -92,9 +92,20 @@
                 </div>
             </div>
 
-            <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <x-button color="outline" href="{{ route('campaigns.index') }}" wire:navigate>Cancel</x-button>
-                <x-button color="primary" type="submit">Update Campaign</x-button>
+            <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                <x-button 
+                    type="button"
+                    color="danger" 
+                    wire:click="delete" 
+                    wire:confirm="Are you sure you want to delete this campaign? This action cannot be undone."
+                    class="rounded-xl"
+                >
+                    Delete Campaign
+                </x-button>
+                <div class="flex gap-3">
+                    <x-button color="outline" href="{{ route('campaigns.index') }}" wire:navigate class="rounded-xl">Cancel</x-button>
+                    <x-button color="primary" type="submit" class="rounded-xl shadow-md">Update Campaign</x-button>
+                </div>
             </div>
         </form>
     </x-card>

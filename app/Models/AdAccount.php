@@ -47,7 +47,7 @@ class AdAccount extends Model
 
     protected $casts = [
         'token_expires_at' => 'datetime',
-        'credentials' => 'array',
+        'credentials' => 'encrypted:array',
         'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',
         'facebook_page_token' => 'encrypted',

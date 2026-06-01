@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Campaigns;
 
-use App\Enums\CampaignStatus;
 use App\Enums\CampaignObjective;
+use App\Enums\CampaignStatus;
 use App\Models\AdAccount;
 use App\Models\Campaign;
 use App\Models\Client;
+use App\Services\CampaignService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
@@ -85,6 +86,17 @@ class Edit extends Component
         ]);
 
         session()->flash('success', 'Campaign updated successfully.');
+
+        return redirect()->route('campaigns.index');
+    }
+
+    public function delete(CampaignService $service)
+    {
+        $this->authorize('delete', $this->campaign);
+
+        $service->delete($this->campaign);
+
+        session()->flash('success', 'Campaign deleted successfully.');
 
         return redirect()->route('campaigns.index');
     }

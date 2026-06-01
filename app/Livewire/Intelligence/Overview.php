@@ -5,6 +5,7 @@ namespace App\Livewire\Intelligence;
 use App\Models\AiInsight;
 use App\Models\Client;
 use App\Models\PerformanceAnomaly;
+use App\Models\PerformanceSnapshot;
 use Livewire\Component;
 
 class Overview extends Component
@@ -12,7 +13,7 @@ class Overview extends Component
     public function render()
     {
         $orgId = auth()->user()->organization_id;
-        $lastSync = \App\Models\PerformanceSnapshot::where('organization_id', $orgId)->latest()->first()?->created_at;
+        $lastSync = PerformanceSnapshot::where('organization_id', $orgId)->latest()->first()?->created_at;
         $activeAlertsCount = PerformanceAnomaly::where('organization_id', $orgId)->unresolved()->count();
 
         return view('livewire.intelligence.overview', [

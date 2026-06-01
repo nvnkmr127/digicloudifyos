@@ -14,6 +14,8 @@ use App\Models\WorkflowAction;
 use App\Models\WorkflowEvent;
 use App\Models\WorkflowRule;
 use App\Services\LeadScoringService;
+use App\Services\PayloadRedactor;
+use App\Services\UrlEgressPolicy;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
@@ -72,6 +74,7 @@ class ProcessWorkflowAutomation implements ShouldQueue
                     Log::info('Workflow automation already processed, skipping.', [
                         'idempotency_key' => $this->idempotencyKey,
                     ]);
+
                     return;
                 }
             }
@@ -283,8 +286,8 @@ class ProcessWorkflowAutomation implements ShouldQueue
             return;
         }
 
-        $redactor = app(\App\Services\PayloadRedactor::class);
-        $url = app(\App\Services\UrlEgressPolicy::class)->assertAllowed((string) $url);
+        $redactor = app(PayloadRedactor::class);
+        $url = app(UrlEgressPolicy::class)->assertAllowed((string) $url);
 
         $message = isset($config['message']) ? $this->replacePlaceholders($config['message'], $event->payload) : null;
         $headers = $config['headers'] ?? [];

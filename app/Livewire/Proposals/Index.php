@@ -13,7 +13,8 @@ class Index extends Component
 
     public function delete($id)
     {
-        $proposal = Proposal::findOrFail($id);
+        $proposal = Proposal::where('organization_id', Auth::user()->organization_id)
+            ->findOrFail($id);
         $proposal->delete();
         session()->flash('success', 'Proposal deleted.');
     }

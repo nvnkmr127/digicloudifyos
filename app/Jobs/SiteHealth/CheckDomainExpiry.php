@@ -69,6 +69,7 @@ class CheckDomainExpiry implements ShouldQueue
                         'domain' => $domain,
                         'status' => $rdap->status(),
                     ]);
+
                     continue;
                 }
 

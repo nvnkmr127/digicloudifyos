@@ -10,10 +10,19 @@ class Index extends Component
 {
     public function removeMember($id)
     {
-        $employee = Employee::find($id);
-        if ($employee) {
-            $employee->delete();
+        // D028: Enforce Role-Based Access Control and Tenant Isolation
+        $user = Auth::user();
+        if (! $user->isAdmin()) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Unauthorized. Only admins can remove members.']);
+
+            return;
         }
+
+        $employee = Employee::where('organization_id', $user->organization_id)
+            ->findOrFail($id);
+
+        $employee->delete();
+        $this->dispatch('notify', ['type' => 'success', 'message' => 'Team member removed.']);
     }
 
     public function render()

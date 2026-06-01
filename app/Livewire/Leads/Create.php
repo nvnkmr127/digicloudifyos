@@ -23,7 +23,7 @@ class Create extends Component
 
     public $source = '';
 
-    public $status = 'New';
+    public $status = 'new';
 
     public $assigned_user = '';
 
@@ -31,13 +31,19 @@ class Create extends Component
 
     protected function rules(): array
     {
+        $orgId = Auth::user()->organization_id;
+
         return [
             'name' => 'required|min:3',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
             'source' => 'required|string',
             'status' => ['required', 'string', Rule::in(LeadStatus::values())],
-            'assigned_user' => 'nullable|uuid|exists:users,id',
+            'assigned_user' => [
+                'nullable',
+                'uuid',
+                Rule::exists('users', 'id')->where('organization_id', $orgId),
+            ],
             'notes' => 'nullable|string',
         ];
     }

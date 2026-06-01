@@ -11,6 +11,16 @@ class LeaveRequest extends Model
 {
     use HasUuids, OrganizationScoped;
 
+    protected static function booted()
+    {
+        static::saving(function ($leave) {
+            if ($leave->start_date && $leave->end_date) {
+                // S035: Force correct days calculation to prevent payroll/HR inconsistencies
+                $leave->days = $leave->start_date->diffInDays($leave->end_date) + 1;
+            }
+        });
+    }
+
     protected $fillable = [
         'organization_id',
         'employee_id',

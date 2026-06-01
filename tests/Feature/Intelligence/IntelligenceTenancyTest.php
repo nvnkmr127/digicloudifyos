@@ -75,7 +75,7 @@ class IntelligenceTenancyTest extends TestCase
 
         $this->actingAs($user);
 
-        $component = new InsightsFeed();
+        $component = new InsightsFeed;
 
         try {
             $component->complete($insight->id);
@@ -117,7 +117,7 @@ class IntelligenceTenancyTest extends TestCase
 
         $this->actingAs($user);
 
-        $component = new InsightsFeed();
+        $component = new InsightsFeed;
 
         try {
             $component->dismiss($insight->id);

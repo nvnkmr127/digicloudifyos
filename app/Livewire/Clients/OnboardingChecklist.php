@@ -10,7 +10,9 @@ use Livewire\Component;
 class OnboardingChecklist extends Component
 {
     public Client $client;
+
     public $checklist;
+
     public $items = [];
 
     public function mount(Client $client)
@@ -41,16 +43,19 @@ class OnboardingChecklist extends Component
                 ]);
             }
         }
+
         return $initialized;
     }
 
     public function toggleItem($taskId)
     {
-        $index = collect($this->items)->search(fn($item) => $item['id'] === $taskId);
-        
-        if ($index === false) return;
+        $index = collect($this->items)->search(fn ($item) => $item['id'] === $taskId);
 
-        $this->items[$index]['completed'] = !($this->items[$index]['completed'] ?? false);
+        if ($index === false) {
+            return;
+        }
+
+        $this->items[$index]['completed'] = ! ($this->items[$index]['completed'] ?? false);
         $this->items[$index]['completed_at'] = $this->items[$index]['completed'] ? now()->toISOString() : null;
 
         // Use atomic JSON update to prevent overwriting of other keys by concurrent edits
@@ -64,9 +69,12 @@ class OnboardingChecklist extends Component
 
     public function getProgressProperty()
     {
-        if (empty($this->items)) return 0;
+        if (empty($this->items)) {
+            return 0;
+        }
         $total = count($this->items);
         $completed = collect($this->items)->where('completed', true)->count();
+
         return round(($completed / $total) * 100);
     }
 

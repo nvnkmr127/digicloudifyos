@@ -21,4 +21,3 @@ class AnalyticsDashboardRequest extends FormRequest
         ];
     }
 }
-

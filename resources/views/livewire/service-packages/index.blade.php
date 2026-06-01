@@ -3,7 +3,7 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <x-card>
-            <div class="text-sm font-black text-gray-900">Create Package</div>
+            <div class="text-sm font-black text-gray-900">{{ $editingId ? 'Edit Package' : 'Create Package' }}</div>
             <form wire:submit.prevent="save" class="mt-4 space-y-5">
                 <x-form-field label="Name" name="name">
                     <x-input type="text" wire:model="name" />
@@ -47,7 +47,12 @@
                     @endforeach
                 </div>
 
-                <x-button color="primary" type="submit">Create</x-button>
+                <div class="flex items-center gap-3">
+                    <x-button color="primary" type="submit">{{ $editingId ? 'Update' : 'Create' }}</x-button>
+                    @if($editingId)
+                        <x-button color="outline" type="button" wire:click="cancelEdit">Cancel</x-button>
+                    @endif
+                </div>
             </form>
         </x-card>
 
@@ -56,7 +61,7 @@
             <div class="mt-4 space-y-2">
                 @forelse($packages as $p)
                     <div class="p-4 border border-gray-100 rounded-2xl bg-white flex items-start justify-between gap-4">
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                             <div class="text-sm font-bold text-gray-900 truncate">{{ $p->name }}</div>
                             <div class="text-xs text-gray-500">
                                 {{ $p->cadence }}
@@ -71,10 +76,23 @@
                             </div>
                             <div class="text-xs text-gray-600 mt-1">Playbooks: {{ is_array($p->config['playbook_template_ids'] ?? null) ? count($p->config['playbook_template_ids']) : 0 }}</div>
                         </div>
-                        <button type="button" class="text-sm font-bold {{ $p->is_active ? 'text-green-700' : 'text-gray-500' }}"
-                                wire:click="toggle('{{ $p->id }}')">
-                            {{ $p->is_active ? 'On' : 'Off' }}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" class="text-xs font-bold {{ $p->is_active ? 'text-green-700' : 'text-gray-400' }}"
+                                    wire:click="toggle('{{ $p->id }}')">
+                                {{ $p->is_active ? 'On' : 'Off' }}
+                            </button>
+                            <span class="text-gray-200">|</span>
+                            <button type="button" class="text-xs font-bold text-primary"
+                                    wire:click="edit('{{ $p->id }}')">
+                                Edit
+                            </button>
+                            <span class="text-gray-200">|</span>
+                            <button type="button" class="text-xs font-bold text-danger"
+                                    wire:confirm="Are you sure you want to delete this package?"
+                                    wire:click="delete('{{ $p->id }}')">
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 @empty
                     <div class="p-6 border border-dashed border-gray-200 rounded-2xl text-sm text-gray-600">

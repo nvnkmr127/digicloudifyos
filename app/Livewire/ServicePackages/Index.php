@@ -24,6 +24,8 @@ class Index extends Component
 
     public array $templateIds = [];
 
+    public ?string $editingId = null;
+
     public function mount(PlaybookService $playbooks, ServicePackageService $packages): void
     {
         $user = Auth::user();
@@ -36,6 +38,28 @@ class Index extends Component
 
         $playbooks->ensureDefaults($user->organization_id);
         $packages->ensureDefaults($user->organization_id);
+    }
+
+    public function edit(string $id): void
+    {
+        $user = Auth::user();
+        $pkg = ServicePackage::where('organization_id', $user->organization_id)->findOrFail($id);
+
+        $this->editingId = $pkg->id;
+        $this->name = $pkg->name;
+        $this->industry = $pkg->industry ?? '';
+        $this->cadence = $pkg->cadence;
+        $this->dayOfWeek = (string) $pkg->day_of_week;
+        $this->dayOfMonth = (string) $pkg->day_of_month;
+        $this->templateIds = $pkg->config['playbook_template_ids'] ?? [];
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->reset(['name', 'industry', 'cadence', 'dayOfMonth', 'dayOfWeek', 'templateIds', 'editingId']);
+        $this->cadence = 'monthly';
+        $this->dayOfMonth = '1';
+        $this->dayOfWeek = '1';
     }
 
     public function save(): void
@@ -52,27 +76,58 @@ class Index extends Component
             'name' => 'required|min:3',
             'industry' => 'nullable|string',
             'cadence' => 'required|in:weekly,monthly,quarterly',
+            'templateIds' => 'nullable|array',
+            'templateIds.*' => [
+                'exists:playbook_templates,id',
+                function ($attribute, $value, $fail) use ($user) {
+                    $exists = PlaybookTemplate::where('id', $value)
+                        ->where('organization_id', $user->organization_id)
+                        ->exists();
+                    if (! $exists) {
+                        $fail('The selected playbook template is invalid or belongs to another organization.');
+                    }
+                },
+            ],
         ]);
 
-        ServicePackage::create([
+        $data = [
             'organization_id' => $user->organization_id,
             'name' => $this->name,
             'industry' => $this->industry !== '' ? $this->industry : null,
             'cadence' => $this->cadence,
             'day_of_week' => $this->cadence === 'weekly' ? (int) $this->dayOfWeek : null,
-            'day_of_month' => in_array($this->cadence, ['monthly', 'quarterly'], true) ? max(1, min(28, (int) $this->dayOfMonth)) : null,
-            'is_active' => true,
+            'day_of_month' => in_array($this->cadence, ['monthly', 'quarterly'], true) ? max(1, min(31, (int) $this->dayOfMonth)) : null,
             'config' => [
                 'playbook_template_ids' => array_values(array_filter($this->templateIds)),
             ],
-        ]);
+        ];
 
-        $this->reset(['name', 'industry', 'cadence', 'dayOfMonth', 'dayOfWeek', 'templateIds']);
-        $this->cadence = 'monthly';
-        $this->dayOfMonth = '1';
-        $this->dayOfWeek = '1';
+        if ($this->editingId) {
+            ServicePackage::where('organization_id', $user->organization_id)
+                ->where('id', $this->editingId)
+                ->update($data);
+            session()->flash('success', 'Service package updated.');
+        } else {
+            $data['is_active'] = true;
+            ServicePackage::create($data);
+            session()->flash('success', 'Service package created.');
+        }
 
-        session()->flash('success', 'Service package created.');
+        $this->cancelEdit();
+    }
+
+    public function delete(string $id): void
+    {
+        $user = Auth::user();
+        if (! $user instanceof User || ! $user->can('manage-organization')) {
+            abort(403);
+        }
+
+        ServicePackage::where('organization_id', $user->organization_id)
+            ->where('id', $id)
+            ->delete();
+
+        session()->flash('success', 'Service package deleted.');
     }
 
     public function toggle(string $id): void

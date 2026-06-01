@@ -47,18 +47,26 @@ class Edit extends Component
     protected function rules(): array
     {
         return [
-            'client_id' => 'required|uuid|exists:clients,id',
+            'client_id' => [
+                'required',
+                'uuid',
+                Rule::exists('clients', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
             'name' => 'required|min:3',
             'description' => 'nullable|string',
             'project_code' => 'nullable|string',
             'status' => ['required', 'string', Rule::in(ProjectStatus::values())],
             'priority' => ['required', 'string', Rule::in(ProjectPriority::values())],
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after:start_date',
             'budget' => 'nullable|numeric|min:0',
             'billing_type' => ['required', 'string', Rule::in(ProjectBillingType::values())],
             'hourly_rate' => 'nullable|numeric|min:0',
-            'project_manager_id' => 'nullable|uuid|exists:employees,id',
+            'project_manager_id' => [
+                'nullable',
+                'uuid',
+                Rule::exists('employees', 'id')->where('organization_id', Auth::user()->organization_id),
+            ],
         ];
     }
 

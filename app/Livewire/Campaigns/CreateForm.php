@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Campaigns;
 
-use App\Enums\CampaignStatus;
 use App\Enums\CampaignObjective;
+use App\Enums\CampaignStatus;
 use App\Models\AdAccount;
 use App\Models\Campaign;
 use App\Models\Client;
@@ -36,9 +36,19 @@ class CreateForm extends Component
 
     protected function rules(): array
     {
+        $orgId = Auth::user()->organization_id;
+
         return [
-            'client_id' => 'required|uuid|exists:clients,id',
-            'ad_account_id' => 'required|uuid|exists:ad_accounts,id',
+            'client_id' => [
+                'required',
+                'uuid',
+                Rule::exists('clients', 'id')->where('organization_id', $orgId),
+            ],
+            'ad_account_id' => [
+                'required',
+                'uuid',
+                Rule::exists('ad_accounts', 'id')->where('organization_id', $orgId),
+            ],
             'name' => 'required|min:3',
             'objective' => ['required', 'string', Rule::in(CampaignObjective::values())],
             'status' => ['required', 'string', Rule::in(CampaignStatus::values())],

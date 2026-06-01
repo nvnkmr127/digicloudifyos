@@ -13,4 +13,9 @@ interface OrganizationContextInterface
      * Get the current organization ID.
      */
     public function getCurrentOrganizationId(): ?string;
+
+    /**
+     * Set a manual organization ID for the current context (e.g., in background jobs).
+     */
+    public function setManualOrganizationId(?string $orgId): void;
 }

@@ -118,6 +118,7 @@
                     'children' => [
                         ['route' => 'conversations.index', 'label' => 'Conversations'],
                         ['route' => 'social-planner.index', 'label' => 'Social Planner'],
+                        ['route' => 'broadcasts.index', 'label' => 'Broadcasts'],
                         ['route' => 'calendars.index', 'label' => 'Calendars'],
                     ],
                 ],

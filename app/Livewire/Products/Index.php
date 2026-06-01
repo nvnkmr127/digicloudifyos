@@ -10,6 +10,13 @@ class Index extends Component
 {
     public function delete($id)
     {
+        // Enforce role-based access control (B027)
+        if (! Auth::user()->hasRole(['ADMIN', 'OWNER'])) {
+            session()->flash('error', 'You do not have permission to delete products.');
+
+            return;
+        }
+
         $product = Product::where('organization_id', Auth::user()->organization_id)->findOrFail($id);
         $product->delete();
 

@@ -38,18 +38,21 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $org = Organization::create([
-            'name' => $request->name.' Organization',
-            'slug' => Str::slug($request->name.'-'.uniqid()),
-        ]);
+        $user = \DB::transaction(function () use ($request) {
+            $org = Organization::create([
+                'name' => $request->name.' Organization',
+                'slug' => Str::slug($request->name.'-'.Str::random(6)),
+            ]);
 
-        $user = User::create([
-            'organization_id' => $org->id,
-            'full_name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'OWNER',
-        ]);
+            return User::create([
+                'organization_id' => $org->id,
+                'full_name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'OWNER',
+                'status' => 'ACTIVE',
+            ]);
+        });
 
         event(new Registered($user));
 

@@ -6,10 +6,13 @@
     </x-page-header>
 
     <x-card>
-        <!-- Search -->
-        <div class="mb-6 max-w-md">
-            <x-input wire:model.live="search" type="text" placeholder="Search by name, email or industry..." />
-        </div>
+        <x-toolbar class="mb-6" variant="subtle">
+            <x-slot name="left">
+                <x-input wire:model.live.debounce.300ms="search" type="search" placeholder="Search clients…" aria-label="Search clients" class="w-full sm:w-96" />
+            </x-slot>
+        </x-toolbar>
+
+        <div wire:loading class="mb-4 text-sm text-text-muted">Loading…</div>
 
         <x-table>
             <x-slot name="header">
@@ -29,7 +32,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div
-                                class="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-primary font-bold mr-3">
+                                class="h-10 w-10 rounded-lg bg-primary-soft flex items-center justify-center text-primary font-bold mr-3">
                                 {{ substr($client->name, 0, 1) }}
                             </div>
                             <div>
@@ -60,14 +63,14 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex flex-col gap-1 w-24">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-black text-gray-400 capitalize">{{ $client->onboarding_progress }}%</span>
+                                <span class="text-[10px] font-semibold text-gray-400 capitalize">{{ $client->onboarding_progress }}%</span>
                             </div>
                             <div class="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                                 @php
                                     $progress = $client->onboarding_progress;
                                     $color = $progress < 30 ? 'bg-red-500' : ($progress < 70 ? 'bg-amber-500' : 'bg-green-500');
                                 @endphp
-                                <div class="h-full {{ $color }} transition-all duration-500" style="width: {{ $progress }}%"></div>
+                                <div x-data="{ progress: @js($progress) }" class="h-full {{ $color }} transition-all duration-500" :style="`width: ${progress}%`"></div>
                             </div>
                         </div>
                     </td>
@@ -106,9 +109,17 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-text-muted">
-                        No clients found. <a href="{{ route('clients.create') }}" class="text-primary font-medium">Add your
-                            first client?</a>
+                    <td colspan="7" class="px-6">
+                        <x-empty-state
+                            title="No clients found"
+                            description="Try adjusting your search, or create your first client."
+                        >
+                            <x-slot name="actions">
+                                <x-button href="{{ route('clients.create') }}" wire:navigate>
+                                    Create Client
+                                </x-button>
+                            </x-slot>
+                        </x-empty-state>
                     </td>
                 </tr>
             @endforelse

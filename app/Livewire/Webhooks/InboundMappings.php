@@ -5,7 +5,6 @@ namespace App\Livewire\Webhooks;
 use App\Models\InboundWebhook;
 use App\Models\WebhookMapping;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 
 class InboundMappings extends Component
@@ -33,18 +32,17 @@ class InboundMappings extends Component
 
     public function save(): void
     {
-        if (! Schema::hasTable('webhook_mappings')) {
-            session()->flash('error', 'Webhook mappings table is not available. Run migrations first.');
-
-            return;
-        }
 
         $validated = $this->validate([
             'name' => 'required|string|min:3|max:255',
             'source_key' => 'required|string|max:255',
             'target_key' => 'required|string|max:255',
             'transform_rule' => 'nullable|string|max:255',
-            'inbound_webhook_id' => 'nullable|string',
+            'inbound_webhook_id' => [
+                'nullable',
+                'uuid',
+                'exists:inbound_webhooks,id,organization_id,'.Auth::user()->organization_id,
+            ],
             'active' => 'boolean',
         ]);
 
@@ -123,24 +121,20 @@ class InboundMappings extends Component
         $mappings = collect();
         $inboundWebhooks = collect();
 
-        if (Schema::hasTable('webhook_mappings')) {
-            $mappings = WebhookMapping::where('organization_id', Auth::user()->organization_id)
-                ->where('direction', 'inbound')
-                ->latest()
-                ->get();
-        }
+        $mappings = WebhookMapping::where('organization_id', Auth::user()->organization_id)
+            ->where('direction', 'inbound')
+            ->latest()
+            ->get();
 
-        if (Schema::hasTable('inbound_webhooks')) {
-            $inboundWebhooks = InboundWebhook::where('organization_id', Auth::user()->organization_id)
-                ->where('active', true)
-                ->orderBy('name')
-                ->get();
-        }
+        $inboundWebhooks = InboundWebhook::where('organization_id', Auth::user()->organization_id)
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.webhooks.inbound-mappings', [
             'mappings' => $mappings,
             'inboundWebhooks' => $inboundWebhooks,
-            'hasTable' => Schema::hasTable('webhook_mappings'),
+            'hasTable' => true,
         ])->layout('layouts.app');
     }
 }

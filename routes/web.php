@@ -5,6 +5,9 @@ use App\Http\Controllers\Clients\PrivacyController;
 use App\Http\Controllers\Integrations\OAuthController;
 use App\Http\Controllers\Portal\ClientPortalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Proposals\ShareController;
+use App\Http\Controllers\PublicFormsController;
+use App\Http\Controllers\Reports\PdfExportController;
 use App\Http\Controllers\Webhooks\FacebookWebhookController;
 use App\Livewire\Ads\Analytics;
 use App\Livewire\Ads\Leads;
@@ -17,10 +20,12 @@ use App\Livewire\Campaigns\Edit;
 use App\Livewire\Campaigns\KanbanBoard;
 use App\Livewire\Clients\BrandKit;
 use App\Livewire\Clients\Integrations;
+use App\Livewire\Clients\OnboardingWizard;
 use App\Livewire\Clients\PerformanceDashboard;
 use App\Livewire\Creatives\RequestsBoard;
 use App\Livewire\Dashboard\Index;
 use App\Livewire\Dashboards\Builder;
+use App\Livewire\Forms\Submissions;
 use App\Livewire\Intelligence\AlertCenter;
 use App\Livewire\Intelligence\BriefingDashboard;
 use App\Livewire\Intelligence\ClientWorkspace;
@@ -81,6 +86,7 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/workflow', Dashboard::class)->name('workflow.index');
     Route::get('/workflow/logs', Logs::class)->name('workflow.logs');
     Route::get('/reports', App\Livewire\Reports\Index::class)->name('reports.index');
+    Route::get('/reports/export/pdf', PdfExportController::class)->name('reports.export.pdf');
     Route::get('/deliverables', App\Livewire\Deliverables\Index::class)
         ->middleware('can:view-analytics')
         ->name('deliverables.index');
@@ -94,7 +100,7 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/clients/create', App\Livewire\Clients\Create::class)
         ->middleware('can:manage-organization')
         ->name('clients.create');
-    Route::get('/clients/{client}/onboarding', App\Livewire\Clients\OnboardingWizard::class)
+    Route::get('/clients/{client}/onboarding', OnboardingWizard::class)
         ->middleware('can:manage-organization')
         ->name('clients.onboarding');
     Route::get('/clients/{client}/edit', App\Livewire\Clients\Edit::class)
@@ -142,6 +148,8 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/orders/{id}', Show::class)->name('orders.show');
     Route::get('/proposals', App\Livewire\Proposals\Index::class)->name('proposals.index');
     Route::get('/proposals/create', App\Livewire\Proposals\Create::class)->name('proposals.create');
+    Route::get('/proposals/{proposal}', App\Livewire\Proposals\Show::class)->name('proposals.show');
+    Route::get('/proposals/{proposal}/edit', App\Livewire\Proposals\Edit::class)->name('proposals.edit');
     Route::get('/analytics', App\Livewire\Analytics\Index::class)->name('analytics.index');
     Route::get('/analytics-management', App\Livewire\AnalyticsManagement\Dashboard::class)->name('analytics-management.dashboard');
     Route::get('/workload', App\Livewire\Workload\Index::class)
@@ -191,10 +199,14 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
     Route::get('/calendars', App\Livewire\Calendars\Index::class)->name('calendars.index');
     Route::get('/forms', App\Livewire\Forms\Index::class)->name('forms.index');
     Route::get('/forms/create', App\Livewire\Forms\Create::class)->name('forms.create');
+    Route::get('/forms/{form}', App\Livewire\Forms\Show::class)->name('forms.show');
+    Route::get('/forms/{form}/submissions', Submissions::class)->name('forms.submissions');
+    Route::get('/broadcasts', App\Livewire\Broadcasts\Index::class)->name('broadcasts.index');
     Route::get('/creative-requests', App\Livewire\CreativeRequests\Index::class)->name('creative-requests.index');
     Route::get('/feedback', App\Livewire\Feedback\Index::class)->name('feedback.index');
     Route::get('/products', App\Livewire\Products\Index::class)->name('products.index');
     Route::get('/products/create', App\Livewire\Products\Create::class)->name('products.create');
+    Route::get('/products/{product}/edit', App\Livewire\Products\Edit::class)->name('products.edit');
     Route::get('/settings', App\Livewire\Settings\Index::class)
         ->middleware('can:manage-organization')
         ->name('settings');
@@ -259,6 +271,17 @@ Route::middleware(['auth', 'verified', 'organization'])->group(function () {
 Route::get('/portal/clients/{client}', [ClientPortalController::class, 'show'])
     ->middleware(['signed', 'throttle:60,1'])
     ->name('client.portal');
+
+Route::get('/share/proposals/{proposal}', [ShareController::class, 'show'])
+    ->middleware(['signed', 'throttle:60,1'])
+    ->name('proposals.share');
+
+Route::get('/f/{slug}', [PublicFormsController::class, 'show'])
+    ->middleware(['throttle:60,1'])
+    ->name('public.forms.show');
+Route::post('/f/{slug}/submit', [PublicFormsController::class, 'submit'])
+    ->middleware(['throttle:30,1'])
+    ->name('public.forms.submit');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

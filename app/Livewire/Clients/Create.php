@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class Create extends Component
@@ -14,15 +15,18 @@ class Create extends Component
     use AuthorizesRequests;
 
     public $name = '';
+
     public $email = '';
+
     public $website_url = '';
+
     public $status = 'ACTIVE';
-    
+
     public function mount()
     {
         Log::debug('Mounting Simplified Client Create component', [
             'user_id' => Auth::id(),
-            'organization_id' => Auth::user()->organization_id ?? 'NULL'
+            'organization_id' => Auth::user()->organization_id ?? 'NULL',
         ]);
 
         // Check DB connection on mount
@@ -37,7 +41,7 @@ class Create extends Component
     public function updated($propertyName)
     {
         Log::debug("Livewire Reactivity: Property [{$propertyName}] updated.", [
-            'value' => $this->{$propertyName}
+            'value' => $this->{$propertyName},
         ]);
         $this->validateOnly($propertyName);
     }
@@ -56,8 +60,8 @@ class Create extends Component
                 'name' => $this->name,
                 'email' => $this->email,
                 'website_url' => $this->website_url,
-                'status' => $this->status
-            ]
+                'status' => $this->status,
+            ],
         ]);
 
         try {
@@ -68,9 +72,10 @@ class Create extends Component
             Log::error('Authorization failed in CreateClient', [
                 'error' => $e->getMessage(),
                 'user_id' => Auth::id(),
-                'user_role' => Auth::user()->role ?? 'NONE'
+                'user_role' => Auth::user()->role ?? 'NONE',
             ]);
             session()->flash('error', 'Unauthorized: You do not have permission to create clients.');
+
             return;
         }
 
@@ -78,9 +83,9 @@ class Create extends Component
             Log::debug('Starting validation...');
             $this->validate();
             Log::debug('Validation passed.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             Log::warning('Validation failed in CreateClient', [
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ]);
             throw $e;
         }
@@ -89,10 +94,10 @@ class Create extends Component
             $orgId = Auth::user()->organization_id ?? null;
             Log::debug('Attempting database creation...', [
                 'organization_id' => $orgId ?: 'NULL',
-                'name' => $this->name
+                'name' => $this->name,
             ]);
 
-            if (!$orgId) {
+            if (! $orgId) {
                 Log::warning('Creating client without organization_id. Checking if model boot handles it...');
             }
 
@@ -114,7 +119,7 @@ class Create extends Component
             session()->flash('success', 'Client created! Let\'s complete the onboarding.');
 
             return redirect()->route('clients.onboarding', $client->id);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('CRITICAL: Failed to create client', [
@@ -122,10 +127,11 @@ class Create extends Component
                 'error_message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => substr($e->getTraceAsString(), 0, 1000) // First 1000 chars for brevity
+                'trace' => substr($e->getTraceAsString(), 0, 1000), // First 1000 chars for brevity
             ]);
-            
-            session()->flash('error', 'Critical System Error: ' . $e->getMessage());
+
+            session()->flash('error', 'Critical System Error: '.$e->getMessage());
+
             return null;
         }
     }

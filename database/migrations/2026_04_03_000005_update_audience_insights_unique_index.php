@@ -17,7 +17,10 @@ return new class extends Migration
         }
 
         Schema::table('audience_insights', function (Blueprint $table) {
-            try { $table->dropUnique('audience_insights_unique_idx'); } catch (\Throwable $e) {}
+            try {
+                $table->dropUnique('audience_insights_unique_idx');
+            } catch (Throwable $e) {
+            }
 
             $table->unique(
                 ['ad_account_id', 'campaign_id', 'ad_set_id', 'ad_id', 'date', 'breakdown_type', 'age', 'gender', 'country', 'city', 'device', 'placement', 'hour'],
@@ -26,8 +29,5 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };
-

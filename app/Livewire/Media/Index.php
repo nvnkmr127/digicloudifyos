@@ -33,6 +33,8 @@ class Index extends Component
             'file_path' => $path,
             'file_type' => $this->upload->getMimeType(),
             'file_size' => $this->upload->getSize(),
+            'uploaded_by' => Auth::id(),
+            'version' => 1,
         ]);
 
         $this->upload = null;
@@ -42,6 +44,12 @@ class Index extends Component
     public function delete($id)
     {
         $asset = CreativeAsset::findOrFail($id);
+
+        // Security: Explicit ownership check (D006)
+        if ($asset->organization_id !== Auth::user()->organization_id) {
+            abort(403);
+        }
+
         Storage::disk('public')->delete($asset->file_path);
         $asset->delete();
         session()->flash('success', 'Asset deleted.');

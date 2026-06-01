@@ -55,10 +55,10 @@ class ReportGeneratorService
         $startDate = now()->subDays($days)->toDateString();
 
         // 1. Overview
-        $insights = AdInsight::where('organization_id', $orgId)
+        $insightsOverview = AdInsight::where('organization_id', $orgId)
             ->where('date', '>=', $startDate)
             ->where('level', 'account')
-            ->selectRaw('SUM(spend) as total_spend, SUM(revenue) as total_revenue, SUM(conversions) as total_conversions, (CASE WHEN SUM(spend) > 0 THEN SUM(revenue) / SUM(spend) ELSE 0 END) as blended_roas')
+            ->selectRaw('SUM(spend) as total_spend, SUM(revenue) as total_revenue, SUM(conversions) as total_conversions')
             ->first();
 
         $totalLeads = FacebookLead::where('organization_id', $orgId)
@@ -66,24 +66,39 @@ class ReportGeneratorService
             ->count();
 
         $overview = [
-            'total_spend' => $insights->total_spend ?? 0,
+            'total_spend' => (float) ($insightsOverview->total_spend ?? 0),
             'total_leads' => $totalLeads,
-            'avg_cpl' => $totalLeads > 0 ? ($insights->total_spend / $totalLeads) : 0,
-            'avg_roas' => $insights->blended_roas ?? 0,
+            'avg_cpl' => $totalLeads > 0 ? ($insightsOverview->total_spend / $totalLeads) : 0,
+            'avg_roas' => ($insightsOverview->total_spend > 0) ? ($insightsOverview->total_revenue / $insightsOverview->total_spend) : 0,
         ];
 
+        // Performance: Bulk aggregate leads to avoid N+1 (D018)
+        $campaignLeads = FacebookLead::where('organization_id', $orgId)
+            ->where('created_at', '>=', $startDate)
+            ->whereNotNull('campaign_id')
+            ->selectRaw('campaign_id, COUNT(*) as lead_count')
+            ->groupBy('campaign_id')
+            ->pluck('lead_count', 'campaign_id');
+
+        $adLeads = FacebookLead::where('organization_id', $orgId)
+            ->where('created_at', '>=', $startDate)
+            ->whereNotNull('ad_id')
+            ->selectRaw('ad_id, COUNT(*) as lead_count')
+            ->groupBy('ad_id')
+            ->pluck('lead_count', 'ad_id');
+
         // 2. Campaigns
-        $campaigns = Campaign::where('organization_id', $orgId)
-            ->with(['adInsights' => function ($q) use ($startDate) {
-                $q->where('date', '>=', $startDate)->where('level', 'campaign');
-            }])
+        $campaigns = Campaign::with(['adInsights' => function ($q) use ($startDate) {
+            $q->where('date', '>=', $startDate)->where('level', 'campaign');
+        }])
+            ->where('organization_id', $orgId)
             ->get()
-            ->map(function ($campaign) {
+            ->map(function ($campaign) use ($campaignLeads) {
                 $spend = $campaign->adInsights->sum('spend');
-                $leads = FacebookLead::where('campaign_id', $campaign->id)->count();
                 $impressions = $campaign->adInsights->sum('impressions');
                 $clicks = $campaign->adInsights->sum('clicks');
                 $revenue = $campaign->adInsights->sum('revenue');
+                $leads = $campaignLeads->get($campaign->id, 0);
 
                 return [
                     'name' => $campaign->name,
@@ -98,23 +113,24 @@ class ReportGeneratorService
             })->sortByDesc('spend')->values()->toArray();
 
         // 3. Creatives
-        $creatives = Creative::where('organization_id', $orgId)
-            ->with(['ad.adInsights' => function ($q) use ($startDate) {
-                $q->where('date', '>=', $startDate)->where('level', 'ad');
-            }])
+        $creatives = Creative::with(['ad.adInsights' => function ($q) use ($startDate) {
+            $q->where('date', '>=', $startDate)->where('level', 'ad');
+        }])
+            ->where('organization_id', $orgId)
             ->get()
-            ->map(function ($creative) {
+            ->map(function ($creative) use ($adLeads) {
                 $ad = $creative->ad;
                 if (! $ad) {
                     return null;
                 }
+
                 $insights = $ad->adInsights;
-                $leads = FacebookLead::where('ad_id', $ad->id)->count();
                 $impressions = $insights->sum('impressions');
                 $clicks = $insights->sum('clicks');
+                $leads = $adLeads->get($ad->id, 0);
 
                 return [
-                    'asset_name' => $creative->headline ?: $creative->creative_id,
+                    'asset_name' => $creative->headline ?: ($creative->name ?? $creative->creative_id),
                     'ctr' => $impressions > 0 ? ($clicks / $impressions) * 100 : 0,
                     'leads' => $leads,
                     'engagement_rate' => $impressions > 0 ? ($clicks / $impressions) * 100 : 0,

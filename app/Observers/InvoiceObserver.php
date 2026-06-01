@@ -4,11 +4,15 @@ namespace App\Observers;
 
 use App\Jobs\ProcessWorkflowAutomation;
 use App\Models\Invoice;
+use App\Services\AgencyManagementService;
 
 class InvoiceObserver
 {
     public function updated(Invoice $invoice)
     {
+        // Security: Clear agency dashboard cache when financial data changes (B002)
+        app(AgencyManagementService::class)->clearCache($invoice->organization_id);
+
         if ($invoice->isDirty('status')) {
             $event = null;
             if ($invoice->status === 'paid') {
@@ -28,5 +32,15 @@ class InvoiceObserver
                 ]);
             }
         }
+    }
+
+    public function created(Invoice $invoice)
+    {
+        app(AgencyManagementService::class)->clearCache($invoice->organization_id);
+    }
+
+    public function deleted(Invoice $invoice)
+    {
+        app(AgencyManagementService::class)->clearCache($invoice->organization_id);
     }
 }

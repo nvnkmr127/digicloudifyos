@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Notifications;
 
-use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -18,7 +17,8 @@ class Bell extends Component
 
     public function markAsRead($id)
     {
-        $notification = Notification::find($id);
+        // Scope lookup to prevent marking others' notifications as read (B017)
+        $notification = Auth::user()->notifications()->find($id);
         if ($notification) {
             $notification->markAsRead();
             $this->dispatch('notificationRead');
@@ -27,8 +27,9 @@ class Bell extends Component
 
     public function render()
     {
-        $unreadCount = Notification::unread()->count();
-        $notifications = Notification::latest()->take(5)->get();
+        // Scope to user to prevent B014 (Global Leak)
+        $unreadCount = Auth::user()->unreadNotifications()->count();
+        $notifications = Auth::user()->notifications()->latest()->take(5)->get();
 
         return view('livewire.notifications.bell', [
             'unreadCount' => $unreadCount,

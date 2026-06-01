@@ -22,6 +22,11 @@ class ClientPerformanceCenter extends Component
 
     public function mount(Client $client)
     {
+        // D023: Enforce strict multi-tenant isolation
+        if ($client->organization_id !== auth()->user()->organization_id) {
+            abort(403, 'Unauthorized access to client performance data.');
+        }
+
         $this->client = $client;
         $this->date = today()->toDateString();
         $this->loadData();
@@ -45,7 +50,7 @@ class ClientPerformanceCenter extends Component
                 ->get();
         });
 
-        $this->recentInsights = Cache::remember("client_recent_insights_{$clientId}", 600, function () use ($clientId) {
+        $this->recentInsights = Cache::remember("client_recent_insights_{$clientId}", 600, function () {
             return $this->client->aiInsights()
                 ->latest('insight_date')
                 ->limit(2)

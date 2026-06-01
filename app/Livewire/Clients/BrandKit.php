@@ -59,6 +59,11 @@ class BrandKit extends Component
     {
         $this->authorize('update', $this->client);
 
+        $this->validate([
+            'tone' => 'nullable|string|max:255',
+            'colors' => 'nullable|string', // Validated in processing
+        ]);
+
         $kit = BrandKitModel::where('organization_id', $this->client->organization_id)
             ->where('client_id', $this->client->id)
             ->first();
@@ -70,14 +75,20 @@ class BrandKit extends Component
             ]);
         }
 
+        // D016: Sanitize and validate colors
+        $validColors = collect($this->textToList($this->colors))
+            ->filter(fn ($c) => preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $c))
+            ->values()
+            ->all();
+
         $kit->update([
             'identity' => [
                 'logos' => $this->textToList($this->logos),
-                'colors' => $this->textToList($this->colors),
+                'colors' => $validColors,
                 'fonts' => $this->textToList($this->fonts),
             ],
             'voice' => [
-                'tone' => trim($this->tone),
+                'tone' => strip_tags(trim($this->tone)),
                 'dos' => $this->textToList($this->dos),
                 'donts' => $this->textToList($this->donts),
             ],

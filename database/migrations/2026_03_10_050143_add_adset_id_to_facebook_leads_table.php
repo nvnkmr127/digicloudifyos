@@ -25,7 +25,10 @@ return new class extends Migration
         }
 
         Schema::table('facebook_leads', function (Blueprint $table) {
-            try { $table->dropForeign(['ad_set_id']); } catch (\Throwable $e) {}
+            try {
+                $table->dropForeign(['ad_set_id']);
+            } catch (Throwable $e) {
+            }
             $table->dropColumn('ad_set_id');
         });
     }

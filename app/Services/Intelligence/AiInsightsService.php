@@ -9,6 +9,7 @@ use App\Models\PerformanceAnomaly;
 use App\Models\PerformanceSnapshot;
 use App\Services\Intelligence\Prompts\AnomalyInsightPrompt;
 use App\Services\Intelligence\Prompts\OpportunityInsightPrompt;
+use App\Services\PayloadRedactor;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -159,13 +160,13 @@ class AiInsightsService
         $response = Http::timeout(30)
             ->retry(2, 200)
             ->post($url, [
-            'contents' => [
-                ['parts' => [['text' => $prompt]]],
-            ],
-            'generationConfig' => [
-                'responseMimeType' => 'application/json',
-            ],
-        ]);
+                'contents' => [
+                    ['parts' => [['text' => $prompt]]],
+                ],
+                'generationConfig' => [
+                    'responseMimeType' => 'application/json',
+                ],
+            ]);
 
         if ($response->failed()) {
             throw new AiInsightsException('Gemini API call failed', $response->status());
@@ -192,13 +193,13 @@ class AiInsightsService
             ->timeout(30)
             ->retry(2, 200)
             ->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-4o-mini',
-            'messages' => [
-                ['role' => 'system', 'content' => 'You are a senior marketing performance analyst. Return ONLY JSON.'],
-                ['role' => 'user', 'content' => $prompt],
-            ],
-            'response_format' => ['type' => 'json_object'],
-        ]);
+                'model' => 'gpt-4o-mini',
+                'messages' => [
+                    ['role' => 'system', 'content' => 'You are a senior marketing performance analyst. Return ONLY JSON.'],
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'response_format' => ['type' => 'json_object'],
+            ]);
 
         if ($response->failed()) {
             throw new AiInsightsException('OpenAI call failed', $response->status());
@@ -212,7 +213,7 @@ class AiInsightsService
 
     protected function parseAndPersistInsights(array $insights, string $clientId, string $orgId, string $date): void
     {
-        $redactor = app(\App\Services\PayloadRedactor::class);
+        $redactor = app(PayloadRedactor::class);
 
         if (isset($insights['insights'])) {
             $insights = $insights['insights'];

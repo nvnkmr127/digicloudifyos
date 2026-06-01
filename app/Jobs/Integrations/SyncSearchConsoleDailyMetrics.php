@@ -77,9 +77,9 @@ class SyncSearchConsoleDailyMetrics implements ShouldQueue
                 ->timeout(30)
                 ->retry(2, 200)
                 ->post('https://www.googleapis.com/webmasters/v3/sites/'.rawurlencode($siteUrl).'/searchAnalytics/query', [
-                'startDate' => $date,
-                'endDate' => $date,
-            ]);
+                    'startDate' => $date,
+                    'endDate' => $date,
+                ]);
 
             if ($query->failed()) {
                 throw new \RuntimeException('Search Console query failed.');

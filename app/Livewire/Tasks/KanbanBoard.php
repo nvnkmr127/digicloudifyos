@@ -13,7 +13,7 @@ class KanbanBoard extends Component
 
     public $tasks = [];
 
-    public $users = [];
+    public $availableAssignees = [];
 
     public $priorityFilter = 'all';
 
@@ -21,28 +21,32 @@ class KanbanBoard extends Component
 
     public $searchQuery = '';
 
-    public $columns = [
-        ['key' => 'pending', 'title' => 'Pending', 'color' => 'bg-gray-100'],
-        ['key' => 'in_progress', 'title' => 'In Progress', 'color' => 'bg-blue-100'],
-        ['key' => 'review', 'title' => 'Review', 'color' => 'bg-purple-100'],
-        ['key' => 'completed', 'title' => 'Completed', 'color' => 'bg-green-100'],
-        ['key' => 'blocked', 'title' => 'Blocked', 'color' => 'bg-red-100'],
-    ];
+    public $columns = [];
 
     protected $listeners = [
         'taskUpdated' => 'refreshTasks',
         'taskCreated' => 'refreshTasks',
     ];
 
+    /**
+     * Component boot logic.
+     */
+    public function boot(): void
+    {
+        $this->columns = collect(Task::getStatuses())->map(function ($meta, $key) {
+            return array_merge(['key' => $key], $meta);
+        })->values()->toArray();
+    }
+
     public function mount()
     {
-        $this->loadUsers();
+        $this->loadAssignees();
         $this->refreshTasks();
     }
 
-    public function loadUsers()
+    public function loadAssignees()
     {
-        $this->users = User::active()
+        $this->availableAssignees = User::active()
             ->orderBy('full_name')
             ->get(['id', 'full_name']);
     }
@@ -93,15 +97,31 @@ class KanbanBoard extends Component
         $this->refreshTasks();
     }
 
+    /**
+     * Update the status of a specific task with validation and authorization.
+     *
+     * @param  string  $taskId
+     * @param  string  $newStatus
+     * @return void
+     */
     public function updateTaskStatus($taskId, $newStatus)
     {
         try {
+            // Validate incoming status against allowed model keys
+            $allowedStatuses = collect(Task::getStatuses())->keys()->toArray();
+            if (! in_array($newStatus, $allowedStatuses)) {
+                throw new \InvalidArgumentException("Invalid task status requested: {$newStatus}");
+            }
+
             $task = Task::findOrFail($taskId);
 
             $this->authorize('update', $task);
 
             $oldStatus = $task->status;
-            $task->update(['status' => $newStatus]);
+
+            // Explicit assignment for better audit trail visibility
+            $task->status = $newStatus;
+            $task->save();
 
             $this->refreshTasks();
 
@@ -113,13 +133,34 @@ class KanbanBoard extends Component
 
             $this->dispatch('notify', [
                 'type' => 'success',
-                'message' => 'Task status updated successfully',
+                'message' => 'Task stage updated successfully',
             ]);
 
         } catch (\Exception $e) {
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => 'Failed to update task status: '.$e->getMessage(),
+                'message' => 'Operation failed: '.$e->getMessage(),
+            ]);
+        }
+    }
+
+    public function deleteTask($taskId)
+    {
+        try {
+            $task = Task::findOrFail($taskId);
+            $this->authorize('delete', $task);
+
+            $task->delete();
+            $this->refreshTasks();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Task deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to delete task: '.$e->getMessage(),
             ]);
         }
     }

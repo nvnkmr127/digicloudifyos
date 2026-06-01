@@ -73,8 +73,8 @@ class SyncMetaPageDailyMetrics implements ShouldQueue
                 ->timeout(30)
                 ->retry(2, 200)
                 ->get('https://graph.facebook.com/v25.0/me/accounts', [
-                'fields' => 'id,name,access_token',
-            ]);
+                    'fields' => 'id,name,access_token',
+                ]);
 
             if ($accounts->failed()) {
                 throw new \RuntimeException('Meta pages discovery failed.');
@@ -104,11 +104,11 @@ class SyncMetaPageDailyMetrics implements ShouldQueue
                 ->timeout(30)
                 ->retry(2, 200)
                 ->get("https://graph.facebook.com/v25.0/{$pageId}/insights", [
-                'metric' => 'page_impressions,page_impressions_unique,page_engaged_users,page_post_engagements',
-                'since' => $date,
-                'until' => $date,
-                'period' => 'day',
-            ]);
+                    'metric' => 'page_impressions,page_impressions_unique,page_engaged_users,page_post_engagements',
+                    'since' => $date,
+                    'until' => $date,
+                    'period' => 'day',
+                ]);
 
             if ($insights->failed()) {
                 throw new \RuntimeException('Meta page insights failed.');

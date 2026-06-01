@@ -26,4 +26,3 @@ enum TaskStatus: string
         return array_map(fn (self $s) => $s->value, self::cases());
     }
 }
-

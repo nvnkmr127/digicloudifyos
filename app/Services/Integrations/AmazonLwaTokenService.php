@@ -21,11 +21,11 @@ class AmazonLwaTokenService
             ->timeout(15)
             ->retry(2, 200)
             ->post('https://api.amazon.com/auth/o2/token', [
-            'grant_type' => 'refresh_token',
-            'refresh_token' => $credential->refresh_token,
-            'client_id' => config('services.amazon_sp_api.lwa_client_id', ''),
-            'client_secret' => config('services.amazon_sp_api.lwa_client_secret', ''),
-        ]);
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $credential->refresh_token,
+                'client_id' => config('services.amazon_sp_api.lwa_client_id', ''),
+                'client_secret' => config('services.amazon_sp_api.lwa_client_secret', ''),
+            ]);
 
         if ($response->failed()) {
             throw new \RuntimeException('Amazon LWA token refresh failed.');

@@ -2,15 +2,19 @@
 
 namespace App\Providers;
 
+use App\Contracts\OrganizationContextInterface;
+use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Lead;
 use App\Models\Proposal;
+use App\Observers\ClientObserver;
 use App\Observers\InvoiceObserver;
 use App\Observers\LeadObserver;
 use App\Observers\ProposalObserver;
 use App\Repositories\CampaignRepository;
 use App\Repositories\LeadRepository;
 use App\Services\AnalyticsService;
+use App\Services\AuthOrganizationContext;
 use App\Services\CampaignService;
 use App\Services\ExportService;
 use App\Services\LeadService;
@@ -65,8 +69,8 @@ class AppServiceProvider extends ServiceProvider
             LeadService::class
         );
         $this->app->singleton(
-            \App\Contracts\OrganizationContextInterface::class,
-            \App\Services\AuthOrganizationContext::class
+            OrganizationContextInterface::class,
+            AuthOrganizationContext::class
         );
     }
 
@@ -108,7 +112,7 @@ class AppServiceProvider extends ServiceProvider
         Lead::observe(LeadObserver::class);
         Invoice::observe(InvoiceObserver::class);
         Proposal::observe(ProposalObserver::class);
-        \App\Models\Client::observe(\App\Observers\ClientObserver::class);
+        Client::observe(ClientObserver::class);
 
         // Sidebar Intelligence Badges
         View::composer(

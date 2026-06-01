@@ -18,6 +18,7 @@ class BriefingDashboard extends Component
 
         if ($id) {
             $this->briefing = DailyBriefing::where('organization_id', $orgId)->findOrFail($id);
+
             return;
         } else {
             $this->briefing = DailyBriefing::where('organization_id', $orgId)
@@ -33,6 +34,13 @@ class BriefingDashboard extends Component
 
     public function completeItem($itemId)
     {
+        // Enforce role-based access control (B035)
+        if (auth()->user()->hasRole('VIEWER')) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'You do not have permission to complete action items.']);
+
+            return;
+        }
+
         $item = BriefingActionItem::whereHas('briefing', function ($q) {
             $q->where('organization_id', auth()->user()->organization_id);
         })->findOrFail($itemId);
@@ -40,13 +48,18 @@ class BriefingDashboard extends Component
         $item->complete(auth()->id());
 
         session()->flash('message', 'Action item marked as completed.');
+
+        // No explicit filter needed here as render() will re-query and filter (B033)
     }
 
     public function render()
     {
         $items = [];
         if ($this->briefing) {
-            $query = $this->briefing->actionItems()->with('client');
+            // Filter out completed items to ensure UX state consistency (B033)
+            $query = $this->briefing->actionItems()
+                ->whereNull('completed_at')
+                ->with('client');
 
             if ($this->activeTab === 'urgent') {
                 $items = $query->where('priority_level', 'urgent')->orderBy('sort_order')->get();

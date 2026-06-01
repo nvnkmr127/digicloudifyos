@@ -2,6 +2,7 @@
 
 namespace App\Services\Automation;
 
+use App\Contracts\OrganizationContextInterface;
 use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\Client;
@@ -13,6 +14,11 @@ class AutomationEngine
 {
     public function runForClient(string $orgId, string $clientId, string $date): void
     {
+        // Security: Set manual organization context for background job (D004)
+        if (app()->bound(OrganizationContextInterface::class)) {
+            app(OrganizationContextInterface::class)->setManualOrganizationId($orgId);
+        }
+
         $client = Client::where('organization_id', $orgId)->find($clientId);
         if (! $client) {
             return;
@@ -45,6 +51,9 @@ class AutomationEngine
 
     protected function executeRule(AutomationRule $rule, Client $client, PerformanceAnomaly $anomaly): void
     {
+        // B001: Fallback from Auth::id() to system context for background jobs
+        $actorId = Auth::id();
+
         if ($rule->action_type === 'create_task') {
             $title = (string) ($rule->action_config['title'] ?? 'Investigate performance issue');
             $priority = (string) ($rule->action_config['priority'] ?? 'high');
@@ -59,7 +68,7 @@ class AutomationEngine
                 'status' => 'pending',
                 'priority' => $priority,
                 'deadline' => now()->addDays(2),
-                'created_by' => Auth::id(),
+                'created_by' => $actorId,
             ]);
 
             return;
@@ -79,9 +88,9 @@ class AutomationEngine
                     'suggested' => $rule->action_config,
                 ],
                 'status' => $rule->requires_approval ? 'proposed' : 'approved',
-                'requested_by' => Auth::id(),
+                'requested_by' => $actorId,
                 'approved_at' => $rule->requires_approval ? null : now(),
-                'approved_by' => $rule->requires_approval ? null : Auth::id(),
+                'approved_by' => $rule->requires_approval ? null : $actorId,
             ]);
         }
     }

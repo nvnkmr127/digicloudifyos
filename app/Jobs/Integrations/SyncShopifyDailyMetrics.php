@@ -89,10 +89,10 @@ class SyncShopifyDailyMetrics implements ShouldQueue
                 ->retry(2, 200)
                 ->withOptions(['allow_redirects' => false])
                 ->get("https://{$shop}/admin/api/2024-01/orders/count.json", [
-                'status' => 'any',
-                'created_at_min' => $start,
-                'created_at_max' => $end,
-            ]);
+                    'status' => 'any',
+                    'created_at_min' => $start,
+                    'created_at_max' => $end,
+                ]);
 
             if ($countResponse->failed()) {
                 throw new \RuntimeException('Shopify orders count failed.');
@@ -105,12 +105,12 @@ class SyncShopifyDailyMetrics implements ShouldQueue
                 ->retry(2, 200)
                 ->withOptions(['allow_redirects' => false])
                 ->get("https://{$shop}/admin/api/2024-01/orders.json", [
-                'status' => 'any',
-                'created_at_min' => $start,
-                'created_at_max' => $end,
-                'limit' => 250,
-                'fields' => 'id,total_price,currency,customer',
-            ]);
+                    'status' => 'any',
+                    'created_at_min' => $start,
+                    'created_at_max' => $end,
+                    'limit' => 250,
+                    'fields' => 'id,total_price,currency,customer',
+                ]);
 
             if ($ordersResponse->failed()) {
                 throw new \RuntimeException('Shopify orders list failed.');

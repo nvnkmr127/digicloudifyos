@@ -12,12 +12,17 @@ class FormSubmission extends Model
 
     protected $fillable = [
         'form_id',
+        'organization_id',
         'payload',
         'ip_address',
+        'user_agent',
+        'referer',
+        'submitted_at',
     ];
 
     protected $casts = [
         'payload' => 'array',
+        'submitted_at' => 'datetime',
     ];
 
     public function form(): BelongsTo

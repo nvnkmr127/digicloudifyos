@@ -29,4 +29,3 @@ class SocialListeningIngestRequest extends FormRequest
         ];
     }
 }
-

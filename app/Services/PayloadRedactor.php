@@ -13,11 +13,13 @@ class PayloadRedactor
 
             if ($this->isSensitiveKey($k)) {
                 $out[$key] = '[redacted]';
+
                 continue;
             }
 
             if (is_array($value)) {
                 $out[$key] = $this->redactArray($value);
+
                 continue;
             }
 
@@ -62,4 +64,3 @@ class PayloadRedactor
         ], true);
     }
 }
-

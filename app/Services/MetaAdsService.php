@@ -29,13 +29,13 @@ use FacebookAds\Object\Fields\AdFields;
 use FacebookAds\Object\Fields\AdSetFields;
 use FacebookAds\Object\Fields\AdsInsightsFields;
 use FacebookAds\Object\Fields\CampaignFields;
-use Illuminate\Support\Facades\Auth;
 use FacebookAds\Object\Fields\LeadFields;
 use FacebookAds\Object\Fields\LeadgenFormFields;
 use FacebookAds\Object\Lead;
 use FacebookAds\Object\LeadgenForm;
 use FacebookAds\Object\Page;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -249,9 +249,11 @@ class MetaAdsService extends BaseAdsService
                         'status' => $this->normalizeStatus($data->{CampaignFields::STATUS}),
                         'start_date' => $data->{CampaignFields::START_TIME} ? Carbon::parse($data->{CampaignFields::START_TIME})->toDateString() : null,
                         'end_date' => $data->{CampaignFields::STOP_TIME} ? Carbon::parse($data->{CampaignFields::STOP_TIME})->toDateString() : null,
-                        'daily_budget' => $data->{CampaignFields::DAILY_BUDGET} ? $data->{CampaignFields::DAILY_BUDGET} / 100 : null,
-                        'lifetime_budget' => $data->{CampaignFields::LIFETIME_BUDGET} ? $data->{CampaignFields::LIFETIME_BUDGET} / 100 : null,
-                        'spend_cap' => $data->{CampaignFields::SPEND_CAP} ? $data->{CampaignFields::SPEND_CAP} / 100 : null,
+
+                        // Financial: Precision handling from Meta subunits (cents) to dollars (I005)
+                        'daily_budget' => $data->{CampaignFields::DAILY_BUDGET} ? (float) ($data->{CampaignFields::DAILY_BUDGET} / 100) : null,
+                        'lifetime_budget' => $data->{CampaignFields::LIFETIME_BUDGET} ? (float) ($data->{CampaignFields::LIFETIME_BUDGET} / 100) : null,
+                        'spend_cap' => $data->{CampaignFields::SPEND_CAP} ? (float) ($data->{CampaignFields::SPEND_CAP} / 100) : null,
                     ]
                 );
                 $syncedCampaigns->push($campaign);
@@ -460,8 +462,13 @@ class MetaAdsService extends BaseAdsService
         // 3. Sync AdSets and Ads
         foreach ($campaigns as $campaign) {
             $adSets = $this->syncAdSets($campaign);
+
+            // Mitigate rate limits (I005)
+            usleep(250000); // 250ms
+
             foreach ($adSets as $adSet) {
                 $this->syncAds($adSet);
+                usleep(100000); // 100ms
             }
         }
 

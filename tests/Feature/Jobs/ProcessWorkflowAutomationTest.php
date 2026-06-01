@@ -3,6 +3,7 @@
 namespace Tests\Feature\Jobs;
 
 use App\Jobs\ProcessWorkflowAutomation;
+use App\Models\Organization;
 use App\Models\WorkflowAction;
 use App\Models\WorkflowRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,7 +15,7 @@ class ProcessWorkflowAutomationTest extends TestCase
 
     public function test_it_is_idempotent_and_skips_duplicate_executions()
     {
-        $organization = \App\Models\Organization::factory()->create();
+        $organization = Organization::factory()->create();
 
         $rule = WorkflowRule::create([
             'organization_id' => $organization->id,

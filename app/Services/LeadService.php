@@ -101,6 +101,7 @@ class LeadService
         $version = Cache::get($key);
         if (! is_int($version) || $version < 1) {
             Cache::forever($key, 1);
+
             return 1;
         }
 

@@ -13,6 +13,26 @@ class RequestsBoard extends Component
 
     public $requests = [];
 
+    public bool $showCreateModal = false;
+
+    public string $title = '';
+
+    public string $description = '';
+
+    public string $priority = 'Medium';
+
+    public string $type = 'Graphic'; // Default type
+
+    public ?string $deadline = null;
+
+    protected $rules = [
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'priority' => 'required|in:Low,Medium,High,Urgent',
+        'type' => 'required|string',
+        'deadline' => 'nullable|date|after:today',
+    ];
+
     public $statusGroups = [
         'requested' => ['title' => 'Requested', 'color' => 'bg-gray-100', 'text' => 'text-gray-700'],
         'in_production' => ['title' => 'In Production', 'color' => 'bg-yellow-100', 'text' => 'text-yellow-700'],
@@ -43,7 +63,15 @@ class RequestsBoard extends Component
 
     public function updateStatus($requestId, $newStatus)
     {
-        $request = CreativeRequest::findOrFail($requestId);
+        // D015: Enforce multi-tenant isolation and status validation
+        if (! isset($this->statusGroups[$newStatus])) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => 'Invalid status target.']);
+
+            return;
+        }
+
+        $request = CreativeRequest::where('organization_id', Auth::user()->organization_id)
+            ->findOrFail($requestId);
 
         $this->authorize('update', $request);
 
@@ -53,6 +81,46 @@ class RequestsBoard extends Component
         $this->dispatch('notify', [
             'type' => 'success',
             'message' => 'Status updated',
+        ]);
+    }
+
+    public function createRequest()
+    {
+        $this->validate();
+
+        CreativeRequest::create([
+            'organization_id' => Auth::user()->organization_id,
+            'title' => $this->title,
+            'description' => $this->description,
+            'status' => 'requested',
+            'priority' => $this->priority,
+            'type' => $this->type,
+            'deadline' => $this->deadline ?: null,
+            'created_by' => Auth::id(),
+        ]);
+
+        $this->reset(['title', 'description', 'priority', 'type', 'deadline', 'showCreateModal']);
+        $this->refreshRequests();
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Creative request created successfully',
+        ]);
+    }
+
+    public function deleteRequest($requestId)
+    {
+        $request = CreativeRequest::where('organization_id', Auth::user()->organization_id)
+            ->findOrFail($requestId);
+
+        $this->authorize('delete', $request);
+
+        $request->delete();
+        $this->refreshRequests();
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Request deleted successfully',
         ]);
     }
 

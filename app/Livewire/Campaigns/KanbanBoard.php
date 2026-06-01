@@ -118,6 +118,27 @@ class KanbanBoard extends Component
         }
     }
 
+    public function deleteCampaign($campaignId, CampaignService $service)
+    {
+        try {
+            $campaign = Campaign::findOrFail($campaignId);
+            $this->authorize('delete', $campaign);
+
+            $service->delete($campaign);
+            $this->refreshCampaigns($service);
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Campaign deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to delete campaign: '.$e->getMessage(),
+            ]);
+        }
+    }
+
     public function clearFilters()
     {
         $this->statusFilter = 'all';

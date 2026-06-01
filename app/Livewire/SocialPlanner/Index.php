@@ -27,13 +27,29 @@ class Index extends Component
 
     public $scheduledTime = '';
 
-    protected $rules = [
-        'content' => 'required|string',
-        'selectedChannels' => 'required|array|min:1',
-        'selectedChannels.*' => 'exists:social_channels,id',
-        'scheduledDate' => 'required|date',
-        'scheduledTime' => 'required',
-    ];
+    protected function rules()
+    {
+        $orgId = Auth::user()->organization_id;
+
+        return [
+            'content' => 'required|string',
+            'selectedChannels' => 'required|array|min:1',
+            'selectedChannels.*' => [
+                'required',
+                'exists:social_channels,id',
+                function ($attribute, $value, $fail) use ($orgId) {
+                    $exists = SocialChannel::where('id', $value)
+                        ->where('organization_id', $orgId)
+                        ->exists();
+                    if (! $exists) {
+                        $fail('The selected social channel is invalid.');
+                    }
+                },
+            ],
+            'scheduledDate' => 'required|date',
+            'scheduledTime' => 'required',
+        ];
+    }
 
     public function mount()
     {
@@ -61,6 +77,7 @@ class Index extends Component
         $this->validate();
 
         $scheduledAt = Carbon::parse($this->scheduledDate.' '.$this->scheduledTime);
+        $channelCount = count($this->selectedChannels);
 
         foreach ($this->selectedChannels as $channelId) {
             SocialPost::create([
@@ -73,9 +90,9 @@ class Index extends Component
             ]);
         }
 
-        $this->dispatch('close-modal', 'create-post-modal');
+        $this->dispatch('close-modal', 'post-creation-modal');
         $this->reset(['content', 'selectedChannels']);
-        session()->flash('message', count($this->selectedChannels) > 1 ? 'Posts scheduled successfully.' : 'Post scheduled successfully.');
+        session()->flash('message', $channelCount > 1 ? 'Posts scheduled successfully.' : 'Post scheduled successfully.');
     }
 
     public function connectChannel($platform)
@@ -96,7 +113,7 @@ class Index extends Component
             'status' => 'active',
         ]);
 
-        $this->dispatch('close-modal', 'connect-channel-modal');
+        $this->dispatch('close-modal', 'channel-connect-modal');
         session()->flash('message', ucfirst($platform).' channel connected.');
     }
 

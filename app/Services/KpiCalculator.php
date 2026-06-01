@@ -65,4 +65,3 @@ class KpiCalculator
         return (($revenue - $spend) / $spend) * 100.0;
     }
 }
-

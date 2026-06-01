@@ -18,14 +18,14 @@ return new class extends Migration
         }
 
         Schema::table('order_items', function (Blueprint $table) {
-            try { $table->dropForeign(['product_id']); } catch (\Throwable $e) {}
+            try {
+                $table->dropForeign(['product_id']);
+            } catch (Throwable $e) {
+            }
             $table->unsignedBigInteger('product_id')->change();
             $table->foreign('product_id')->references('id')->on('products');
         });
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };
-

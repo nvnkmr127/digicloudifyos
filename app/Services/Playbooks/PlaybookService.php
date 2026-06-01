@@ -79,13 +79,25 @@ class PlaybookService
 
     public function runTemplateForClient(string $orgId, Client $client, PlaybookTemplate $template, string $date): ?ClientPlaybookRun
     {
-        $exists = ClientPlaybookRun::where('organization_id', $orgId)
-            ->where('client_id', $client->id)
-            ->where('playbook_template_id', $template->id)
-            ->whereDate('run_date', $date)
-            ->exists();
+        // Security: Verify that both client and template belong to the specified organization (B003)
+        if ($client->organization_id !== $orgId || $template->organization_id !== $orgId) {
+            throw new \Exception('Organization mismatch for playbook execution.');
+        }
 
-        if ($exists) {
+        // D027: Prevent race condition resulting in duplicate onboarding tasks
+        $run = ClientPlaybookRun::firstOrCreate(
+            [
+                'organization_id' => $orgId,
+                'client_id' => $client->id,
+                'playbook_template_id' => $template->id,
+                'run_date' => $date,
+            ],
+            [
+                'status' => 'running',
+            ]
+        );
+
+        if (! $run->wasRecentlyCreated && $run->status !== 'failed') {
             return null;
         }
 

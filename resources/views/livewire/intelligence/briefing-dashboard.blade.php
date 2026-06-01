@@ -137,7 +137,7 @@
                                         </div>
                                     </div>
 
-                                    @if(!$item->is_completed)
+                                    @if(!$item->is_completed && !auth()->user()->hasRole('VIEWER'))
                                         <button wire:click="completeItem('{{ $item->id }}')" 
                                             class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white transition-all bg-indigo-600 shadow-sm rounded-xl hover:bg-indigo-700 hover:shadow-indigo-200 focus:ring-4 focus:ring-indigo-100 dark:hover:shadow-indigo-900/30 dark:focus:ring-indigo-900/40">
                                             Execute Task

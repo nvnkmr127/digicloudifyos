@@ -20,7 +20,7 @@
                 <div>
                     <label for="client_id" class="block text-sm font-medium text-text-primary">Client</label>
                     <select id="client_id" wire:model="client_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
                         <option value="">Select a client...</option>
                         @foreach($clients as $client)
                             <option value="{{ $client->id }}">{{ $client->name }}</option>
@@ -32,7 +32,7 @@
                     <label for="project_id" class="block text-sm font-medium text-text-primary">Project
                         (Optional)</label>
                     <select id="project_id" wire:model="project_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
                         <option value="">No Project</option>
                         @foreach($projects as $project)
                             <option value="{{ $project->id }}">{{ $project->name }}</option>
@@ -55,7 +55,7 @@
                 <div>
                     <label for="status" class="block text-sm font-medium text-text-primary">Status</label>
                     <select id="status" wire:model="status"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
                         <option value="draft">Draft</option>
                         <option value="sent">Sent</option>
                         <option value="paid">Paid</option>
@@ -94,7 +94,7 @@
                             </div>
                             <div class="md:col-span-1 text-right">
                                 <button type="button" wire:click="removeItem({{ $index }})"
-                                    class="text-red-500 hover:text-red-700 p-2">
+                                    class="text-red-500 hover:text-red-700 p-2" aria-label="Remove line item">
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -110,15 +110,15 @@
                     <div class="w-full md:w-64 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
                         <div class="flex justify-between items-center text-sm mb-2">
                             <span class="text-text-muted">Subtotal:</span>
-                            <span class="font-black text-text-primary">${{ number_format($this->subtotal, 2) }}</span>
+                            <span class="font-semibold text-text-primary">${{ number_format($this->subtotal, 2) }}</span>
                         </div>
                         <div class="flex justify-between items-center text-sm mb-4">
                             <span class="text-text-muted">Tax & Discount:</span>
                             <span class="font-bold text-gray-400 italic">No Capturing Logic</span>
                         </div>
                         <div class="pt-4 border-t border-gray-200 flex justify-between items-center">
-                            <span class="text-sm font-black text-gray-900 uppercase tracking-widest tracking-tighter">Total Due</span>
-                            <span class="text-lg font-black text-primary">${{ number_format($this->subtotal, 2) }}</span>
+                            <span class="text-sm font-semibold text-gray-900 uppercase tracking-widest tracking-tighter">Total Due</span>
+                            <span class="text-lg font-semibold text-primary">${{ number_format($this->subtotal, 2) }}</span>
                         </div>
                     </div>
                 </div>

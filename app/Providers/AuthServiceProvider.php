@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Campaign;
 use App\Models\Client;
 use App\Models\CreativeRequest;
 use App\Models\Lead;
 use App\Models\Opportunity;
 use App\Models\Pipeline;
 use App\Models\Project;
+use App\Models\Proposal;
 use App\Models\Task;
 use App\Policies\CampaignPolicy;
 use App\Policies\ClientPolicy;
@@ -16,6 +18,7 @@ use App\Policies\LeadPolicy;
 use App\Policies\OpportunityPolicy;
 use App\Policies\PipelinePolicy;
 use App\Policies\ProjectPolicy;
+use App\Policies\ProposalPolicy;
 use App\Policies\TaskPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -31,6 +34,7 @@ class AuthServiceProvider extends ServiceProvider
         Project::class => ProjectPolicy::class,
         Pipeline::class => PipelinePolicy::class,
         Opportunity::class => OpportunityPolicy::class,
+        Proposal::class => ProposalPolicy::class,
     ];
 
     public function boot(): void

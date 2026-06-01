@@ -28,4 +28,3 @@ enum CampaignObjective: string
         return array_map(fn (self $o) => $o->value, self::cases());
     }
 }
-
